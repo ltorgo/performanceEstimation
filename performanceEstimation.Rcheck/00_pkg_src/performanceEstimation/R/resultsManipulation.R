@@ -1,0 +1,106 @@
+
+#################################################################
+# Manipulation of the "ComparisonResults" objects
+#################################################################
+
+
+# =====================================================
+# Function that joins  experimental results objects.
+# The joining is carried out by some specified dimension,
+# the most common being joining experiments carried out in
+# different data sets (dimension 4), or experiments with
+# different learners (dimension 3) on the same data sets.
+# =====================================================
+# Luis Torgo, Aug 2013
+# =====================================================
+# Example runs:
+# > bestScores(mergeEstimationRes(subset(earth,stats='e1',vars=1:3),
+#                   subset(nnet,stats='e1',vars=4:6),by=3))
+# > bestScores(mergeEstimationRes(nnet,earth,rf,rpartXse,svm,by=3))
+#
+mergeEstimationRes <- function(...,by='tasks') {
+
+  s <- list(...)
+  if (length(s) < 2) return(s[[1]])
+  
+  if ((! by %in% c('statistics','workflows','tasks')) &&
+      (! by %in% 1:3))
+    stop('mergeEstimationRes:: invalid value on "by" argument!')
+  for(i in 2:length(s)) 
+    if (!identical(s[[i]]@tasks[[1]][[1]]@settings,s[[1]]@tasks[[1]][[1]]@settings))
+      stop('mergeEstimationRes:: trying to join performance estimation objects with different estimation settings!')
+
+  if (!is.numeric(by))
+    by <- match(by,c('statistics','workflows','tasks'))
+
+  if (by == 1) {
+      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
+      if (!all(sameTasks)) stop("mergeEstimationRes:: to join by statistics all objects need to address the same tasks!")
+      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
+      if (!all(sameWFs)) stop("mergeEstimationRes:: to join by statistics all objects need to use the same workflows!")
+      for(e in s[2:length(s)]) 
+          for(t in 1:length(e@tasks))
+              for(w in 1:length(e@tasks[[t]]))
+                  s[[1]]@tasks[[t]][[w]]@iterationsScores <- cbind(s[[1]]@tasks[[t]][[w]]@iterationsScores,
+                                                                   e@tasks[[t]][[w]]@iterationsScores)
+      
+  } else if (by == 2) {
+      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
+      if (!all(sameTasks)) stop("mergeEstimationRes:: to join by workflows all objects need to address the same tasks!")
+      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
+      if (!all(sameStats)) stop("mergeEstimationRes:: to join by workflows all objects need to estimate the same statistics!")
+      for(e in s[2:length(s)]) 
+          for(t in 1:length(e@tasks))
+              s[[1]]@tasks[[t]] <- c(s[[1]]@tasks[[t]],e@tasks[[t]])
+  } else if (by == 3) {
+      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
+      if (!all(sameWFs)) stop("mergeEstimationRes:: to join by tasks all objects need to use the same workflows!")
+      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
+      if (!all(sameStats)) stop("mergeEstimationRes:: to join by tasks all objects need to estimate the same statistics!")
+      for(e in s[2:length(s)]) 
+          s[[1]]@tasks <- c(s[[1]]@tasks,e@tasks)
+      
+  }
+  return(s[[1]])
+}
+
+# =====================================================
+# Small auxiliary functions to obtain information from 
+# compExp objects.
+# =====================================================
+# Luis Torgo, Aug 2013
+# =====================================================
+taskNames      <- function(o) names(o@tasks)
+workflowNames  <- function(o) names(o@tasks[[1]])
+metricNames <- function(o) colnames(o@tasks[[1]][[1]]@iterationsScores)
+
+
+
+  
+# ======================================================================
+# Get the fold results of a certain variant (learning system) over a
+# certain dataset. Both can be specified by name or number.
+# You get a matrix with as many rows as there are folds and as many
+# columns as there are evaluation statistics.
+# =====================================================
+# Luis Torgo, Jan 2009
+# =====================================================
+getIterationsResults <- function(results,wf,task) {
+  if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
+
+  results@tasks[[task]][[wf]]@iterationsScores
+}
+
+
+# ======================================================================
+# Get some summary statistics of the performance of a variant on a certain
+# data set, for all evaluation statistics.
+# =====================================================
+# Luis Torgo, Jan 2009
+# =====================================================
+estimationSummary <- function(results,wf,task) {
+  if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
+  .scores2summary(results@tasks[[task]][[wf]])
+}
+  
+

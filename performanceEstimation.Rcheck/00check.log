@@ -1,0 +1,21 @@
+* using log directory ‘/usersData/ltorgo/Software/R/MyPackages/performanceEstimation/performanceEstimation.Rcheck’
+* using R version 3.0.2 (2013-09-25)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘performanceEstimation/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘performanceEstimation’ version ‘0.1’
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Luis Torgo <ltorgo@dcc.fc.up.pt>’
+New submission
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘performanceEstimation’ can be installed ... ERROR
+Installation failed.
+See ‘/usersData/ltorgo/Software/R/MyPackages/performanceEstimation/performanceEstimation.Rcheck/00install.out’ for details.
