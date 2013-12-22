@@ -191,6 +191,8 @@ A named vector with the calculated statistics.
  \code{\link{regressionMetrics}}, \code{\link{timeseriesMetrics}}
 }
 \examples{
+\dontrun{
+library(DMwR)
 ## Calculating several statistics of a classification tree on the Iris data
 data(iris)
 idx <- sample(1:nrow(iris),100)
@@ -205,6 +207,7 @@ classificationMetrics(test$Species,preds,stats="all")
 ## Now trying calculating the utility of the predictions
 cbM <- matrix(c(10,-20,-20,-20,20,-10,-20,-10,20),3,3)
 classificationMetrics(test$Species,preds,"totU",cbM)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

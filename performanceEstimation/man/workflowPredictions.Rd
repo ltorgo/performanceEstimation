@@ -1,7 +1,7 @@
 \name{workflowPredictions}
 \alias{workflowPredictions}
-\alias{`workflowPredictions<-`}
-\alias{'workflowPredictions<-'}
+\alias{workflowPredictions<-}
+
 \title{
 The predictions of a workflow run
 }

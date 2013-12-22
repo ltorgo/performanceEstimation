@@ -13,11 +13,12 @@
 }
 \usage{
 standardWF(form,train,test,
-           learner,learner.pars=NULL,
-           predictor='predict',predictor.pars=NULL,
-           evaluator=if (is.classification(form,train)) 'classificationMetrics' else 'regressionMetrics',
-           evaluator.pars=NULL,
-           .outPreds=TRUE,.outModel=FALSE)
+    learner,learner.pars=NULL,
+    predictor='predict',predictor.pars=NULL,
+    evaluator=if (is.classification(form,train)) 'classificationMetrics'
+              else 'regressionMetrics',
+    evaluator.pars=NULL,
+    .outPreds=TRUE,.outModel=FALSE)
 }
 
 \arguments{

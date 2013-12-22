@@ -43,33 +43,30 @@ estimationSummary(results,wf,task)
 \code{\link{getIterationsResults}}, \code{\link{performanceEstimation}}
 }
 \examples{
-## Estimating several evaluation metrics on different variants of a
-## regression tree on  a data set, using one repetition of 10-fold CV
+\dontrun{
+## Estimating MSE for 3 variants of both
+## regression trees and SVMs, on  two data sets, using one repetition
+## of 10-fold CV
+library(e1071)
+library(DMwR)
 data(swiss)
+data(mtcars)
 
-## First the user defined functions 
-cv.rpartXse <- function(form, train, test, ...) {
-    require(DMwR)
-    t <- rpartXse(form, train, ...)
-    p <- predict(t, test)
-    mse <- mean((p - resp(form, test))^2)
-    c(nmse = mse/mean((mean(resp(form, train)) - resp(form, test))^2), 
-        mse = mse)
-}
-
-results <- experimentalComparison(
-               c(dataset(Infant.Mortality ~ ., swiss)),
-               c(variants('cv.rpartXse',se=c(0,0.5,1))),
-               cvSettings(1,10,1234)
-                                 )
+## running the estimation experiment
+res <- performanceEstimation(
+  c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
+  c(workflowVariants("standardWF",learner="svm",
+                     learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
+    workflowVariants("standardWF",learner="rpartXse",
+                     learner.pars=list(se=c(0,0.5,1)))
+  ),
+  CvSettings(nReps=1,nFolds=10,seed=1234)
+  )
 
 ## Get the statistics of a specific learner
-estimationSummary(results,'cv.rpartXse.v1','swiss')
+estimationSummary(res,'svm.v1','swiss')
 
-## Get the statistics of the learner that obtained the best NMSE on the
-## swiss data set
-estimationSummary(results,bestScores(results)$swiss['nmse','system'],'swiss')
-
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -5,6 +5,7 @@
 \alias{EstimationResults-class}
 \alias{plot,EstimationResults,missing-method}
 \alias{summary,EstimationResults-method}
+\alias{show,EstimationResults-method}
 
 \title{Class "EstimationResults" }
 \description{This is the class of the objects storing the results of
@@ -33,6 +34,7 @@ Objects can be created by calls of the form \code{EstimationResults(...)}
   \describe{
     \item{plot}{\code{signature(x = "EstimationResults", y = "missing")}: method
       used to visualize the results of the estimation process. }
+    \item{show}{\code{signature(object = "EstimationResults")}: shows the contents of an object in a proper way}
     \item{summary}{\code{signature(object = "EstimationResults")}: method used to
       obtain a summary of the results of the estimation process. }
 	 }

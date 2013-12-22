@@ -23,13 +23,14 @@
 }
 \usage{
 timeseriesWF(form,train,test,
-             learner,learner.pars=NULL,
-             type='slide',relearn.step=1,
-             predictor='predict',predictor.pars=NULL,
-             evaluator=if (is.factor(responseValues(form,train))) 'classificationMetrics' else 'timeseriesMetrics',
-             evaluator.pars=NULL,
-             .outPreds=TRUE,.outModels=FALSE,
-             verbose=T)
+   learner,learner.pars=NULL,
+   type='slide',relearn.step=1,
+   predictor='predict',predictor.pars=NULL,
+   evaluator=if (is.factor(responseValues(form,train))) 'classificationMetrics' 
+             else 'timeseriesMetrics',
+   evaluator.pars=NULL,
+   .outPreds=TRUE,.outModels=FALSE,
+   verbose=T)
 }
 
 \arguments{

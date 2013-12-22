@@ -3,7 +3,7 @@
 \alias{subset-methods}
 %%\alias{subset,ANY-method}
 \alias{subset,ComparisonResults-method}
-\title{Methods for Function subset in Package 'performanceEstimation'}
+\title{Methods for Function \code{subset} in Package \pkg{performanceEstimation}}
 \description{
   The method subset when applied to objects of class \code{\linkS4class{ComparisonResults}} can
   be used to obtain another object of the same class with a subset of

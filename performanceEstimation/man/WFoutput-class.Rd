@@ -4,6 +4,7 @@
 \alias{WFoutput}
 \alias{WFoutput-class}
 \alias{show,WFoutput-method}
+\alias{summary,WFoutput-method}
 
 \title{Class "WFoutput"}
 
@@ -40,8 +41,11 @@
 \section{Methods}{
   \describe{
     \item{show}{\code{signature(object = "WFoutput")}: method used to
-      show the contents of a WFoutput object. }
-	 }
+      show the contents of a \code{WFoutput} object. }
+
+  \item{summary}{\code{signature(object = "WFoutput")}: method used to
+    obtain a summary of the contents of a \code{WFoutput} object. }
+    }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison on Predictive Models}.

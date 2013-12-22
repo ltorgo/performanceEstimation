@@ -227,7 +227,7 @@ setMethod("show",
 
 setMethod("summary",
           "EstimationResults",
-          function(object,...) {
+          function(object) {
               cat('\n*** Summary of a ',
                   switch(class(object@settings),
                          CvSettings='Cross Validation',
@@ -332,7 +332,7 @@ setMethod("plot",
 
 setMethod("summary",
           "ComparisonResults",
-          function(object,...) {
+          function(object) {
               cat('\n== Summary of a ',
                   switch(class(object@tasks[[1]][[1]]@settings),
                          CvSettings='Cross Validation',
