@@ -2,10 +2,16 @@
 \alias{runWorkflow}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-%%  ~~function to do ... ~~
+Run a workflow
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  This function can be used to apply (run) a workflow.
+
+  It receives in the first argument an object of class
+  \code{\linkS4class{Workflow}} and then any other arguments that are
+  required to run the workflow, which will typically involve at least a
+  formula, a training data set (a data frame), and a test data set
+  (another data frame).
 }
 \usage{
 runWorkflow(l, ...)
@@ -13,54 +19,32 @@ runWorkflow(l, ...)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{l}{
-%%     ~~Describe \code{l} here~~
+ An object of class \code{\linkS4class{Workflow}}
 }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
+Further arguments that are required by the workflow function
 }
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  The execution of a workflow produces an object of class
+  \code{\linkS4class{WFoutput}} 
 }
-\references{
-%% ~put references to the literature/web site here ~
+\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models}.
+  \url{https://github.com/ltorgo/performanceEstimation}  
 }
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+\author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  \code{\linkS4class{WFoutput}}, \code{\link{workflowInformation}}, \code{\linkS4class{Workflow}}, \code{\link{standardWF}}
+
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (l, ...) 
-{
-    if (!inherits(l, "Workflow")) 
-        stop(l, " is not of class \"Workflow\".")
-    res <- do.call(l@func, c(list(...), l@pars))
-    if (!inherits(res, "WFoutput")) 
-        stop("Provided workflow should return a \"WFoutput\" object.")
-    else res
-  }
+\dontrun{
+## A simple example
+data(iris)
+w1 <- Workflow("mySolution",par1="gaussian",k=10)
+runWorkflow(w1,Species ~ .,iris[1:100,],iris[101:150,])
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+}
+\keyword{models}
+

@@ -101,6 +101,7 @@ In case you require either "nmse" or "nmae" to be calculated you must
  \code{\link{classificationMetrics}}, \code{\link{timeseriesMetrics}}
 }
 \examples{
+\dontrun{
 ## Calculating several statistics of a regression tree on the Swiss data
 data(swiss)
 idx <- sample(1:nrow(swiss),as.integer(0.7*nrow(swiss)))
@@ -115,7 +116,7 @@ regressionMetrics(test[,'Infant.Mortality'],preds)
 regressionMetrics(test[,'Infant.Mortality'],preds,stats=c('mae','rmse'))
 ## calculate all statistics
 regressionMetrics(test[,'Infant.Mortality'],preds,stats="all",train.y=train[,'Infant.Mortality'])
-
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

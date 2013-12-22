@@ -50,7 +50,7 @@ rankWorkflows(compRes,top=5,
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
 \seealso{
-\code{\link{performanceEstimation}}, \code{\link{topPerformers}}, \code{\link{metricEstimates}}
+\code{\link{performanceEstimation}}, \code{\link{topPerformers}}, \code{\link{metricsSummary}}
 }
 
 \examples{

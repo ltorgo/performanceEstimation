@@ -67,8 +67,8 @@ s
 ## small example illustrating the format of user supplied data splits
 ## it assumes that the source data is formed by 10 cases and that we
 ## will be using two repetitions of a boostrap process 
-s2 <- BootSettings(dataSplits=matrix(c(sample(0:1,10,replace=T),
-                                       sample(0:1,10,replace=T)),
+s2 <- BootSettings(dataSplits=matrix(c(sample(0:1,10,replace=TRUE),
+                                       sample(0:1,10,replace=TRUE)),
                                      nrow=10,ncol=2))
 s2
 s2@dataSplits

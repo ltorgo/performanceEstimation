@@ -1,56 +1,58 @@
 \name{metricNames}
 \alias{metricNames}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
-%%  ~~function to do ... ~~
+The evaluation metrics estimated in an experiment
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+This function can be used to get a vector with the names of the
+evaluation metrics that were used in a performance estimation experiment.
 }
 \usage{
 metricNames(o)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{o}{
-%%     ~~Describe \code{o} here~~
+An object of class \code{\linkS4class{ComparisonResults}}
 }
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  A vector of strings (the names of the metrics)
 }
-\references{
-%% ~put references to the literature/web site here ~
+\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models}.
+  \url{https://github.com/ltorgo/performanceEstimation}  
 }
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+\author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  \code{\linkS4class{ComparisonResults}}, \code{\link{performanceEstimation}}, \code{\link{taskNames}}, \code{\link{workflowNames}}
+
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+\dontrun{
+## Estimating MSE for 3 variants of both
+## regression trees and SVMs, on  two data sets, using one repetition
+## of 10-fold CV
+library(e1071)
+library(DMwR)
+data(swiss)
+data(mtcars)
 
-## The function is currently defined as
-function (o) 
-colnames(o@tasks[[1]][[1]]@iterationsScores)
+## running the estimation experiment
+res <- performanceEstimation(
+  c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
+  c(workflowVariants("standardWF",learner="svm",
+                     learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
+    workflowVariants("standardWF",learner="rpartXse",
+                     learner.pars=list(se=c(0,0.5,1)))
+  ),
+  CvSettings(nReps=1,nFolds=10,seed=1234)
+  )
+
+## the names of the metrics that were estimated in the above experiment
+metricNames(res)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+}
+\keyword{models}
+

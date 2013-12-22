@@ -392,7 +392,7 @@ RLensemble <- function(f,tr,ts,weightRT=0.5,step=FALSE,...) {
   pr <- predict(r,ts)
   pl <- predict(l,noNAsTS)
   ps <- weightRT*pr+(1-weightRT)*pl
-  c(correlation=cor(resp(f,ts),ps))
+  c(correlation=cor(responseValues(f,ts),ps))
 }
 @ 
 
@@ -595,6 +595,7 @@ considerably lower frequency.
 <<cv_ex,eval=FALSE>>=
 data(BreastCancer,package='mlbench')
 library(e1071)
+library(DMwR)
 bc <- knnImputation(BreastCancer[,-1])
 bcExp <- performanceEstimation(
   PredTask(Class ~ .,bc,'BreastCancer'),

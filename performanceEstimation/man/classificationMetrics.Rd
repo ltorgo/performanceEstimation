@@ -12,7 +12,7 @@ metrics may require additional information to be given (see Details section).
 
 }
 \usage{
-classificationMetrics <- function(trues,preds,
+classificationMetrics(trues,preds,
             stats="err",
             benMtrx=NULL,
             allCls=unique(c(levels(as.factor(trues)),levels(as.factor(preds)))),

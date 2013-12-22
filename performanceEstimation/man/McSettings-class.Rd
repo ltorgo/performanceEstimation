@@ -80,7 +80,7 @@ m1
 ## illustrates the format of the data splits
 m2 <- McSettings(dataSplits=matrix(c(c(NA,NA,rep(1,3),0,rep(NA,4),
                                      rep(1,3),0,rep(NA,6)),
-                                   nrow=10,ncol=2))
+                                   nrow=10,ncol=2)))
 m2
 m2@dataSplits
 }

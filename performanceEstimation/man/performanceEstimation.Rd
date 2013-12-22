@@ -58,27 +58,27 @@ of alternative modelling approaches to a set of predictive tasks. The estimation
   \emph{Cross validation}: this type of estimates can be obtained by
   providing in the \code{setts} argument an object of class
   \code{\linkS4class{CvSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{crossValidation}}.
+  obtained in the help page of the function \code{\link{cvEstimates}}.
 
   \emph{Leave one out cross validation}: this type of estimates can be obtained by
   providing in the \code{setts} argument and object of class
   \code{\linkS4class{LoocvSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{loocv}}.
+  obtained in the help page of the function \code{\link{loocvEstimates}}.
 
    \emph{Hold out}: this type of estimates can be obtained by
   providing in the \code{setts} argument and object of class
   \code{\linkS4class{HldSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{holdOut}}.
+  obtained in the help page of the function \code{\link{hldEstimates}}.
   
    \emph{Monte Carlo}: this type of estimates can be obtained by
   providing in the \code{setts} argument and object of class
   \code{\linkS4class{McSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{monteCarlo}}.
+  obtained in the help page of the function \code{\link{mcEstimates}}.
 
    \emph{Bootstrap}: this type of estimates can be obtained by
   providing in the \code{setts} argument and object of class
   \code{\linkS4class{BootSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{bootstrap}}.
+  obtained in the help page of the function \code{\link{bootEstimates}}.
 
   Further functions within this package can then be used to analyse the
   results of the estimation process.
@@ -94,7 +94,7 @@ of alternative modelling approaches to a set of predictive tasks. The estimation
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
   \code{\link{workflowVariants}},\code{\link{topPerformers}},\code{\link{rankWorkflows}},
-  \code{\link{pairedComparisons}}, \code{\link{cvEstimates}}, \code{\link{loocvEsimtates}},
+  \code{\link{pairedComparisons}}, \code{\link{cvEstimates}}, \code{\link{loocvEstimates}},
 \code{\link{hldEstimates}}, \code{\link{mcEstimates}},
   \code{\link{bootEstimates}}
 

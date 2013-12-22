@@ -26,8 +26,9 @@ timeseriesWF(form,train,test,
              learner,learner.pars=NULL,
              type='slide',relearn.step=1,
              predictor='predict',predictor.pars=NULL,
-             evaluator=if (is.factor(resp(form,train))) 'class.eval' else 'ts.eval',
+             evaluator=if (is.factor(responseValues(form,train))) 'classificationMetrics' else 'timeseriesMetrics',
              evaluator.pars=NULL,
+             .outPreds=TRUE,.outModels=FALSE,
              verbose=T)
 }
 
@@ -78,6 +79,16 @@ timeseriesWF(form,train,test,
     A list of parameter values to be passed to the evaluator (defaults
   to \code{NULL}).
   }
+  \item{.outPreds}{
+    A boolean indicating whether the function should include the
+  predictions of the workflow in the \code{\linkS4class{WFoutput}}
+  object that is returned (defaults to \code{TRUE})
+  }
+  \item{.outModels}{
+    A boolean indicating whether the function should include the
+  models learned by the workflow in the \code{\linkS4class{WFoutput}}
+  object that is returned (defaults to \code{FALSE})
+  }
   \item{verbose}{
     A Boolean indicating whether a "*" character should be printed every
     time the window slides (defaults to TRUE).
@@ -86,7 +97,7 @@ timeseriesWF(form,train,test,
 \details{
   The main goal of this function is to facilitate the task of the users
   of the experimental comparison infra-structure provided by function
-  \code{\link{experimentalComparison}} for time series problems where
+  \code{\link{performanceEstimation}} for time series problems where
   the target variable can be numeric or nominal. This latter function requires
   the user to write down a function implementing each of the workflows
   to be evaluated/compared by the infra-structure through a Monte Carlo
@@ -158,8 +169,8 @@ timeseriesWF(form,train,test,
   Finally, the user may also specify a function that is to be used to
   obtain evaluation metrics using the predictions and true values of the
   test set. This can be any function which is specified through
-  parameter \code{evaluator} (defaulting to \code{\link{class.eval}} for
-  nominal target variables and \code{\link{ts.eval}} for numeric
+  parameter \code{evaluator} (defaulting to \code{\link{classificationMetrics}} for
+  nominal target variables and \code{\link{timeseriesMetrics}} for numeric
   targets). The function will be called with the true values on the
   first argument and the predictions  on the
   second. Further arguments are supplied next, as specified in the
@@ -172,19 +183,15 @@ timeseriesWF(form,train,test,
   A named vector with the calculated statistics as returned by the
   function specified in parameter \code{evaluator}.
 }
-\references{ Torgo, L. (2010) \emph{Data Mining using R: learning with case studies},
-  CRC Press (ISBN: 9781439810187).
+\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison on Predictive Models}.
+  \url{https://github.com/ltorgo/performanceEstimation}  
+}
 
-  \url{http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR}  
-}
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
-\note{
-  You may find extra information and an extensive set of examples in a
-  PDF file accompanying the package \code{DMwR}.
-}
 \seealso{
- \code{\link{standardWF}},  \code{\link{experimentalComparison}},
- \code{\link{class.eval}},  \code{\link{ts.eval}}
+ \code{\link{standardWF}},  \code{\link{performanceEstimation}},
+ \code{\link{classificationMetrics}},  \code{\link{timeseriesMetrics}}
 }
 \examples{
 
@@ -196,19 +203,22 @@ timeseriesWF(form,train,test,
 ## data for training and 25\% for testing.
 \dontrun{
 library(quantmod)
-library(e1071)
+library(randomForest)
 getSymbols('^GSPC',from='2008-01-01',to='2012-12-31')
 data.model <- specifyModel(
   Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10)+Delt(Vo(GSPC),k=1:3))
-data <- as.data.frame(modelData(data.model))
+data <- modelData(data.model)
 colnames(data)[1] <- 'PercVarClose'
-spExp <- experimentalComparison(
-  c(dataset(PercVarClose ~ .,data,'SP500_2008_2012')),
-  variants('timeseriesWF',
-           learner='svm',learner.pars=list(cost=10),
-           type=c('slide','grow'),relearn.step=200,
-           evaluator.pars=list(stats='nmse')),
-  mcSettings(5,0.5,0.25))
+spExp <- performanceEstimation(
+  PredTask(PercVarClose ~ .,data,'SP500_2012'),
+  c(Workflow('standardWF',wfID="standRF",
+             learner='randomForest',
+             learner.pars=list(ntree=500)),
+    Workflow('timeseriesWF',efID,"slideRF",
+             learner='randomForest',
+             learner.pars=list(ntree=500,relearn.step=5))
+   ),
+  McSettings(10,0.5,0.25))
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

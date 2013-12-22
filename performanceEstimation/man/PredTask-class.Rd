@@ -44,6 +44,6 @@
 showClass("PredTask")
 data(iris)
 t1 <- PredTask(Species  ~ .,iris)
-t2 <- PredTask(Species  ~ .,iris[sample(1:50,100),],"irisSubset")
+t2 <- PredTask(Species  ~ .,iris[1:20,],"irisSubset")
 }
 \keyword{classes}

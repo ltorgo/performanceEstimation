@@ -200,7 +200,7 @@ standardWF <- function(form,train,test,
                        predictor='predict',predictor.pars=NULL,
                        evaluator=if (is.classification(form,train)) 'classificationMetrics' else 'regressionMetrics',
                        evaluator.pars=NULL,
-                       .outPreds=T,.outModel=F)
+                       .outPreds=TRUE,.outModel=FALSE)
 {
 
   if (is.null(predictor)) {
@@ -238,7 +238,7 @@ timeseriesWF <- function(form,train,test,
                          predictor='predict',predictor.pars=NULL,
                          evaluator=if (is.factor(responseValues(form,train))) 'classificationMetrics' else 'timeseriesMetrics',
                          evaluator.pars=NULL,
-                         .outPreds=T,.outModels=F,
+                         .outPreds=TRUE,.outModels=FALSE,
                          verbose=T)
 {
    

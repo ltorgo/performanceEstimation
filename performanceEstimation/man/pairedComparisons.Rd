@@ -77,7 +77,7 @@ pairedComparisons(obj,baseline,test="wilcoxon")
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-\code{\link{performanceEstimation}},\code{\link{topPerformers}},\code{\link{topPerformer}},\code{\link{rankWorkflows}},\code{\link{metricEstimates}},\code{\linkS4class{ComparisonResults}}
+\code{\link{performanceEstimation}},\code{\link{topPerformers}},\code{\link{topPerformer}},\code{\link{rankWorkflows}},\code{\link{metricsSummary}},\code{\linkS4class{ComparisonResults}}
 }
 \examples{
 \dontrun{

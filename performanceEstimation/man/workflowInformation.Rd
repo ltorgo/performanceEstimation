@@ -1,6 +1,7 @@
 \name{workflowInformation}
 \alias{workflowInformation}
-
+\alias{`workflowInformation<-`}
+\alias{'workflowInformation<-'}
 \title{
 Extra information associated with a workflow run
 }

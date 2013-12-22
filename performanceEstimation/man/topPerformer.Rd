@@ -52,7 +52,7 @@ topPerformer(compRes,metric,task,max=FALSE)
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
-\code{\link{performanceEstimation}}, \code{\link{rankWorkflows}}, \code{\link{metricEstimates}}
+\code{\link{performanceEstimation}}, \code{\link{rankWorkflows}}, \code{\link{metricsSummary}}
 }
 \examples{
 \dontrun{

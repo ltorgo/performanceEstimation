@@ -15,9 +15,9 @@
 standardWF(form,train,test,
            learner,learner.pars=NULL,
            predictor='predict',predictor.pars=NULL,
-           evaluator=if (is.factor(resp(form,train))) 'class.eval' else 'regr.eval',
+           evaluator=if (is.classification(form,train)) 'classificationMetrics' else 'regressionMetrics',
            evaluator.pars=NULL,
-           .outPreds=F)
+           .outPreds=TRUE,.outModel=FALSE)
 }
 
 \arguments{
@@ -51,7 +51,7 @@ standardWF(form,train,test,
   \item{evaluator}{
     A character string with the name of a function that is to be used to
   obtain the evaluation metrics for the predictions of the model (if the
-  target is a factor defaults to 'class.eval' else to 'regr.eval').
+  target is a factor defaults to \code{\link{classificationMetrics}} else to \code{\link{regressionMetrics}}).
   }
   \item{evaluator.pars}{
     A list of parameter values to be passed to the evaluator (defaults
@@ -59,14 +59,19 @@ standardWF(form,train,test,
   }
   \item{.outPreds}{
     A boolean that if set to \code{TRUE} will make the function return
-  as an attribute of its result, a list with the true and predicted
-  values (defaults  to \code{FALSE}).
+  the true values and predictions of the test set in the workflow output
+  object (you may inspect it using function \code{\link{workflowPredictions}}) (defaults  to \code{FALSE}).
+  }
+  \item{.outModel}{
+    A boolean that if set to \code{TRUE} will make the function return
+  the models that was obtained in the extra information of the workflow
+  output object (you may inspect it using function \code{\link{workflowInformation}}) (defaults  to \code{FALSE}).
   }
 }
 \details{
   The main goal of this function is to facilitate the task of the users
   of the experimental comparison infra-structure provided by function
-  \code{\link{experimentalComparison}}. This latter function requires
+  \code{\link{performanceEstimation}}. This latter function requires
   the user to write down a function implementing each of the workflows
   to be evaluated/compared by the infra-structure. Frequently, users
   just want to compare existing algorithms or variants of these algorithms on a
@@ -99,8 +104,8 @@ standardWF(form,train,test,
   Finally, the user may also specify a function that is to be used to
   obtain evaluation metrics using the predictions and true values of the
   test set. This can be any function which is specified through
-  parameter \code{evaluator} (defaulting to \code{\link{class.eval}} for
-  nominal target variables and \code{\link{regr.eval}} for numeric
+  parameter \code{evaluator} (defaulting to \code{\link{classificationMetrics}} for
+  nominal target variables and \code{\link{regressionMetrics}} for numeric
   targets). The function will be called with the true values on the
   first argument and the predictions  on the
   second. Further arguments to this function are specified in the
@@ -110,67 +115,38 @@ standardWF(form,train,test,
   which will be the result returned by function \code{timeseriesWF}.
 
   In case the user sets the parameter \code{.outPreds} to \code{TRUE}
-  the named vector with the evaluation metrics that is returned by the
-  function will have an attribute named "itInfo" which will be a list
-  with components \code{preds} and \code{trues}, with the predicted and
-  true values, respectively, for the test set
+  the \code{\linkS4class{WFoutput}} object with the evaluation metrics that is returned by the
+  function will also include information about the true and predicted
+  values for the used test set, which can be inspected using the
+  function \code{\link{workflowPredictions}}
 }
 \value{
-  A named vector with the calculated statistics as returned by the
-  function specified in parameter \code{evaluator}.
+  An object of class \code{\linkS4class{WFoutput}}
 }
-\references{ Torgo, L. (2010) \emph{Data Mining using R: learning with case studies},
-  CRC Press (ISBN: 9781439810187).
+\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison on Predictive Models}.
+  \url{https://github.com/ltorgo/performanceEstimation}  
+}
 
-  \url{http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR}  
-}
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \note{
   In order to use any of the available classification algorithms you must
   have previously installed the respective packages if necessary.
 }
 \seealso{
- \code{\link{experimentalComparison}}, \code{\link{timeseriesWF}}, \code{\link{class.eval}}, \code{\link{regr.eval}}
+ \code{\link{performanceEstimation}}, \code{\link{timeseriesWF}}, \code{\link{classificationMetrics}}, \code{\link{regressionMetrics}}
 }
 \examples{
-## Estimating the error rate on the Iris data set of three variants
-## (different pruning levels) of a classification tree through 10-fold
-## cross validation  
-data(iris)
-res <- experimentalComparison(
-    c(dataset(Species ~ .,iris)),
-    variants('standardWF',
-             learner='rpartXse',learner.pars=list(se=c(0,0.5,1)),
-             predictor.pars=list(type='class')
-    ),
-    cvSettings(1,10,123))
-
 \dontrun{
-  ## An example of a user defined workflow function. This one in
-  ## particular will obtain a simple ensemble of a regression tree and a
-  ## linear regression model, whose predictions are then combined using
-  ## some weights. Finally, this wrokflow evaluates the model using the
-  ## correlation between the true and predicted values
-  ## We then use experimentalComparison to compare several variants of
-  ## this user-defined workflow through bootstrap
-  ##
-  RLensemble <- function(f,tr,ts,weightRT=0.5,step=F,...) {
-    noNAsTR <- knnImputation(tr)
-    noNAsTS <- knnImputation(ts)
-    r <- rpartXse(f,tr,...)
-    l <- lm(f,noNAsTR)
-    if (step) l <- step(l,trace=0)
-    pr <- predict(r,ts)
-    pl <- predict(l,noNAsTS)
-    ps <- weightRT*pr+(1-weightRT)*pl
-    c(correlation=cor(resp(f,ts),ps))
-  }
-  data(algae)
-  expRes <- experimentalComparison(
-  dataset(a1 ~ .,algae[,1:12],'alga1'),
-  variants('RLensemble',
-  se=c(0,1),step=c(T,F),weightRT=c(0.4,0.5,0.6)),
-  bootSettings(1234,50))
+data(iris)
+library(e1071)
+irisExp <- performanceEstimation(
+  PredTask(Species ~ .,iris),
+  workflowVariants('standardWF',
+           learner='svm',
+           learner.pars=list(cost=c(1,10))
+           ),
+  CvSettings())
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
