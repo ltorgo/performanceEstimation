@@ -2,7 +2,7 @@ Package: performanceEstimation
 Type: Package
 Title: An  infra-structure for performance estimation of predictive models
 Version: 0.1
-Depends: R(>= 3.0), methods, graphics, xts (>= 0.6-7),  ROCR (>= 1.0-2), class (>= 7.3-1), abind (>= 1.1-0),  lattice (>= 0.18-3), grid (>= 2.10.1), zoo (>= 1.6-4), ggplot2 (>= 0.9.3)
+Depends: R(>= 3.0), methods, graphics,  ggplot2 (>= 0.9.3)
 Date: 2013-12-01
 Author: Luis Torgo
 Maintainer: Luis Torgo <ltorgo@dcc.fc.up.pt>

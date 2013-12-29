@@ -252,10 +252,12 @@ setMethod("summary",
           })
 
 
+if (!isGeneric("plot"))  setGeneric("plot", function(x, y, ...) standardGeneric("plot"))
 
 setMethod("plot",
           "EstimationResults",
           function(x,y,...) {
+              
               nstats <- ncol(x@iterationsScores)
               
               tit <- paste(x@workflow@name,
@@ -276,7 +278,7 @@ setMethod("plot",
                                ylab=colnames(x@iterationsScores)[1]) +
                          geom_smooth(method='loess',size=1) +
                          scale_x_discrete()
-                  print(plt)
+                  ##print(plt)
               } else {
                   dt <- .scores2long(x@iterationsScores)
                   plt <- ggplot(dt,aes_string(x="rep",y="score")) + 
@@ -285,8 +287,9 @@ setMethod("plot",
                               geom_smooth(aes_string(group="stat"),method='loess',size=1) +
                                   scale_x_discrete() +theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5,hjust=0))+
                                       facet_grid( stat ~ .,scales = "free_y")
-                  print(plt)
+                  ##print(plt)
               }
+              plt
               
           }
           )
@@ -324,7 +327,8 @@ setMethod("plot",
                      geom_boxplot(aes_string(group="sys")) + ggtitle(tlt) +
                      ylab("Distribution of Statistics Scores") + xlab("Alternative Workflows") +
                          facet_grid(stat ~ task,scales="free_y")+theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5))
-              print(plt)
+              #print(plt)
+              plt
                       
   })
 

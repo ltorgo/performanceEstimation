@@ -44,7 +44,7 @@ pairedComparisons(obj,baseline,test="wilcoxon")
   tries to check what is the best performing workflow for each
   task/metric. This can be obtained with the function
   \code{\link{topPerformers}}. From this analysis it is possible that we
-  are able to indentify one particular workflow as the "best" solution
+  are able to identify one particular workflow as the "best" solution
   to these tasks. In this context, we frequently want to check to what
   extent we can be confident that the observed differences between this
   selected workflow and the remaining alternatives are statistically
@@ -56,7 +56,18 @@ pairedComparisons(obj,baseline,test="wilcoxon")
   of \emph{p} values for each paired comparison, which indicate the
   confidence level on the rejection of the null hypothesis.
 
-  [say more about the available tests]
+  The \code{\link{performanceEstimation}} function ensures that all compared workflows
+are run on exactly the same train+test partitions on all repetitions and
+for all predictive tasks. In this context, we can use pairwise
+statistical significance tests. Given that, with the exception of a
+single repetition of hold-out,  we cannot ensure that the
+different iterations are statistically independent (for instance there
+may be some overlap between the training samples), we recommend the use
+of the Wilcoxon signed rank test to assess the statistical significance of the
+differences between every pair of compared workflows. This is the
+default for the \code{test} parameter. However, this function also
+implements paired t-tests which could be preferred on single repetitions
+of hold-out estimation experiments.
 }
 \value{
   The result of this function is an array with four dimensions. The
@@ -105,7 +116,7 @@ topPerformers(res)
 
 ## now let us assume that we will choose "svm.v2" as our baseline
 ## carry out the paired comparisons
-pairedComparisons(results,"svm.v2")
+pairedComparisons(res,"svm.v2")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

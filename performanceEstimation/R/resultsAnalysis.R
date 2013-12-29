@@ -89,8 +89,15 @@ metricsSummary <- function(compRes,summary='mean',...) {
 pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
     if (!inherits(obj,'ComparisonResults')) stop(obj,' is not of class "ComparisonResults".\n')
 
+    if (! (test %in% c('wilcoxon','t.test')))
+        stop("pairedComparison: valid tests are 'wilcoxon' or 't.test'.")
+    else t.func <- switch(test,
+                          wilcoxon="wilcox.test",
+                          t.test="t.test")
+    
     if (missing(baseline))  # using the first workflow as baseline if none indicated
         baseline <- names(obj@tasks[[1]])[1]
+
 
     ts <- taskNames(obj);     nts <- length(ts)
     ws <- workflowNames(obj); nws <- length(ws)
@@ -121,9 +128,10 @@ pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
 
                 a <- mean(obj@tasks[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
                 s <- sd(obj@tasks[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
-                tst <- try(w <- wilcox.test(obj@tasks[[t]][[o]]@iterationsScores[,m],
-                                          obj@tasks[[t]][[baseline]]@iterationsScores[,m],
-                                          paired=T)
+                tst <- try(w <- do.call(t.func,
+                                        list(obj@tasks[[t]][[o]]@iterationsScores[,m],
+                                             obj@tasks[[t]][[baseline]]@iterationsScores[,m],
+                                             paired=T))
                          )
                 p <- if (inherits(tst,"try-error"))  NA else tst$p.value
                 res[o,,m,t] <- c(a,s,res[baseline,'AvgScore',m,t]-a,p)

@@ -3,7 +3,7 @@
 \docType{class}
 \alias{EstimationResults}
 \alias{EstimationResults-class}
-\alias{plot,EstimationResults,missing-method}
+\alias{plot,EstimationResults-method}
 \alias{summary,EstimationResults-method}
 \alias{show,EstimationResults-method}
 

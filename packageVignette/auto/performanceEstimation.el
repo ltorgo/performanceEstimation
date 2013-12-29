@@ -1,12 +1,9 @@
 (TeX-add-style-hook "performanceEstimation"
  (lambda ()
-    (LaTeX-add-bibliographies
-     "compExps")
+    (LaTeX-add-bibliographies)
     (LaTeX-add-labels
      "sec:simpleEx"
-     "sec:expMeth"
-     "fig:maeA1"
-     "fig:maeA1b")
+     "sec:expMeth")
     (TeX-add-symbols
      "PE")
     (TeX-run-style-hooks

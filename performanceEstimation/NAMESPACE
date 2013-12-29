@@ -2,8 +2,8 @@
 ##import(abind)  # commented out as it does not have a name space
 ##import(xts)
 ##importFrom(zoo,as.zoo)
-##import(methods)
-##import(ggplot2)
+import(methods)
+import(ggplot2)
 
 
 exportClasses(
@@ -21,7 +21,7 @@ exportClasses(
 
 exportMethods(show)
 exportMethods(summary)
-##exportMethods(plot)
+exportMethods(plot)
 exportMethods(subset)
 
 export(

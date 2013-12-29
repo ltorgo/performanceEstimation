@@ -3,7 +3,7 @@
 \docType{class}
 \alias{ComparisonResults}
 \alias{ComparisonResults-class}
-\alias{plot,ComparisonResults,missing-method}
+\alias{plot,ComparisonResults-method}
 \alias{show,ComparisonResults-method}
 %%\alias{subset,ComparisonResults-method}
 \alias{summary,ComparisonResults-method}

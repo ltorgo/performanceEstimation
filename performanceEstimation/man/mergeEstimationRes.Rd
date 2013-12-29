@@ -4,10 +4,10 @@
 Merging several \code{compExp} class objects
 }
 \description{
-  This function can be used to join several \code{compExp} class objects
-  into a single object. The merge is carried out assuming there there is
+  This function can be used to join several objects of class \code{ComparisonResults}  
+  into a single object. The merge is carried out assuming that there is
   something in common between the objects (e.g. all use the same
-  learners on different data sets), and that the user specifies which
+  workflows on different tasks), and that the user specifies which
   property should be used for the merging process.
 }
 \usage{
@@ -16,11 +16,17 @@ mergeEstimationRes(..., by = "tasks")
 
 \arguments{
   \item{\dots}{
-The \code{\linkS4class{ComparisonResults}} class object names separated by commas
+The \code{\linkS4class{ComparisonResults}} class objects names separated by commas
 }
 \item{by}{
   The dimension of the \code{\linkS4class{ComparisonResults}} class objects that should be used
-  for the merge. All objects should have the same values on this dimension.
+  for the merge. All objects should have the same values on the
+  remaining dimensions of an estimation experiment. For instance, if you
+  merge by "tasks" (the default) it means that the objects being merged
+  should include estimation results on the same set of workflows on the
+  same set of metrics, using the same estimation method and
+  settings. The only thing that changes between the objects in this
+  example is the set of tasks. 
 }
 }
 \details{

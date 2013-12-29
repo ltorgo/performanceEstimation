@@ -3,3 +3,4 @@
 .RData
 performanceEstimation.Rcheck
 tentativasGraficos.R
+packageVignette/cache
