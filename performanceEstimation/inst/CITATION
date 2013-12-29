@@ -1,15 +1,13 @@
-citHeader("To cite DMwR in publications use:")
+citHeader("To cite performanceEstimation in publications use:")
 
-citEntry(entry="book",
-         title = "Data Mining with R, learning with case studies",
+citEntry(entry="Manual",
+         title = "An Infra-Structure for Performance Estimation and Experimental Comparison of Predictive Models",
          author = personList(as.person("L. Torgo")),
-	 publisher = "Chapman and Hall/CRC",
-         year         = "2010", 
-         url          = "http://www.liaad.up.pt/~ltorgo/DataMiningWithR",
+         year         = "2013", 
+         url          = "https://github.com/ltorgo/performanceEstimation",
          textVersion =
-         paste("Torgo, L. (2010). ",
-               "Data Mining with R, learning with case studies ",
-	       "Chapman and Hall/CRC. ",
-               "URL: http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR",
+         paste("Torgo, L. (2013). ",
+               "An Infra-Structure for Performance Estimation and Experimental Comparison of Predictive Models",
+               "URL: https://github.com/ltorgo/performanceEstimation",
                sep="")
          )
