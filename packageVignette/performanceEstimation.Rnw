@@ -432,7 +432,7 @@ workflow function that implements our modelling approach:
 
 <<eval=FALSE>>=
 RLensemble <- function(f,tr,ts,weightRT=0.5,step=FALSE,...) {
-  require(DMwR,quietly=F)
+  require(DMwR,quietly=TRUE)
   noNAsTR <- knnImputation(tr)
   noNAsTS <- knnImputation(ts)
   r <- rpartXse(f,tr,...)
