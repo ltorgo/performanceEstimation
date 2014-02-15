@@ -1,0 +1,4 @@
+VERSION 0.1.1 (????-??-??)
+
+- corrected bug on subset method for class ComparisonResults
+- corrected bug on topPerformers() function
