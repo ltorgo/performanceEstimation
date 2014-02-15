@@ -12,7 +12,7 @@ topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@ite
   bs <- lapply(avgScs,function(t) {
       r <- data.frame(Workflow=rep('',NROW(t)),Estimate=rep(0,NROW(t)),stringsAsFactors=F,row.names=rownames(t))
       for(i in 1:NROW(t))
-          r[i,] <- if (maxs[i]) c(colnames(t)[which.max(t[i,])],round(max(t[i,]),digs)) else c(colnames(t)[which.min(t[i,])],round(min(t[i,]),digs))
+          r[i,] <- if (maxs[i]) c(colnames(t)[which.max(t[i,])],round(max(t[i,],na.rm=TRUE),digs)) else c(colnames(t)[which.min(t[i,])],round(min(t[i,],na.rm=TRUE),digs))
       r
   })
   bs
