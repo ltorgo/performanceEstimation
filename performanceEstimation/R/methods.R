@@ -424,10 +424,10 @@ setMethod("subset",
                 tasks <- grep(tasks,names(rr@tasks))
               rr@tasks <- rr@tasks[tasks]
             }
-            if (is.character(statistics) && length(statistics) == 1) {
+            if (is.character(statistics) && length(statistics) == 1) 
                 statistics <- grep(statistics,colnames(x@tasks[[1]][[1]]@iterationsScores))
-                rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,statistics,drop=F] ; sn}))
-            }
+            rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,statistics,drop=F] ; sn}))
+
             rr
           }
           )
