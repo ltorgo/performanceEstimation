@@ -349,20 +349,20 @@ setMethod("summary",
               print(object@tasks[[1]][[1]]@settings)
               cat('\n* Predictive Tasks :: ',
                   paste(names(object@tasks),collapse=', '))
-              cat('\n* Workflows  :: ',paste(names(object@tasks[[1]]),collapse=', '))
+              cat('\n* Workflows  :: ',paste(names(object@tasks[[1]]),collapse=', '),"\n")
               
-              cat('\n\n* Summary of Experiment Results:\n')
+              ##cat('\n\n* Summary of Experiment Results:\n')
               ld <- list()
               for(d in 1:length(object@tasks)) {
                   lv <- list()
-                  cat("\n-> Datataset: ",names(object@tasks)[d],'\n')
+                  cat("\n-> Task: ",names(object@tasks)[d])
                   for(v in 1:length(object@tasks[[d]])) {
-                      cat("\n\t*Workflow:",names(object@tasks[[d]])[v],"\n")
+                      cat("\n  *Workflow:",names(object@tasks[[d]])[v],"\n")
                       ss <- .scores2summary(object@tasks[[d]][[v]])
                       print(ss)
                       lv <- c(lv,list(ss))
                   }
-                  cat('\n')
+                  ##cat('\n')
                   names(lv) <- names(object@tasks[[d]])
                   ld <- c(ld,list(lv))
               }

@@ -215,7 +215,7 @@ spExp <- performanceEstimation(
   c(Workflow('standardWF',wfID="standRF",
              learner='randomForest',
              learner.pars=list(ntree=500)),
-    Workflow('timeseriesWF',efID,"slideRF",
+    Workflow('timeseriesWF',wfID="slideRF",
              learner='randomForest',
              learner.pars=list(ntree=500,relearn.step=5))
    ),

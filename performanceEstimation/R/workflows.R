@@ -31,7 +31,7 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
     wf <- if (is(wf,"function")) deparse(substitute(wf)) else wf
     if (missing(varsRootName)) varsRootName <- wf
 
-    default.novar <- c('evaluator.pars.stats','evaluator.pars.allCls')
+    default.novar <- c('evaluator.pars.stats','evaluator.pars.allCls','evaluator.pars.benMtrx')
     allnovar <- c(as.is,default.novar)
 
     ## unfolding the parameters hidden inside the special parameters
@@ -112,8 +112,15 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
     }
     
     for(i in 1:length(vs)) 
-        names(vs)[i] <- vs[[i]]@name <- if (wf=='standardWF') paste(vs[[i]]@pars$learner,'.v',i,sep='') else paste(varsRootName,'.v',i,sep='')
+        names(vs)[i] <- vs[[i]]@name <- if (wf=="standardWF" || wf=="timeseriesWF") vs[[i]]@pars$learner else varsRootName
 
+    cs <- table(names(vs))
+    tochg <- names(cs)[which(cs>1)]
+    for(n in tochg) {
+        pos <- which(names(vs)==n)
+        for(i in seq_along(pos))
+            names(vs)[pos[i]] <- vs[[pos[i]]]@name <- paste0(n,".v",i)
+    }
     vs
 }
 
