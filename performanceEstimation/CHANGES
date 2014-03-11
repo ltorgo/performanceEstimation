@@ -1,4 +1,6 @@
-VERSION 0.1.1 (????-??-??)
+VERSION 0.1.1 (2014-03-11)
 
+- corrections to Citation and minor stuff on package vignette
 - corrected bug on subset method for class ComparisonResults
 - corrected bug on topPerformers() function
+- corrected but on workflowVariants() when using a benefit matrix
