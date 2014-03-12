@@ -123,11 +123,11 @@ data <- modelData(data.model)
 colnames(data)[1] <- 'PercVarClose'
 spExp <- performanceEstimation(
   PredTask(PercVarClose ~ .,data,'SP500_2012'),
-  c(standRF=Workflow('standardWF',
+  c(standRF=Workflow('standardWF',wfID="standRF",
                     pars=list(learner='randomForest',
                               learner.pars=list(ntree=500))
                    ),
-    slideRF=Workflow('timeseriesWF',
+    slideRF=Workflow('timeseriesWF',wfID="slideRF",
                     pars=list(learner='randomForest',
                               learner.pars=list(ntree=500,relearn.step=5))
                    )

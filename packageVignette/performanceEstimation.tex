@@ -634,7 +634,7 @@ workflow function that implements our modelling approach:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{RLensemble} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{f}\hlstd{,}\hlkwc{tr}\hlstd{,}\hlkwc{ts}\hlstd{,}\hlkwc{weightRT}\hlstd{=}\hlnum{0.5}\hlstd{,}\hlkwc{step}\hlstd{=}\hlnum{FALSE}\hlstd{,}\hlkwc{...}\hlstd{) \{}
-  \hlkwd{require}\hlstd{(DMwR,}\hlkwc{quietly}\hlstd{=F)}
+  \hlkwd{require}\hlstd{(DMwR,}\hlkwc{quietly}\hlstd{=}\hlnum{TRUE}\hlstd{)}
   \hlstd{noNAsTR} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(tr)}
   \hlstd{noNAsTS} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(ts)}
   \hlstd{r} \hlkwb{<-} \hlkwd{rpartXse}\hlstd{(f,tr,...)}
@@ -1102,7 +1102,7 @@ data for training and 25\% for testing.
   \hlkwd{PredTask}\hlstd{(PercVarClose} \hlopt{~} \hlstd{.,data,}\hlstr{'SP500_2012'}\hlstd{),}
   \hlkwd{c}\hlstd{(}\hlkwd{Workflow}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"standRF"}\hlstd{,}
              \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}\hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{)),}
-    \hlkwd{Workflow}\hlstd{(}\hlstr{'timeseriesWF'}\hlstd{,efID,}\hlstr{"slideRF"}\hlstd{,}
+    \hlkwd{Workflow}\hlstd{(}\hlstr{'timeseriesWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"slideRF"}\hlstd{,}
              \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
              \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{,}\hlkwc{relearn.step}\hlstd{=}\hlnum{5}\hlstd{))}
    \hlstd{),}
