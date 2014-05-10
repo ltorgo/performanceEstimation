@@ -537,8 +537,8 @@ responseValues <- function(formula,data) model.response(model.frame(formula,data
 ##outFold <- function(ds,f,r)
 ##  unlist(subset(ds,ds[,1] == "TEST" & ds[,3]==f & ds[,4]==r,colnames(ds)[2]))
 outFold <- function(ds,f,r=NULL)  {
-    if (is.null(r)) which(ds[,f])
-    else which(ds[[r]][,f])
+    if (is.null(r)) which(ds[,f]==1)
+    else which(ds[[r]][,f]==1)
 }
 
 
