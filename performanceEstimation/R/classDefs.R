@@ -288,7 +288,7 @@ EstimationResults <- function(t,w,st,sc,p=NULL,e=NULL) {
   o@iterationsPreds <- p
   ## classification tasks, code back predictions to class labels
   if (!is.null(p) && is.factor(model.response(model.frame(t@formula,t@data))))
-      o@iterationsPreds <- lapply(p,function(q) apply(q,2,function(x) factor(x,levels=levels(responseValues(t@formula,t@data)))))
+      o@iterationsPreds <- lapply(p,function(q) apply(q,2,function(x) factor(x,labels=levels(responseValues(t@formula,t@data)))))
   o@iterationsInfo  <- e
   o
 }
