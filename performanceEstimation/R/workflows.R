@@ -176,7 +176,8 @@ runWorkflow <- function(l,...) {
         if (length(rowNs) != length(value[[1]])) stop("workflowPredictions:: need as many names as there are true values!")
     } else rowNs <- 1:length(value[[1]])
     if (length(value[[1]]) != length(value[[2]])) stop("workflowPredictions:: vectors of true and predicted values must have equal length!")
-    obj@predictions <- matrix(c(value[[1]],value[[2]]),nrow=length(value[[1]]),dimnames=list(rowNs,c('true','predicted')))
+    #obj@predictions <- matrix(c(value[[1]],value[[2]]),nrow=length(value[[1]]),dimnames=list(rowNs,c('true','predicted')))
+    obj@predictions <-data.frame(true=value[[1]],predicted=value[[2]],row.names=rowNs)
     obj
 }
 

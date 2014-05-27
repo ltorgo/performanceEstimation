@@ -78,7 +78,7 @@ Workflow <- function(func,...,wfID=func) {
 ##
 setClass("WFoutput",
          representation(scores        = "numeric",  # vector of stats scores
-                        predictions   = "matrix",   # matrix nTest x 2 (true,pred)
+                        predictions   = "data.frame",   # a data.frame nTest x 2 (true,pred)
                         extraInfo     = "list")     # list of whatever info the wf author wants
 )
 
@@ -86,7 +86,7 @@ setClass("WFoutput",
 ## --------------------------------------------------------------
 ## Constructor
 ##
-WFoutput <- function(s,p=matrix(NA,0,0),e=list()) {
+WFoutput <- function(s,p=data.frame(),e=list()) {
   o              <- new("WFoutput")
   o@scores       <- s
   o@predictions  <- p
