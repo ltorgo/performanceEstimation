@@ -28,7 +28,7 @@ setClass("PredTask",
 PredTask <- function(formula,data,name=NULL) {
   if (missing(formula) || missing(data))
     stop('\nYou need to provide a formula and a data frame.\n')
-  if (inherits(try(mf <- model.frame(formula,data),T),"try-error"))
+  if (inherits(try(mf <- model.frame(formula,data,na.action=NULL),TRUE),"try-error"))
     stop('\nInvalid formula for the given data frame.\n')
 
   if (is.null(name)) {
