@@ -23,21 +23,21 @@ mergeEstimationRes <- function(...,by='tasks') {
   s <- list(...)
   if (length(s) < 2) return(s[[1]])
   
-  if ((! by %in% c('statistics','workflows','tasks')) &&
+  if ((! by %in% c('metrics','workflows','tasks')) &&
       (! by %in% 1:3))
     stop('mergeEstimationRes:: invalid value on "by" argument!')
   for(i in 2:length(s)) 
-    if (!identical(s[[i]]@tasks[[1]][[1]]@settings,s[[1]]@tasks[[1]][[1]]@settings))
+    if (!identical(s[[i]]@tasks[[1]][[1]]@estTask,s[[1]]@tasks[[1]][[1]]@estTask))
       stop('mergeEstimationRes:: trying to join performance estimation objects with different estimation settings!')
 
   if (!is.numeric(by))
-    by <- match(by,c('statistics','workflows','tasks'))
+    by <- match(by,c('metrics','workflows','tasks'))
 
   if (by == 1) {
       sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
-      if (!all(sameTasks)) stop("mergeEstimationRes:: to join by statistics all objects need to address the same tasks!")
+      if (!all(sameTasks)) stop("mergeEstimationRes:: to join by metrics all objects need to address the same tasks!")
       sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
-      if (!all(sameWFs)) stop("mergeEstimationRes:: to join by statistics all objects need to use the same workflows!")
+      if (!all(sameWFs)) stop("mergeEstimationRes:: to join by metrics all objects need to use the same workflows!")
       for(e in s[2:length(s)]) 
           for(t in 1:length(e@tasks))
               for(w in 1:length(e@tasks[[t]]))
@@ -48,7 +48,7 @@ mergeEstimationRes <- function(...,by='tasks') {
       sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
       if (!all(sameTasks)) stop("mergeEstimationRes:: to join by workflows all objects need to address the same tasks!")
       sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
-      if (!all(sameStats)) stop("mergeEstimationRes:: to join by workflows all objects need to estimate the same statistics!")
+      if (!all(sameStats)) stop("mergeEstimationRes:: to join by workflows all objects need to estimate the same metrics!")
       for(e in s[2:length(s)]) 
           for(t in 1:length(e@tasks))
               s[[1]]@tasks[[t]] <- c(s[[1]]@tasks[[t]],e@tasks[[t]])
@@ -56,7 +56,7 @@ mergeEstimationRes <- function(...,by='tasks') {
       sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
       if (!all(sameWFs)) stop("mergeEstimationRes:: to join by tasks all objects need to use the same workflows!")
       sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
-      if (!all(sameStats)) stop("mergeEstimationRes:: to join by tasks all objects need to estimate the same statistics!")
+      if (!all(sameStats)) stop("mergeEstimationRes:: to join by tasks all objects need to estimate the same metrics!")
       for(e in s[2:length(s)]) 
           s[[1]]@tasks <- c(s[[1]]@tasks,e@tasks)
       
@@ -66,41 +66,64 @@ mergeEstimationRes <- function(...,by='tasks') {
 
 # =====================================================
 # Small auxiliary functions to obtain information from 
-# compExp objects.
+# ComparisonResults objects.
 # =====================================================
 # Luis Torgo, Aug 2013
 # =====================================================
 taskNames      <- function(o) names(o@tasks)
 workflowNames  <- function(o) names(o@tasks[[1]])
-metricNames <- function(o) colnames(o@tasks[[1]][[1]]@iterationsScores)
+metricNames    <- function(o) o@tasks[[1]][[1]]@estTask@metrics
 
 
 
   
 # ======================================================================
-# Get the fold results of a certain variant (learning system) over a
-# certain dataset. Both can be specified by name or number.
-# You get a matrix with as many rows as there are folds and as many
-# columns as there are evaluation statistics.
-# =====================================================
-# Luis Torgo, Jan 2009
-# =====================================================
-getIterationsResults <- function(results,wf,task) {
+# Obtaining some information from the estimation experiments
+# ======================================================================
+# Luis Torgo, Jan 2009, 2014
+# ======================================================================
+getIterationsScores <- function(results,workflow,task) {
   if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
 
-  results@tasks[[task]][[wf]]@iterationsScores
+  results@tasks[[task]][[workflow]]@iterationsScores
 }
 
 
+getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
+    if ((missing(rep) || missing(fold)) && missing(it))
+        stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+    if (!missing(it)) {
+        if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]
+    } else {
+        if (rep >  obj@tasks[[task]][[workflow]]@estTask@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@nFolds,"folds available.\n"))
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+    }
+}
+
+getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
+    if ((missing(rep) || missing(fold)) && missing(it))
+        stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+    if (!missing(it)) {
+        if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
+        obj@tasks[[task]][[workflow]]@iterationsPreds[[it]]
+    } else {
+        if (rep >  obj@tasks[[task]][[workflow]]@estTask@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@nFolds,"folds available.\n"))
+        obj@tasks[[task]][[workflow]]@iterationsPreds[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+    }
+}
+
+
+
 # ======================================================================
-# Get some summary statistics of the performance of a variant on a certain
-# data set, for all evaluation statistics.
+# Get some summary statistics of all evaluation metrics of the performance
+# of a workflow on a certain task.
 # =====================================================
-# Luis Torgo, Jan 2009
+# Luis Torgo, Jan 2009, 2014
 # =====================================================
-estimationSummary <- function(results,wf,task) {
+estimationSummary <- function(results,workflow,task) {
   if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
-  .scores2summary(results@tasks[[task]][[wf]])
+  .scores2summary(results@tasks[[task]][[workflow]])
 }
   
 

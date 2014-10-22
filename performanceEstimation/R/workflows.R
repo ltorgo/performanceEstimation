@@ -178,24 +178,6 @@ workflowPredictions <- function(obj) obj@predictions
 
 workflowInformation <- function(obj) obj@extraInfo
 
-getITsInfo <- function(obj,task=1,workflow=1,rep,fold,it) {
-    if ((missing(rep) || missing(fold)) && missing(it))
-        stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
-    if (!missing(it))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]
-    else
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
-}
-
-getPredictionsInfo <- function(obj,task=1,workflow=1,rep,fold,it) {
-    if ((missing(rep) || missing(fold)) && missing(it))
-        stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
-    if (!missing(it))
-        obj@tasks[[task]][[workflow]]@iterationsPreds[[it]]
-    else
-        obj@tasks[[task]][[workflow]]@iterationsPreds[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
-}
-
 
 ## --------------------------------------------------------------
 ## Standard Workflows
