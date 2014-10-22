@@ -247,7 +247,7 @@ setMethod("summary",
                   ' Estimation Experiment ***\n')
 
               print(object@estTask)
-              cat('\n* Predictive Task :: ',object@task@name)
+              cat('\n* Predictive Task :: ',object@task@taskName)
               cat('\n* Workflow        :: ',object@workflow@func,' with parameters ')
               for(x in names(object@workflow@pars)) {
                   k <- object@workflow@pars[[x]]
@@ -276,7 +276,7 @@ setMethod("plot",
                          BootTask='Bootstrap',
                          McTask='Monte Carlo'
                          ),
-                           "estimation on",x@task@name,sep=" "
+                           "estimation on",x@task@taskName,sep=" "
                   )
               if (nstats == 1) {
                   plt <- qplot(1:nrow(x@iterationsScores),
@@ -419,7 +419,7 @@ setMethod("subset",
           function(x,
                  tasks=1:length(x@tasks),
                  workflows=1:length(x@tasks[[1]]),
-                 statistics=1:dim(x@tasks[[1]][[1]]@iterationsScores)[2])
+                 metrics=1:dim(x@tasks[[1]][[1]]@iterationsScores)[2])
           {
             rr <- x
             if (!identical(workflows,1:length(x@tasks[[1]]))) {
@@ -432,9 +432,9 @@ setMethod("subset",
                 tasks <- grep(tasks,names(rr@tasks))
               rr@tasks <- rr@tasks[tasks]
             }
-            if (is.character(statistics) && length(statistics) == 1) 
-                statistics <- grep(statistics,colnames(x@tasks[[1]][[1]]@iterationsScores))
-            rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,statistics,drop=F] ; sn}))
+            if (is.character(metrics) && length(metrics) == 1) 
+                metrics <- grep(metrics,colnames(x@tasks[[1]][[1]]@iterationsScores))
+            rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
 
             rr
           }
