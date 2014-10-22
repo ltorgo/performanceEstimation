@@ -107,12 +107,12 @@ setMethod("show",
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
                 object@nReps,'x',object@nFolds,
-                '- Fold Cross Validation')
+                '- Fold Cross Validation for estimating ',
+                paste(object@metrics,collapse=","),"\n")
             if (!userSplit)
-              cat(' run with seed = ', object@seed,'\n')
+              cat('\t Run with seed = ', object@seed,'\n')
             else
-              cat('\n   User-supplied data splits\n')
-            cat(" Task for estimating : ",paste(object@metrics,collapse=","),"\n")
+              cat('\t User-supplied data splits\n')
           })
 
 
@@ -131,12 +131,12 @@ setMethod("show",
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'\n Stratified ','\n'),
                 object@nReps,'x',
-                100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout')
+                100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout for estimating ',
+                paste(object@metrics,collapse=","),"\n")
             if (!userSplit)
-              cat(' run with seed = ',object@seed,'\n')
+              cat('\t Run with seed = ',object@seed,'\n')
             else
-              cat('\n   User-supplied data splits\n')
-            cat(" Task for estimating : ",paste(object@metrics,collapse=","),"\n")
+              cat('\t User-supplied data splits\n')
           })
 
 
@@ -150,13 +150,12 @@ setMethod("show",
 setMethod("show","LoocvTask",
           function(object) {
               userSplit <- !is.null(object@dataSplits)
-              cat('\n LOOCV experiment with verbose = ',
-                  ifelse(object@verbose,'TRUE','FALSE'))
+              cat('\n LOOCV experiment for estimating ',
+                paste(object@metrics,collapse=","),"\n")
               if (!userSplit)
-                  cat(' run with seed = ',object@seed,'\n')
+                  cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and seed = ',object@seed,'\n')
               else
-                  cat('\n   User-supplied data splits\n')
-              cat(" Task for estimating : ",paste(object@metrics,collapse=","),"\n")
+                  cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and user-supplied data splits\n')
          })
 
 
@@ -171,12 +170,14 @@ setMethod("show","LoocvTask",
 setMethod("show",
           "BootTask",
           function(object) {
-            cat('\n',ifelse(object@type=='e0','e0','.632'),
-                ' Bootstrap experiment settings\n\tSeed = ',
-                object@seed,'\n\tNr. repetitions = ',object@nReps,'\n')
-            if (!is.null(object@dataSplits))
-              cat('\n   User-supplied data splits\n')
-            cat(" Task for estimating : ",paste(object@metrics,collapse=","),"\n")
+            userSplit <- !is.null(object@dataSplits)
+            cat('\n',object@nReps,' repetitions of ',ifelse(object@type=='e0','e0','.632'),
+                ' Bootstrap experiment for estimating ',
+                paste(object@metrics,collapse=","),'\n')
+            if (!userSplit)
+              cat('\t Run with seed = ', object@seed,'\n')
+            else
+              cat('\t User-supplied data splits\n')
          })
 
 
@@ -192,7 +193,8 @@ setMethod("show",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat('\n',object@nReps,
-               ' repetitions Monte Carlo Simulation')
+               ' repetitions Monte Carlo Simulation for estimating ',
+                paste(object@metrics,collapse=","))
             if (userSplit) {
               cat(' using user-supplied data splits\n')
             } else {
@@ -205,7 +207,6 @@ setMethod("show",
                   '\n'
                   )
             }
-            cat(" Task for estimating : ",paste(object@metrics,collapse=","),"\n")
          })
 
 
@@ -220,9 +221,9 @@ setMethod("show",
           "EstimationResults",
           function(object) {
             print(object@estTask)
-            cat("\nTask    :: ",object@task@name,"\nWorflow :: ",object@workflow@name,"\n")
+            cat("\nTask    :: ",object@task@taskName,"\nWorflow :: ",object@workflow@name,"\n")
             cat("\nOverview of the Scores of the experiment:\n")
-            print(.scores2summary(object)[1:2,])
+            print(.scores2summary(object)[1:2,,drop=FALSE])
             if (any(sapply(object@iterationsPreds,length))) 
                 cat("\nTrue and Predicted values for each test set are available.\n")
             if (any(sapply(object@iterationsInfo,length))) 
