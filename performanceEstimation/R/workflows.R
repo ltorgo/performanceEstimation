@@ -28,6 +28,7 @@
 #
 
 workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
+    if (missing(wf)) wf <- "standardWF"
     wf <- if (is(wf,"function")) deparse(substitute(wf)) else wf
     if (missing(varsRootName)) varsRootName <- wf
 
@@ -177,6 +178,24 @@ workflowPredictions <- function(obj) obj@predictions
 
 workflowInformation <- function(obj) obj@extraInfo
 
+getITsInfo <- function(obj,task=1,workflow=1,rep,fold,it) {
+    if ((missing(rep) || missing(fold)) && missing(it))
+        stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+    if (!missing(it))
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]
+    else
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+}
+
+getPredictionsInfo <- function(obj,task=1,workflow=1,rep,fold,it) {
+    if ((missing(rep) || missing(fold)) && missing(it))
+        stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+    if (!missing(it))
+        obj@tasks[[task]][[workflow]]@iterationsPreds[[it]]
+    else
+        obj@tasks[[task]][[workflow]]@iterationsPreds[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+}
+
 
 ## --------------------------------------------------------------
 ## Standard Workflows
@@ -191,19 +210,39 @@ workflowInformation <- function(obj) obj@extraInfo
 standardWF <- function(form,train,test,
                        learner,learner.pars=NULL,
                        predictor='predict',predictor.pars=NULL,
-                       .outModel=FALSE)
+                       pre=NULL,pre.pars=NULL,
+                       post=NULL,post.pars=NULL,
+                       .fullOutput=FALSE)
 {
+    .fullRes <- if (.fullOutput) list() else NULL
 
-  if (is.null(predictor)) {
-    ps <- do.call(learner,c(list(form,train,test),learner.pars))
-  } else {
-    m <- do.call(learner,c(list(form,train),learner.pars))
-    ps <- do.call(predictor,c(list(m,test),predictor.pars))
-  }
+    ## Data pre-processing stage
+    if (!is.null(pre)) {
+        preprocRes <- do.call(pre,c(list(form,train,test),pre.pars))
+        train <- preprocRes$train
+        test <- preprocRes$test
+        if (.fullOutput) .fullRes$preprocessing <- preprocRes
+    }
 
-  res <- WFoutput(rownames(test),responseValues(form,test),ps)
-  if (.outModel && !is.null(predictor)) workflowInformation(res) <- list(model=m) 
-  res
+    ## Learning stage
+    if (is.null(predictor)) {  ## there is no separate predict stage (e.g. kNN)
+        ps <- do.call(learner,c(list(form,train,test),learner.pars))
+        if (.fullOutput) .fullRes$modeling <- ps
+    } else {
+        m <- do.call(learner,c(list(form,train),learner.pars))
+        ps <- do.call(predictor,c(list(m,test),predictor.pars))
+        if (.fullOutput) .fullRes$modeling <- if (is.null(post)) m else list(model=m,initPreds=ps)
+    }
+
+    ## Data post-processing stage
+    if (!is.null(post)) {
+        ps <- do.call(post,c(list(form,train,test,ps),post.pars))
+        if (.fullOutput) .fullRes$postprocessing <- ps
+    }
+    
+    res <- WFoutput(rownames(test),responseValues(form,test),ps)
+    if (.fullOutput) workflowInformation(res) <- .fullRes
+    res
 }
  
 

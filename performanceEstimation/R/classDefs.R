@@ -7,6 +7,10 @@
 #################################################################
 
 
+setClassUnion("StrOrDF",c("character","data.frame"))
+setClassUnion("OptList",c("list","NULL"))
+setClassUnion("OptMatrix",c("matrix","NULL"))
+setClassUnion("OptString",c("character","NULL"))
 
 ## ==============================================================
 ## CLASS: PredTask
@@ -14,7 +18,6 @@
 ## Class for storing information concerning a prediction task
 ## ==============================================================
 
-setClassUnion("StrOrDF",c("character","data.frame"))
 
 ## --------------------------------------------------------------
 ## Definition
@@ -63,18 +66,60 @@ PredTask <- function(form,data,taskName=NULL) {
 ## Definition
 ##
 setClass("Workflow",
-         representation(name="character",func="character",pars="list"))
+         representation(name="character",
+                        func="character",
+                        pars="list"))
 
 
 
 ## --------------------------------------------------------------
 ## Cnstructor
 ##
-Workflow <- function(func,...,wfID=func) {
-    if (missing(func)) stop("\nYou need to provide the name of a function implementing the workflow.\n")
-    fn <- if (is(func,"function")) deparse(substitute(func)) else func
-    do.call("new",list("Workflow",name=wfID,func=fn,pars=list(...)))
+#Workflow <- function(func,...,wfID=func) {
+#    if (missing(func)) stop("\nYou need to provide the name of a function imple#menting the workflow.\n")
+#    fn <- if (is(func,"function")) deparse(substitute(func)) else func
+#    do.call("new",list("Workflow",name=wfID,func=fn,pars=list(...)))
+#}
+
+Workflow <- function(wfID,
+                     learner,learner.pars=NULL,
+                     user,user.pars=NULL,
+                     predictor="predict",predictor.pars=NULL,
+                     pre=NULL,pre.pars=NULL,
+                     post=NULL,post.pars=NULL,
+                     fullOutput=FALSE
+                     ) {
+    if (missing(learner) && missing(user)) stop("\nYou need to provide either the name of a learner or of a user-defined workflow.\n")
+
+    if (!missing(learner) && is(learner,"function"))
+        learner <- deparse(substitute(learner)) 
+    if (!missing(user) && is(user,"function"))
+        user <- deparse(substitute(user))
+     if (!missing(predictor) && is(predictor,"function"))
+         predictor <- deparse(substitute(predictor))
+    if (!missing(pre) && is(pre,"function"))
+        pre <- deparse(substitute(pre))
+    if (!missing(post) && is(post,"function"))
+        post <- deparse(substitute(post))
+
+    if (!missing(learner)) {  # user is using the standardWF
+        new("Workflow",
+            name= if (missing(wfID)) learner else wfID,
+            func="standardWF",
+            pars=list(learner=learner,learner.pars=learner.pars,
+                      predictor=predictor,predictor.pars=predictor.pars,
+                      pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
+                      .fullOutput= fullOutput)
+            )
+    } else {
+        new("Workflow",
+            name= if (missing(wfID)) user else wfID,
+            func=user,
+            pars=user.pars
+            )
+    }
 }
+
 
 ## ==============================================================
 ## CLASS: WFoutput
@@ -125,8 +170,6 @@ WFoutput <- function(rIDs,ts,ps,e=list()) {
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClassUnion("OptList",c("list","NULL"))
-setClassUnion("OptMatrix",c("matrix","NULL"))
 setClass("CvTask",
          representation(metrics='character',     # metrics to be estimated
                         evaluator='character',   # function used to obtain metrics
