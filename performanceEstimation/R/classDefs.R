@@ -14,29 +14,40 @@
 ## Class for storing information concerning a prediction task
 ## ==============================================================
 
+setClassUnion("StrOrDF",c("character","data.frame"))
 
 ## --------------------------------------------------------------
 ## Definition
 ##
 setClass("PredTask",
-         representation(name="character",formula="formula",data="data.frame"))
+         representation(taskName="character",
+                        formula="formula",
+                        dataSource="StrOrDF",
+                        type="character",
+                        target="character")
+         )
 
 
 ## --------------------------------------------------------------
 ## constructor
 ##
-PredTask <- function(formula,data,name=NULL) {
-  if (missing(formula) || missing(data))
-    stop('\nYou need to provide a formula and a data frame.\n')
-  if (inherits(try(mf <- model.frame(formula,data,na.action=NULL),TRUE),"try-error"))
+PredTask <- function(form,data,taskName=NULL) {
+  if (missing(form) || missing(data))
+    stop('\nYou need to provide a formula and a data frame name.\n')
+  if (is.data.frame(data)) data <- deparse(substitute(data))
+  if (inherits(try(mf <- model.frame(form,get(data),na.action=NULL),TRUE),"try-error"))
     stop('\nInvalid formula for the given data frame.\n')
 
-  if (is.null(name)) {
+  tgt <- deparse(form[[2]])
+  if (is.null(taskName)) {
     m <- match.call()
-    name <- deparse(m$data)
+    taskName <- paste(data,tgt,sep=".")
   }
+  
   new("PredTask",
-      name=name,formula=formula,data=as.data.frame(mf))
+      taskName=taskName,formula=form,dataSource=data,
+      type=if (is.factor(get(data)[,tgt])) "class" else "regr",
+      target=deparse(form[[2]]))
 }
 
 
@@ -77,8 +88,7 @@ Workflow <- function(func,...,wfID=func) {
 ## Definition
 ##
 setClass("WFoutput",
-         representation(scores        = "numeric",  # vector of stats scores
-                        predictions   = "data.frame",   # a data.frame nTest x 2 (true,pred)
+         representation(predictions   = "data.frame",   # a data.frame nTest x 2 (true,pred)
                         extraInfo     = "list")     # list of whatever info the wf author wants
 )
 
@@ -86,10 +96,19 @@ setClass("WFoutput",
 ## --------------------------------------------------------------
 ## Constructor
 ##
-WFoutput <- function(s,p=data.frame(),e=list()) {
+WFoutput <- function(rIDs,ts,ps,e=list()) {
   o              <- new("WFoutput")
-  o@scores       <- s
-  o@predictions  <- p
+
+  if (!is.null(dim(ps))) {
+      preds <- colnames(ps)[apply(ps,1,which.max)]
+      probs <- ps
+  } else {
+      preds <- ps
+      probs <- NULL
+  }
+  
+  o@predictions  <- data.frame(row.names=rIDs,true=ts,predicted=preds)
+  if (!is.null(probs)) o@predictions <- cbind(o@predictions,probs)
   o@extraInfo    <- e
   o
 }
@@ -97,7 +116,7 @@ WFoutput <- function(s,p=data.frame(),e=list()) {
 
 
 ## ==============================================================
-## CLASS: CvSettings
+## CLASS: CvTask
 ##
 ## A class containing the settings of a cross validation experiment
 ## ==============================================================
@@ -107,20 +126,28 @@ WFoutput <- function(s,p=data.frame(),e=list()) {
 ## Definition
 ##
 setClassUnion("OptList",c("list","NULL"))
-setClass("CvSettings",
-         representation(nReps='numeric',      # nr. of repetitions
+setClassUnion("OptMatrix",c("matrix","NULL"))
+setClass("CvTask",
+         representation(metrics='character',     # metrics to be estimated
+                        evaluator='character',   # function used to obtain metrics
+                        evaluator.pars='OptList',   # pars to this function
+                        nReps='numeric',      # nr. of repetitions
                         nFolds='numeric',     # nr. of folds of each rep.
                         seed='numeric',       # seed of the random generator
                         strat='logical',      # is the sampling stratified?
-                        dataSplits='OptList')    # user supplied data splits
+                        dataSplits='OptMatrix') # user supplied data splits
          )
 
 
 ## --------------------------------------------------------------
 ## constructor
 ##
-CvSettings <- function(nReps=1,nFolds=10,seed=1234,strat=FALSE,dataSplits=NULL) {
-    new("CvSettings",
+CvTask <- function(metrics,evaluator="",evaluator.pars=NULL,
+                   nReps=1,nFolds=10,
+                   seed=1234,strat=FALSE,
+                   dataSplits=NULL) {
+    new("CvTask",
+        metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
         nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
         nFolds=if (is.null(dataSplits)) nFolds else ncol(dataSplits[[1]]),
         seed=seed,strat=strat,dataSplits=dataSplits)
@@ -128,7 +155,7 @@ CvSettings <- function(nReps=1,nFolds=10,seed=1234,strat=FALSE,dataSplits=NULL) 
 
 
 ## ==============================================================
-## CLASS: HldSettings
+## CLASS: HldTask
 ##
 ## A class containing the settings of a holdout experiment
 ## ==============================================================
@@ -137,9 +164,11 @@ CvSettings <- function(nReps=1,nFolds=10,seed=1234,strat=FALSE,dataSplits=NULL) 
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClassUnion("OptMatrix",c("matrix","NULL"))
-setClass("HldSettings",
-         representation(nReps='numeric', # number of repetitions
+setClass("HldTask",
+         representation(metrics='character',# metrics to be estimated
+                        evaluator='character',   # function used to obtain metrics
+                        evaluator.pars='OptList',   # pars to this function
+                        nReps='numeric', # number of repetitions
                         hldSz='numeric', # the size (0..1) of the holdout
                         seed='numeric',  # the random number seed
                         strat='logical', # is the sampling stratified?
@@ -150,8 +179,12 @@ setClass("HldSettings",
 ## --------------------------------------------------------------
 ## Constructor
 ##
-HldSettings <- function(nReps=1,hldSz=0.3,seed=1234,strat=FALSE,dataSplits=NULL) {
-    new("HldSettings",
+HldTask <- function(metrics,evaluator="",evaluator.pars=NULL,
+                    nReps=1,hldSz=0.3,
+                    seed=1234,strat=FALSE,
+                    dataSplits=NULL) {
+    new("HldTask",
+        metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
         nReps=if (is.null(dataSplits)) nReps else ncol(dataSplits),
         hldSz=if (is.null(dataSplits)) hldSz else sum(dataSplits[,1])/nrow(dataSplits),
         seed=seed,strat=strat,dataSplits=dataSplits)
@@ -159,7 +192,7 @@ HldSettings <- function(nReps=1,hldSz=0.3,seed=1234,strat=FALSE,dataSplits=NULL)
 
 
 ## ==============================================================
-## CLASS: LoocvSettings
+## CLASS: LoocvTask
 ##
 ## A class containing the settings of a leave one out cross validation
 ## experiment
@@ -169,21 +202,30 @@ HldSettings <- function(nReps=1,hldSz=0.3,seed=1234,strat=FALSE,dataSplits=NULL)
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("LoocvSettings",
-         representation(seed='numeric',    # seed of the random generator
-                        verbose='logical') # function used to evalute preds
+setClass("LoocvTask",
+         representation(metrics='character',  # metrics to be estimated
+                        evaluator='character',   # function used to obtain metrics
+                        evaluator.pars='OptList',   # pars to this function
+                        seed='numeric',    # seed of the random generator
+                        verbose='logical', # function used to evalute preds
+                        dataSplits='OptMatrix')
          )
 
 
 ## --------------------------------------------------------------
 ## constructor
-LoocvSettings <- function(seed=1234,verbose=FALSE)
-  new("LoocvSettings",seed=seed,verbose=verbose)
+LoocvTask <- function(metrics,evaluator="",evaluator.pars=NULL,
+                      seed=1234,verbose=FALSE,
+                      dataSplits=NULL)
+  new("LoocvTask",
+      metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
+      seed=seed,verbose=verbose,
+      dataSplits=dataSplits)
 
 
 
 ## ==============================================================
-## CLASS: BootSettings
+## CLASS: BootTask
 ##
 ## A class containing the settings of a boostrap experiment
 ## ==============================================================
@@ -192,8 +234,11 @@ LoocvSettings <- function(seed=1234,verbose=FALSE)
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("BootSettings",
-         representation(type='character', # type of boostrap ("e0" or ".632")
+setClass("BootTask",
+         representation(metrics='character', # metrics to be estimated
+                        evaluator='character',   # function used to obtain metrics
+                        evaluator.pars='OptList',   # pars to this function
+                        type='character', # type of boostrap ("e0" or ".632")
                         nReps='numeric',  # number of repetitions
                         seed='numeric',   # seed of the random generator
                         dataSplits='OptMatrix') # user supplied data splits
@@ -203,8 +248,11 @@ setClass("BootSettings",
 ## --------------------------------------------------------------
 ## constructor
 ##
-BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
-     new("BootSettings",type=type,
+BootTask <- function(metrics,evaluator="",evaluator.pars=NULL,
+                     type='e0',nReps=200,seed=1234,dataSplits=NULL) {
+     new("BootTask",
+         metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
+         type=type,
          nReps=if (is.null(dataSplits)) nReps else ncol(dataSplits),
          seed=seed,dataSplits=dataSplits)
 }
@@ -212,7 +260,7 @@ BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
 
 
 ## ==============================================================
-## CLASS: McSettings
+## CLASS: McTask
 ##
 ## A class containing the settings of a monte carlo experiment
 ## ==============================================================
@@ -221,8 +269,11 @@ BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("McSettings",
-         representation(nReps='numeric',
+setClass("McTask",
+         representation(metrics='character',
+                        evaluator='character',   # function used to obtain metrics
+                        evaluator.pars='OptList',   # pars to this function
+                        nReps='numeric',
                         szTrain='numeric',
                         szTest='numeric',
                         seed='numeric',
@@ -233,21 +284,26 @@ setClass("McSettings",
 ## --------------------------------------------------------------
 ## constructor
 ##
-McSettings <- function(nReps=10,szTrain=0.25,szTest=0.25,seed=1234,dataSplits=NULL)
-    new("McSettings",nReps= if (is.null(dataSplits)) nReps else ncol(dataSplits),
-        szTrain=szTrain,szTest=szTest,seed=seed,dataSplits=dataSplits)
+McTask <- function(metrics,evaluator="",evaluator.pars=NULL,
+                   nReps=10,szTrain=0.25,szTest=0.25,
+                   seed=1234,dataSplits=NULL)
+    new("McSettings",
+        metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
+        nReps= if (is.null(dataSplits)) nReps else ncol(dataSplits),
+        szTrain=szTrain,szTest=szTest,
+        seed=seed,dataSplits=dataSplits)
 
 
 
 ## ==============================================================
-## CLASS UNION: EstimationSettings
+## CLASS UNION: EstimationTask
 ##
-## A class encapsulating all types of experimental settings
+## A class encapsulating all types of Estimation Experiments
 ## ==============================================================
 
-setClassUnion("EstimationSettings",
-              c("CvSettings", "McSettings", "HldSettings",
-                "LoocvSettings","BootSettings"))
+setClassUnion("EstimationTask",
+              c("CvTask", "McTask", "HldTask",
+                "LoocvTask","BootTask"))
 
 
 
@@ -268,7 +324,7 @@ setClassUnion("EstimationSettings",
 setClass("EstimationResults",
          representation(task             = "PredTask",
                         workflow         = "Workflow",
-                        settings         = "EstimationSettings",
+                        estTask          = "EstimationTask",
                         iterationsScores = "matrix",   # nIts x nStats
                         iterationsPreds  = "list",     # list of nIts matrices or NULL
                         iterationsInfo   = "list"      # list of nIts lists or NULL
@@ -279,16 +335,18 @@ setClass("EstimationResults",
 ## --------------------------------------------------------------
 ## constructor
 ##
-EstimationResults <- function(t,w,st,sc,p=NULL,e=NULL) {
+EstimationResults <- function(t,w,et,sc,p=NULL,e=NULL) {
   o                  <- new("EstimationResults")
   o@task             <- t
   o@workflow         <- w
-  o@settings         <- st
+  o@estTask          <- et
   o@iterationsScores <- sc
   o@iterationsPreds <- p
   ## classification tasks, code back predictions to class labels
-  if (!is.null(p) && is.factor(model.response(model.frame(t@formula,t@data))))
-      o@iterationsPreds <- lapply(p,function(q) apply(q,2,function(x) factor(x,labels=levels(responseValues(t@formula,t@data)))))
+  if (!is.null(p) && is.factor(model.response(model.frame(t@formula,get(t@dataSource))))) {
+      for (i in 1:length(o@iterationsPreds))
+          o@iterationsPreds[[i]][,"predicted"] <- factor(o@iterationsPreds[[i]][,"predicted"],levels=levels(responseValues(t@formula,get(t@dataSource))))
+  }
   o@iterationsInfo  <- e
   o
 }

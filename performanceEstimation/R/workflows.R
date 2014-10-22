@@ -166,21 +166,6 @@ runWorkflow <- function(l,...) {
 ## --------------------------------------------------------------
 
 
-`workflowPredictions<-` <- function(obj,value) {
-    if (!is.list(value)) stop("workflowPredictions:: value must be a list!")
-    if (length(value) < 2) stop("workflowPredictions:: you need to supply a list with at least a vector of true values and a vector of predicted values!")
-    trues <- value[[1]]
-    preds <- value[[2]]
-    if (length(value) > 2) {
-        rowNs <- value[[3]]
-        if (length(rowNs) != length(value[[1]])) stop("workflowPredictions:: need as many names as there are true values!")
-    } else rowNs <- 1:length(value[[1]])
-    if (length(value[[1]]) != length(value[[2]])) stop("workflowPredictions:: vectors of true and predicted values must have equal length!")
-    #obj@predictions <- matrix(c(value[[1]],value[[2]]),nrow=length(value[[1]]),dimnames=list(rowNs,c('true','predicted')))
-    obj@predictions <-data.frame(true=value[[1]],predicted=value[[2]],row.names=rowNs)
-    obj
-}
-
 workflowPredictions <- function(obj) obj@predictions
 
 
@@ -206,9 +191,7 @@ workflowInformation <- function(obj) obj@extraInfo
 standardWF <- function(form,train,test,
                        learner,learner.pars=NULL,
                        predictor='predict',predictor.pars=NULL,
-                       evaluator=if (is.classification(form,train)) 'classificationMetrics' else 'regressionMetrics',
-                       evaluator.pars=NULL,
-                       .outPreds=TRUE,.outModel=FALSE)
+                       .outModel=FALSE)
 {
 
   if (is.null(predictor)) {
@@ -218,17 +201,7 @@ standardWF <- function(form,train,test,
     ps <- do.call(predictor,c(list(m,test),predictor.pars))
   }
 
-  if (is.null(evaluator)) {
-    eval.res <- rep(1,nrow(test))
-  } else {
-    if (evaluator=='classificationMetrics')
-      eval.res <- do.call(evaluator,c(list(responseValues(form,test),ps),evaluator.pars))
-    else
-      eval.res <- do.call(evaluator,c(list(responseValues(form,test),ps),c(evaluator.pars,list(train.y=if (any(c('nmse','nmae') %in% evaluator.pars$stats)) responseValues(form,train) else NULL))))
-  }
-
-  res <- WFoutput(eval.res)
-  if (.outPreds) workflowPredictions(res) <- list(responseValues(form,test),ps,rownames(test))
+  res <- WFoutput(rownames(test),responseValues(form,test),ps)
   if (.outModel && !is.null(predictor)) workflowInformation(res) <- list(model=m) 
   res
 }
