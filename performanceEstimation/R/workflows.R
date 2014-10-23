@@ -206,15 +206,21 @@ standardWF <- function(form,train,test,
         if (.fullOutput) .fullRes$preprocessing <- preprocRes
     }
 
-    ## Learning stage
+    ## Learning and prediction stage
+    tm <- Sys.time()
     if (is.null(predictor)) {  ## there is no separate predict stage (e.g. kNN)
         ps <- do.call(learner,c(list(form,train,test),learner.pars))
+        t.tr <- t.ts <- as.numeric(Sys.time() - tm,units="secs")
         if (.fullOutput) .fullRes$modeling <- ps
     } else {
         m <- do.call(learner,c(list(form,train),learner.pars))
+        t.tr <- as.numeric(Sys.time() - tm,units="secs")
+        tm <- Sys.time()
         ps <- do.call(predictor,c(list(m,test),predictor.pars))
+        t.ts <- as.numeric(Sys.time() - tm,units="secs")
         if (.fullOutput) .fullRes$modeling <- if (is.null(post)) m else list(model=m,initPreds=ps)
     }
+
     ## Checking for learners that do not ouput as many predictions as test cases!
     ## (e.g. SVM from e1071!)
     trues <- responseValues(form,test)
@@ -233,7 +239,7 @@ standardWF <- function(form,train,test,
     }
     
     res <- WFoutput(rownames(test),trues,ps)
-    if (.fullOutput) workflowInformation(res) <- .fullRes
+    workflowInformation(res) <- if (.fullOutput) c(list(times=c(trainT=t.tr,testT=t.ts)),.fullRes) else list(times=c(trainT=t.tr,testT=t.ts))
     res
 }
  
