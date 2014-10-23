@@ -190,17 +190,7 @@ cvEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  if (sets@evaluator=="" ) 
-      if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-      else                         sets@evaluator <- "regressionMetrics"
-  scores <- matrix(NA,nrow=sets@nFolds*sets@nReps,ncol=length(sets@metrics))
-  for(i in 1:(sets@nFolds*sets@nReps))
-      scores[i,] <- do.call(sets@evaluator,
-                              c(list(trues=preds[[i]][,"true"],
-                                     preds=preds[[i]][,"predicted"],
-                                     stats=sets@metrics),
-                                sets@evaluator.pars))
-  colnames(scores) <- sets@metrics
+  scores <- .scoresIts(task,sets,preds,info)
       
     
   EstimationResults(task,wf,sets,scores,preds,info)
@@ -310,17 +300,7 @@ hldEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  if (sets@evaluator=="" ) 
-      if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-      else                         sets@evaluator <- "regressionMetrics"
-  scores <- matrix(NA,nrow=sets@nReps,ncol=length(sets@metrics))
-  for(i in 1:sets@nReps)
-      scores[i,] <- do.call(sets@evaluator,
-                              c(list(trues=preds[[i]][,"true"],
-                                     preds=preds[[i]][,"predicted"],
-                                     stats=sets@metrics),
-                                sets@evaluator.pars))
-  colnames(scores) <- sets@metrics
+  scores <- .scoresIts(task,sets,preds,info)
   
   EstimationResults(task,wf,sets,scores,preds,info)
 }
@@ -388,17 +368,7 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  if (sets@evaluator=="" ) 
-      if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-      else                         sets@evaluator <- "regressionMetrics"
-  scores <- matrix(NA,nrow=n,ncol=length(sets@metrics))
-  for(i in 1:n)
-      scores[i,] <- do.call(sets@evaluator,
-                              c(list(trues=preds[[i]][,"true"],
-                                     preds=preds[[i]][,"predicted"],
-                                     stats=sets@metrics),
-                                sets@evaluator.pars))
-  colnames(scores) <- sets@metrics
+  scores <- .scoresIts(task,sets,preds,info)
 
   EstimationResults(task,wf,sets,scores,preds,info)
 
@@ -668,3 +638,30 @@ outFold <- function(ds,f,r=NULL)  {
 ## sapply when we have only one metric (and it did not worked with simplify=FALSE
 ## on sapply)
 ## .statScores.old <- function(compRes,stat=1) lapply(compRes@tasks,function(t) sapply(t,function(w) .scores2summary(w)[stat,,drop=FALSE]))
+
+
+## calculates the scores of all iterations of an estimation exp
+.scoresIts <- function(task,sets,preds,info) {
+    nIts <- length(preds)
+    if (sets@evaluator=="" ) 
+        if (is.classification(task)) sets@evaluator <- "classificationMetrics"
+        else                         sets@evaluator <- "regressionMetrics"
+    scores <- matrix(NA,nrow=nIts,ncol=length(sets@metrics))
+    colnames(scores) <- sets@metrics
+    for(i in 1:nIts) {
+        wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
+        predMs <- setdiff(sets@metrics,wts)
+        if (length(predMs)) {
+            scores[i,predMs] <- do.call(sets@evaluator,
+                                        c(list(trues=preds[[i]][,"true"],
+                                               preds=preds[[i]][,"predicted"],
+                                               stats=predMs),
+                                          sets@evaluator.pars))
+        }
+        if (length(wts)) {
+            allts <- as.numeric(info[[i]]$times)
+            scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],totTime=allts[1]+allts[2])[wts]
+        }
+    }
+    scores
+}
