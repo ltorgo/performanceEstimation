@@ -199,7 +199,8 @@ standardWF <- function(form,train,test,
     .fullRes <- if (.fullOutput) list() else NULL
 
     ## Data pre-processing stage
-    if (!is.null(pre)) {
+    if (!is.null(pre) || !is.null(pre.pars)) {
+        if (is.null(pre)) pre <- "standardPRE"
         preprocRes <- do.call(pre,c(list(form,train,test),pre.pars))
         train <- preprocRes$train
         test <- preprocRes$test
@@ -278,3 +279,32 @@ timeseriesWF <- function(form,train,test,
   res
 }
 
+
+
+
+## =====================================================================
+## A function implementing some typical pre-processing steps/functions
+## ---------------------------------------------------------------------
+## L. Torgo, Oct 2014
+##
+standardPRE <- function(form,train,test,steps,...) {
+
+    tgtVar <- deparse(form[[2]])
+    allPreds <- setdiff(colnames(train),tgtVar)
+    
+    for(s in steps) {
+        if (s == "scale") {
+            numPreds <- allPreds[sapply(allPreds,function(p) is.numeric(train[[p]]))]
+            scaledTrain <- scale(train[,numPreds],...)
+            train[,numPreds] <- scaledTrain
+            test[,numPreds] <- scale(test[,numPreds],
+                                     center=attr(scaledTrain,"scaled:center"),
+                                     scale=attr(scaledTrain,"scaled:scale"))
+        } else {
+
+        }
+    }
+
+    list(train=train,test=test)
+}
+ 
