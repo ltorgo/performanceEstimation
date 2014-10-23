@@ -34,7 +34,7 @@ setClass("PredTask",
 ## --------------------------------------------------------------
 ## constructor
 ##
-PredTask <- function(form,data,taskName=NULL) {
+PredTask <- function(form,data,taskName=NULL,type=NULL) {
   if (missing(form) || missing(data))
     stop('\nYou need to provide a formula and a data frame name.\n')
   if (is.data.frame(data)) data <- deparse(substitute(data))
@@ -47,9 +47,16 @@ PredTask <- function(form,data,taskName=NULL) {
     taskName <- paste(data,tgt,sep=".")
   }
   
+  if (is.null(type)) {
+      taskType <- if (is.factor(get(data)[,tgt])) "class" else "regr"
+  } else taskType <- type
+
+  if (taskType == "ts" && !is.numeric(get(data)[[tgt]]))
+      stop("PredTask:: time series task should have numeric target.")
+  
   new("PredTask",
       taskName=taskName,formula=form,dataSource=data,
-      type=if (is.factor(get(data)[,tgt])) "class" else "regr",
+      type=taskType,
       target=deparse(form[[2]]))
 }
 

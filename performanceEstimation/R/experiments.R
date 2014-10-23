@@ -429,12 +429,8 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
                           get(task@dataSource)[idx,],
                           get(task@dataSource)[-idx,])
 
-#    if (sets@type == ".632") scores <- rbind(scores,0.632*it.res@scores+0.368*resub@scores)
-#    else scores <- rbind(scores,it.res@scores)
-    
     preds[[r]] <- it.res@predictions
     info[[r]] <- it.res@extraInfo
-
       
   }
   cat('\n')
