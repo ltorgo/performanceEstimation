@@ -95,13 +95,14 @@ pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
                           wilcoxon="wilcox.test",
                           t.test="t.test")
     
-    if (missing(baseline))  # using the first workflow as baseline if none indicated
-        baseline <- names(obj@tasks[[1]])[1]
-
-
     ts <- taskNames(obj);     nts <- length(ts)
     ws <- workflowNames(obj); nws <- length(ws)
     ms <- metricNames(obj);   nms <- length(ms)
+
+    if (missing(baseline))  # using the first workflow as baseline if none indicated
+#        baseline <- names(obj@tasks[[1]])[1]
+        baseline <- topPerformer(obj,ms[1],ts[1])@name
+
     other <- setdiff(ws,baseline)
 
     ## the results of the paired comparisons against the baseline (will be on first row)
