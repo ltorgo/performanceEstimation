@@ -84,7 +84,7 @@ metricsSummary <- function(compRes,summary='mean',...) {
 # provide a vector of the names of the statistics we which to get a
 # table (defaults to all).
 # =====================================================
-# Luis Torgo, Jan-Aug 2009
+# Luis Torgo, Jan-Aug 2009, 2014
 # =====================================================
 pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
     if (!inherits(obj,'ComparisonResults')) stop(obj,' is not of class "ComparisonResults".\n')
