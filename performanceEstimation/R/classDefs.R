@@ -49,7 +49,11 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
   
   if (is.null(type)) {
       taskType <- if (is.factor(get(data)[,tgt])) "class" else "regr"
-  } else taskType <- type
+  } else {
+      if (!(type %in% c("class","regr","ts")))
+          stop(paste("PredTask::",type,"tasks not implemented."))
+      taskType <- type
+  }
 
   if (taskType == "ts" && !is.numeric(get(data)[[tgt]]))
       stop("PredTask:: time series task should have numeric target.")
