@@ -151,7 +151,13 @@ WFoutput <- function(rIDs,ts,ps,e=list()) {
       preds <- ps
       probs <- NULL
   }
-  
+  if (length(preds) != length(ts)) {
+      warning("WFoutput:: less predictions than test cases, filling with NAs.")
+      t <- ts
+      t[] <- NA
+      t[names(ps)] <- preds
+      preds <- t
+  }
   o@predictions  <- data.frame(row.names=rIDs,true=ts,predicted=preds)
   if (!is.null(probs)) o@predictions <- cbind(o@predictions,probs)
   o@extraInfo    <- e

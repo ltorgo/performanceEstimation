@@ -199,9 +199,8 @@ standardWF <- function(form,train,test,
     .fullRes <- if (.fullOutput) list() else NULL
 
     ## Data pre-processing stage
-    if (!is.null(pre) || !is.null(pre.pars)) {
-        if (is.null(pre)) pre <- "standardPRE"
-        preprocRes <- do.call(pre,c(list(form,train,test),pre.pars))
+    if (!is.null(pre)) {
+        preprocRes <- do.call("standardPRE",c(list(form,train,test,steps=pre),pre.pars))
         train <- preprocRes$train
         test <- preprocRes$test
         if (.fullOutput) .fullRes$preprocessing <- preprocRes
@@ -300,8 +299,16 @@ standardPRE <- function(form,train,test,steps,...) {
             test[,numPreds] <- scale(test[,numPreds],
                                      center=attr(scaledTrain,"scaled:center"),
                                      scale=attr(scaledTrain,"scaled:scale"))
+        } else if (s == "centralImp") {
+            for (i in allPreds) {
+                cval <- if (is.numeric(train[[i]])) median(train[[i]],na.rm=TRUE) else { x <- as.factor(train[[i]]) ; levels(x)[which.max(table(x))] }
+                if (any(idx <- is.na(train[[i]]))) train[[i]][idx] <- cval
+                if (any(idx <- is.na(test[[i]]))) test[[i]][idx] <- cval
+            }
         } else {
-
+            user.pre <- do.call(s,c(list(form,train,test),...))
+            train <- user.pre$train
+            test  <- user.pre$test
         }
     }
 

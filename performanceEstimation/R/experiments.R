@@ -623,7 +623,7 @@ is.regression <- function(task) task@type == 'regr'
 #is.classification <- function(formula,data) is.factor(model.response(model.frame(formula,data)))
 is.classification <- function(task) task@type == 'class'
 
-responseValues <- function(formula,data) model.response(model.frame(formula,data))
+responseValues <- function(formula,data,na=NULL) model.response(model.frame(formula,data,na.action=na))
 
 
 ##outFold <- function(ds,f,r)
