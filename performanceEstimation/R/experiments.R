@@ -444,32 +444,39 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  if (sets@evaluator=="" ) 
-      if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-      else                         sets@evaluator <- "regressionMetrics"
-  scores <- matrix(NA,nrow=sets@nReps,ncol=length(sets@metrics))
-  if (sets@type == ".632")
-      resubScores <- do.call(sets@evaluator,
-                             c(list(trues=resub@predictions[,"true"],
-                                    preds=resub@predictions[,"predicted"],
-                                    stats=sets@metrics),
-                               sets@evaluator.pars))
-  for(i in 1:sets@nReps)
-      if (sets@type == ".632") {
-          scores[i,] <- 0.632*do.call(sets@evaluator,
-                                      c(list(trues=preds[[i]][,"true"],
-                                             preds=preds[[i]][,"predicted"],
-                                             stats=sets@metrics),
-                                        sets@evaluator.pars)) +
-                        0.368*resubScores
-      } else {
-          scores[i,] <- do.call(sets@evaluator,
-                                c(list(trues=preds[[i]][,"true"],
-                                       preds=preds[[i]][,"predicted"],
-                                       stats=sets@metrics),
-                                  sets@evaluator.pars))
+  if (sets@type == ".632") {  # this method is different from all others
+      nIts <- length(preds)
+      if (sets@evaluator=="" ) 
+          if (is.classification(task)) sets@evaluator <- "classificationMetrics"
+          else                         sets@evaluator <- "regressionMetrics"
+      scores <- matrix(NA,nrow=nIts,ncol=length(sets@metrics))
+      colnames(scores) <- sets@metrics
+      wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
+      predMs <- setdiff(sets@metrics,wts)
+      if (length(predMs)) {
+          resubScores <- do.call(sets@evaluator,
+                                 c(list(trues=resub@predictions[,"true"],
+                                        preds=resub@predictions[,"predicted"],
+                                        stats=predMs),
+                                   sets@evaluator.pars))
       }
-  colnames(scores) <- sets@metrics
+      for(i in 1:nIts) {
+          if (length(predMs)) {
+              scores[i,predMs] <- 0.632*do.call(sets@evaluator,
+                                                c(list(trues=preds[[i]][,"true"],
+                                                       preds=preds[[i]][,"predicted"],
+                                                       stats=predMs),
+                                                  sets@evaluator.pars)) +
+                                  0.368*resubScores
+          }
+          if (length(wts)) {
+              allts <- as.numeric(info[[i]]$times)
+              scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],
+                                 totTime=allts[1]+allts[2])[wts]
+          }
+      }
+      
+  } else scores <- .scoresIts(task,sets,preds,info)
       
   
   EstimationResults(task,wf,sets,scores,preds,info)
@@ -648,9 +655,9 @@ outFold <- function(ds,f,r=NULL)  {
         else                         sets@evaluator <- "regressionMetrics"
     scores <- matrix(NA,nrow=nIts,ncol=length(sets@metrics))
     colnames(scores) <- sets@metrics
+    wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
+    predMs <- setdiff(sets@metrics,wts)
     for(i in 1:nIts) {
-        wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
-        predMs <- setdiff(sets@metrics,wts)
         if (length(predMs)) {
             scores[i,predMs] <- do.call(sets@evaluator,
                                         c(list(trues=preds[[i]][,"true"],
