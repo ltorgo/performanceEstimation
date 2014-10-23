@@ -215,14 +215,24 @@ standardWF <- function(form,train,test,
         ps <- do.call(predictor,c(list(m,test),predictor.pars))
         if (.fullOutput) .fullRes$modeling <- if (is.null(post)) m else list(model=m,initPreds=ps)
     }
+    ## Checking for learners that do not ouput as many predictions as test cases!
+    ## (e.g. SVM from e1071!)
+    trues <- responseValues(form,test)
+    if (length(ps) != length(trues)) {
+        warning("standardWF:: less predictions than test cases, filling with NAs.")
+        t <- trues
+        t[] <- NA
+        t[names(ps)] <- ps
+        ps <- t
+    }    
 
     ## Data post-processing stage
     if (!is.null(post)) {
-        ps <- do.call(post,c(list(form,train,test,ps),post.pars))
+        ps <- do.call("standardPOST",c(list(form,train,test,ps,steps=post),post.pars))
         if (.fullOutput) .fullRes$postprocessing <- ps
     }
     
-    res <- WFoutput(rownames(test),responseValues(form,test),ps)
+    res <- WFoutput(rownames(test),trues,ps)
     if (.fullOutput) workflowInformation(res) <- .fullRes
     res
 }
@@ -313,5 +323,38 @@ standardPRE <- function(form,train,test,steps,...) {
     }
 
     list(train=train,test=test)
+}
+ 
+
+
+
+
+## =====================================================================
+## A function implementing some typical pre-processing steps/functions
+## ---------------------------------------------------------------------
+## L. Torgo, Oct 2014
+##
+standardPOST <- function(form,train,test,preds,steps,...) {
+
+    tgtVar <- deparse(form[[2]])
+    allPreds <- setdiff(colnames(train),tgtVar)
+    
+    for(s in steps) {
+        if (s == "na2central") {
+            if (any(idx <- is.na(preds))) {
+                cval <- if (is.numeric(train[[tgtVar]])) median(train[[tgtVar]],na.rm=TRUE) else { x <- as.factor(train[[tgtVar]]) ; levels(x)[which.max(table(x))] }
+                preds[idx] <- cval
+            }
+        } else if (s == "onlyPos") {
+            if (any(idx <- preds < 0)) preds[idx] <- 0
+        } else if (s == "cast2int") {
+            if (any(idx <- preds < infLim)) preds[idx] <- infLim
+            if (any(idx <- preds > supLim)) preds[idx] <- supLim
+        } else {
+            preds <- do.call(s,c(list(form,train,test,preds),...))
+        }
+    }
+
+    preds
 }
  
