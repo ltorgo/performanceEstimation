@@ -124,29 +124,6 @@ classificationMetrics <- function(trues,preds,
 }   
 
 
-# =====================================================================
-# Function to calculate some standard  evaluation statistics for time series
-# problems
-# ---------------------------------------------------------------------
-# L. Torgo (2013)
-#
-# Examples:
-# s <- timeseriesMetrics(tr,ps,train.y=data[,'Y'])
-# s <- timeseriesMetrics(tr,ps,stats=c('mse','mae'))
-#
-timeseriesMetrics <- function(trues,preds,
-                    stats='mse',
-                    train.y=NULL)
-{
-    if (('theil' %in% stats) && is.null(train.y))
-        stop('timeseriesMetrics:: train.y parameter not specified.',call.=FALSE)
-
-    other <- setdiff(stats,'theil')
-    r <- if (length(other) > 0) regressionMetrics(trues,preds,other,train.y) else c()
-    if ('theil' %in% stats) r <- c(r,theil=sum((trues-preds)^2)/sum((c(train.y[length(train.y)],trues[-length(trues)])-preds)^2))
-
-    if (identical(stats,"all")) return(r) else return(r[stats])
-}
 
 
 
