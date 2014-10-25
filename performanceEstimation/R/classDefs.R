@@ -117,7 +117,7 @@ Workflow <- function(wfID,
     if (!missing(learner)) {  # no user-defined workflow
         if (missing(type)) {  # standard workflow
             new("Workflow",
-                name= if (missing(wfID)) learner else wfID,
+                name= if (missing(wfID) || wfID %in% c("standardWF","timeseriesWF")) learner else wfID,
                 func= "standardWF",
                 pars=list(learner=learner,learner.pars=learner.pars,
                     predictor=predictor,predictor.pars=predictor.pars,
@@ -126,7 +126,7 @@ Workflow <- function(wfID,
                 )
         } else {              # slide or growing window workflow (time series)
             new("Workflow",
-                name= if (missing(wfID)) paste(learner,type,sep=".") else wfID,
+                name= if (missing(wfID) || wfID %in% c("standardWF","timeseriesWF")) paste(learner,type,sep=".") else wfID,
                 func= "timeseriesWF",
                 pars=list(type=type,relearn.step=relearn.step,
                     learner=learner,learner.pars=learner.pars,
