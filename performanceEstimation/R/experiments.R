@@ -625,6 +625,8 @@ outFold <- function(ds,f,r=NULL)  {
 
 ## calculates the scores of all iterations of an estimation exp
 .scoresIts <- function(task,sets,its) {
+    trReq <- any(sets@metrics %in% c("nmse","nmae","theil"))
+
     nIts <- length(its)
     if (sets@evaluator=="" ) 
         if (is.classification(task)) sets@evaluator <- "classificationMetrics"
@@ -635,11 +637,20 @@ outFold <- function(ds,f,r=NULL)  {
     predMs <- setdiff(sets@metrics,wts)
     for(i in 1:nIts) {
         if (length(predMs)) {
-            scores[i,predMs] <- do.call(sets@evaluator,
-                                        c(list(trues=its[[i]]$preds[,"true"],
-                                               preds=its[[i]]$preds[,"predicted"],
-                                               stats=predMs),
-                                          sets@evaluator.pars))
+            if (trReq) {
+                scores[i,predMs] <- do.call(sets@evaluator,
+                                            c(list(trues=its[[i]]$preds[,"true"],
+                                                   preds=its[[i]]$preds[,"predicted"],
+                                                   stats=predMs,
+                                                   train.y=get(task@dataSource)[its[[i]]$train,task@target]),
+                                              sets@evaluator.pars))
+            } else {
+                scores[i,predMs] <- do.call(sets@evaluator,
+                                            c(list(trues=its[[i]]$preds[,"true"],
+                                                   preds=its[[i]]$preds[,"predicted"],
+                                                   stats=predMs),
+                                              sets@evaluator.pars))
+            }
         }
         if (length(wts)) {
             allts <- as.numeric(its[[i]]$info$times)
