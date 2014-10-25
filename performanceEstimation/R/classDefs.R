@@ -79,7 +79,8 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
 setClass("Workflow",
          representation(name="character",
                         func="character",
-                        pars="list"))
+                        pars="list",
+                        deps="OptList"))
 
 
 
@@ -99,7 +100,8 @@ Workflow <- function(wfID,
                      predictor="predict",predictor.pars=NULL,
                      pre=NULL,pre.pars=NULL,
                      post=NULL,post.pars=NULL,
-                     fullOutput=FALSE
+                     fullOutput=FALSE,
+                     deps=NULL
                      ) {
     if (missing(learner) && missing(user)) stop("\nYou need to provide either the name of a learner or of a user-defined workflow.\n")
 
@@ -122,7 +124,8 @@ Workflow <- function(wfID,
                 pars=list(learner=learner,learner.pars=learner.pars,
                     predictor=predictor,predictor.pars=predictor.pars,
                     pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
-                    .fullOutput= fullOutput)
+                    .fullOutput= fullOutput),
+                deps=deps
                 )
         } else {              # slide or growing window workflow (time series)
             new("Workflow",
@@ -132,14 +135,16 @@ Workflow <- function(wfID,
                     learner=learner,learner.pars=learner.pars,
                     predictor=predictor,predictor.pars=predictor.pars,
                     pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
-                    .fullOutput= fullOutput)
+                    .fullOutput= fullOutput),
+                deps=deps
                 )
         }
     } else {
         new("Workflow",
             name= if (missing(wfID)) user else wfID,
             func=user,
-            pars=user.pars
+            pars=user.pars,
+            deps=deps
             )
     }
 }
