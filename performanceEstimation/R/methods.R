@@ -18,13 +18,13 @@ setMethod("show",
           "PredTask",
           function(object) {
             cat('Prediction Task Object:\n')
-            cat('\tTask Name                    ::',object@taskName,"\n")
-            cat('\tTask Type                    ::',
+            cat('\tTask Name         ::',object@taskName,"\n")
+            cat('\tTask Type         ::',
                 if (object@type == "class") "classification" else "regression","\n")
-            cat('\tTarget Feature               ::',object@target,"\n")
-            cat('\tFormula                      :: ')
+            cat('\tTarget Feature    ::',object@target,"\n")
+            cat('\tFormula           :: ')
             print(object@formula)
-            cat('\tTask Data Source Object Name ::',object@dataSource,"\n")
+            cat('\tTask Data Source  ::',deparse(object@dataSource),"\n")
           }
           )
 
@@ -76,9 +76,9 @@ setMethod("show",
           "WFoutput",
           function(object) {
             cat('WFoutput object :\n')
-            cat("\t'predictions' data frame slot with dimensions ",nrow(object@predictions),"x",ncol(object@predictions),"\n")
+            cat("\t'@predictions' slot containing the predictions with dimensions ",nrow(object@predictions),"x",ncol(object@predictions),"\n")
             if (length(object@extraInfo)) 
-              cat("\tObject contains extra information returned by the used workflow function.\n")
+              cat("\t'@extraInfo' slot containing extra information returned by the workflow function.\n")
             cat("\n")
           })
 
@@ -226,10 +226,6 @@ setMethod("show",
             cat("\nTask    :: ",object@task@taskName,"\nWorflow :: ",object@workflow@name,"\n")
             cat("\nOverview of the Scores of the experiment:\n")
             print(.scores2summary(object)[1:2,,drop=FALSE])
-            if (any(sapply(object@iterationsPreds,length))) 
-                cat("\nTrue and Predicted values for each test set are available.\n")
-            if (any(sapply(object@iterationsInfo,length))) 
-                cat("\nExtra Information returned from the workflow iterations available.\n")
             cat("\n")
             })
 
@@ -252,10 +248,12 @@ setMethod("summary",
               cat('\n* Predictive Task :: ',object@task@taskName)
               cat('\n* Workflow        :: ',object@workflow@func,' with parameters ')
               for(x in names(object@workflow@pars)) {
-                  k <- object@workflow@pars[[x]]
-                  k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
-                  k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
-                  cat('\n\t',x,' -> ',k,' ')
+                  if (!is.null(object@workflow@pars[[x]])) {
+                      k <- object@workflow@pars[[x]]
+                      k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
+                      k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
+                      cat('\n\t',x,' -> ',k,' ')
+                  }
               }
               cat('\n\n* Summary of Score Estimation Results:\n\n')
               print(.scores2summary(object))
@@ -287,16 +285,18 @@ setMethod("plot",
                                xlab='Estimation Iterations',
                                ylab=colnames(x@iterationsScores)[1]) +
                          geom_smooth(method='loess',size=1) +
+                         geom_line(stat="hline",yintercept="mean",color="red") +
                          scale_x_discrete()
                   ##print(plt)
               } else {
                   dt <- .scores2long(x@iterationsScores)
                   plt <- ggplot(dt,aes_string(x="rep",y="score")) + 
                       ggtitle(tit) +
-                          ylab('Metrics Scores') + xlab('Estimation Iterations')+
-                              geom_smooth(aes_string(group="stat"),method='loess',size=1) +
-                                  scale_x_discrete() +theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5,hjust=0))+
-                                      facet_grid( stat ~ .,scales = "free_y")
+                      ylab('Metrics Scores') + xlab('Estimation Iterations')+
+                      geom_smooth(aes_string(group="stat"),method='loess',size=1) +
+                      geom_line(stat="hline",yintercept="mean",color="red") +
+                      scale_x_discrete() +theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5,hjust=0))+
+                      facet_grid( stat ~ .,scales = "free_y")
                   ##print(plt)
               }
               plt

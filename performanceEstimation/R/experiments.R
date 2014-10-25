@@ -56,9 +56,8 @@ performanceEstimation <- function(tasks,workflows,setts,...) {
     ##rr <- NULL
     for (s in 1:length(workflows)) {
 
-      cat('\n\n++ MODEL/WORKFLOW ::',workflows[[s]]@func,
-          ' variant -> ',names(workflows)[s],'\n')
-
+      cat('\n\n++ MODEL/WORKFLOW ::',workflows[[s]]@name,"\n")
+      
       taskRes[[s]] <- do.call(
                switch(class(setts),
                       CvTask='cvEstimates',
@@ -113,13 +112,13 @@ cvEstimates <- function(wf,task,sets) {
   ## Did the user supplied the data splits for all folds and repetitions?
   userSplit <- !is.null(sets@dataSplits)
   
-  n <- nrow(get(task@dataSource))
+  n <- nrow(eval(task@dataSource))
   if (!userSplit) n.each.part <- n %/% sets@nFolds
 
   itsInfo <- vector("list",sets@nFolds*sets@nReps)
 
   if (!userSplit && sets@strat) {  # stratified sampling
-    respVals <- responseValues(task@formula,get(task@dataSource))
+    respVals <- responseValues(task@formula,eval(task@dataSource))
     regrProb <- is.numeric(respVals)
     if (regrProb) {  # regression problem
       ## the bucket to which each case belongs  
@@ -150,8 +149,6 @@ cvEstimates <- function(wf,task,sets) {
     if (!userSplit) {
       set.seed(sets@seed*r)
       permutation <- sample(n)
-      #perm.data <- task@data[permutation,]
-#    } else perm.data <- task@data
     } else permutation <- 1:n
 
     for(i in seq(sets@nFolds)) {
@@ -171,9 +168,9 @@ cvEstimates <- function(wf,task,sets) {
       it.res <- runWorkflow(wf,
                             task@formula,
                             #perm.data[-out.fold,],
-                            get(task@dataSource)[permutation[-out.fold],],
+                            eval(task@dataSource)[permutation[-out.fold],],
                             #perm.data[out.fold,])
-                            get(task@dataSource)[permutation[out.fold],])
+                            eval(task@dataSource)[permutation[out.fold],])
       
       itsInfo[[itN]] <- list(preds=it.res@predictions,
                              info=it.res@extraInfo,
@@ -226,13 +223,13 @@ hldEstimates <- function(wf,task,sets) {
   ## Did the user supplied the data splits for all folds and repetitions?
   userSplit <- !is.null(sets@dataSplits)
 
-  n <- nrow(get(task@dataSource))
+  n <- nrow(eval(task@dataSource))
   if (!userSplit) n.test <- as.integer(n * sets@hldSz)
 
   itsInfo <- vector("list",sets@nReps)
 
   if (!userSplit & sets@strat) {  # stratified sampling
-    respVals <- responseValues(task@formula,get(task@dataSource))
+    respVals <- responseValues(task@formula,eval(task@dataSource))
     regrProb <- is.numeric(respVals)
     if (regrProb) {  # regression problem
       # the bucket to which each case belongs  
@@ -281,9 +278,9 @@ hldEstimates <- function(wf,task,sets) {
     it.res <- runWorkflow(wf,
                           task@formula,
                             #perm.data[-out.fold,],
-                            get(task@dataSource)[permutation[-out.fold],],
+                            eval(task@dataSource)[permutation[-out.fold],],
                             #perm.data[out.fold,])
-                            get(task@dataSource)[permutation[out.fold],])
+                            eval(task@dataSource)[permutation[out.fold],])
 
     itsInfo[[r]] <- list(preds=it.res@predictions,
                          info=it.res@extraInfo,
@@ -335,7 +332,7 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
   ## Did the user supplied the data splits for all folds and repetitions?
   userSplit <- !is.null(sets@dataSplits)
 
-  n <- nrow(get(task@dataSource))
+  n <- nrow(eval(task@dataSource))
 
   itsInfo <- vector("list",1)
 
@@ -350,8 +347,8 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
 
     it.res <- runWorkflow(wf,
                           task@formula,
-                          get(task@dataSource)[-out.fold,],
-                          get(task@dataSource)[out.fold,])
+                          eval(task@dataSource)[-out.fold,],
+                          eval(task@dataSource)[out.fold,])
     
     itsInfo[[r]] <- list(preds=it.res@predictions,
                          info=it.res@extraInfo,
@@ -401,12 +398,12 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
   show(sets)
 
   if (sets@type == '.632')
-      resub <- runWorkflow(wf,task@formula,get(task@dataSource),get(task@dataSource))
+      resub <- runWorkflow(wf,task@formula,eval(task@dataSource),eval(task@dataSource))
 
   ## Did the user supplied the data splits for all folds and repetitions?
   userSplit <- !is.null(sets@dataSplits)
 
-  n <- nrow(get(task@dataSource))
+  n <- nrow(eval(task@dataSource))
 
   itsInfo <- vector("list",sets@nReps)
 
@@ -421,8 +418,8 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
     
     it.res <- runWorkflow(wf,
                           task@formula,
-                          get(task@dataSource)[idx,],
-                          get(task@dataSource)[-idx,])
+                          eval(task@dataSource)[idx,],
+                          eval(task@dataSource)[-idx,])
 
     itsInfo[[itN]] <- list(preds=it.res@predictions,
                            info=it.res@extraInfo,
@@ -507,7 +504,7 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
 
   itsInfo <- vector("list",mcSet@nReps)
 
-  n <- NROW(get(task@dataSource))
+  n <- NROW(eval(task@dataSource))
 
   if (!userSplit) {
       train.size <- if (mcSet@szTrain < 1) as.integer(n*mcSet@szTrain) else mcSet@szTrain
@@ -538,13 +535,13 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
     if (!userSplit) {
         rep.res <- runWorkflow(wf,
                                task@formula,
-                               get(task@dataSource)[(start-train.size):(start-1),],
-                               get(task@dataSource)[start:(start+test.size-1),])
+                               eval(task@dataSource)[(start-train.size):(start-1),],
+                               eval(task@dataSource)[start:(start+test.size-1),])
     } else {
         rep.res <- runWorkflow(wf,
                                task@formula,
-                               get(task@dataSource)[mcSet@dataSplits[mcSet@dataSplits[,1] == "TRAIN" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==it,2],],
-                               get(task@dataSource)[mcSet@dataSplits[mcSet@dataSplits[,1] == "TEST" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==it,2],])
+                               eval(task@dataSource)[mcSet@dataSplits[mcSet@dataSplits[,1] == "TRAIN" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==it,2],],
+                               eval(task@dataSource)[mcSet@dataSplits[mcSet@dataSplits[,1] == "TEST" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==it,2],])
 
     }
 
@@ -642,7 +639,7 @@ outFold <- function(ds,f,r=NULL)  {
                                             c(list(trues=its[[i]]$preds[,"true"],
                                                    preds=its[[i]]$preds[,"predicted"],
                                                    stats=predMs,
-                                                   train.y=get(task@dataSource)[its[[i]]$train,task@target]),
+                                                   train.y=eval(task@dataSource)[its[[i]]$train,task@target]),
                                               sets@evaluator.pars))
             } else {
                 scores[i,predMs] <- do.call(sets@evaluator,

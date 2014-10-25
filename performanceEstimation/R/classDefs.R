@@ -11,6 +11,7 @@ setClassUnion("StrOrDF",c("character","data.frame"))
 setClassUnion("OptList",c("list","NULL"))
 setClassUnion("OptMatrix",c("matrix","NULL"))
 setClassUnion("OptString",c("character","NULL"))
+setClassUnion("NameOrCall",c("call","name"))
 
 ## ==============================================================
 ## CLASS: PredTask
@@ -25,7 +26,8 @@ setClassUnion("OptString",c("character","NULL"))
 setClass("PredTask",
          representation(taskName="character",
                         formula="formula",
-                        dataSource="StrOrDF",
+#                        dataSource="StrOrDF",
+                        dataSource="NameOrCall",
                         type="character",
                         target="character")
          )
@@ -37,8 +39,10 @@ setClass("PredTask",
 PredTask <- function(form,data,taskName=NULL,type=NULL) {
   if (missing(form) || missing(data))
     stop('\nYou need to provide a formula and a data frame name.\n')
-  if (is.data.frame(data)) data <- deparse(substitute(data))
-  if (inherits(try(mf <- model.frame(form,get(data),na.action=NULL),TRUE),"try-error"))
+  if (is.data.frame(data)) data <- substitute(data)
+  if (inherits(try(mf <- model.frame(form,eval(data),na.action=NULL),TRUE),"try-error"))
+#  if (is.data.frame(data)) data <- deparse(substitute(data))
+#  if (inherits(try(mf <- model.frame(form,get(data),na.action=NULL),TRUE),"try-error"))
     stop('\nInvalid formula for the given data frame.\n')
 
   tgt <- deparse(form[[2]])
@@ -48,14 +52,14 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
   }
   
   if (is.null(type)) {
-      taskType <- if (is.factor(get(data)[,tgt])) "class" else "regr"
+      taskType <- if (is.factor(eval(data)[,tgt])) "class" else "regr"
   } else {
       if (!(type %in% c("class","regr","ts")))
           stop(paste("PredTask::",type,"tasks not implemented."))
       taskType <- type
   }
 
-  if (taskType == "ts" && !is.numeric(get(data)[[tgt]]))
+  if (taskType == "ts" && !is.numeric(eval(data)[[tgt]]))
       stop("PredTask:: time series task should have numeric target.")
   
   new("PredTask",
@@ -420,9 +424,9 @@ EstimationResults <- function(t,w,et,sc,e) {
   o@iterationsScores <- sc
 #  o@iterationsPreds <- p
   ## classification tasks, code back predictions to class labels
-  if (!is.null(p) && is.factor(model.response(model.frame(t@formula,get(t@dataSource))))) {
+  if (!is.null(p) && is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
       for (i in 1:length(o@iterationsPreds))
-          o@iterationsInfo[[i]]$preds[,"predicted"] <- factor(o@iterationsInfo[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,get(t@dataSource))))
+          o@iterationsInfo[[i]]$preds[,"predicted"] <- factor(o@iterationsInfo[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,eval(t@dataSource))))
   }
   o@iterationsInfo  <- e
   o
