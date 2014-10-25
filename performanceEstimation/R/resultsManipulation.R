@@ -94,10 +94,10 @@ getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
         stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
     if (!missing(it)) {
         if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]$info
     } else {
         if (rep >  obj@tasks[[task]][[workflow]]@estTask@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@nFolds,"folds available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]$info
     }
 }
 
@@ -106,10 +106,10 @@ getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
         stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
     if (!missing(it)) {
         if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsPreds[[it]]
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]$preds
     } else {
         if (rep >  obj@tasks[[task]][[workflow]]@estTask@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@nFolds,"folds available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsPreds[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]
+        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@nFolds+fold]]$preds
     }
 }
 

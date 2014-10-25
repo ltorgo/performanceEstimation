@@ -116,10 +116,7 @@ cvEstimates <- function(wf,task,sets) {
   n <- nrow(get(task@dataSource))
   if (!userSplit) n.each.part <- n %/% sets@nFolds
 
-  #results <- EstimationResults(task,wf,sets,matrix(NA,0,0))
-  #itsI <- results <- NULL
-  preds <- vector("list",sets@nFolds*sets@nReps)
-  info <- vector("list",sets@nFolds*sets@nReps)
+  itsInfo <- vector("list",sets@nFolds*sets@nReps)
 
   if (!userSplit && sets@strat) {  # stratified sampling
     respVals <- responseValues(task@formula,get(task@dataSource))
@@ -178,8 +175,9 @@ cvEstimates <- function(wf,task,sets) {
                             #perm.data[out.fold,])
                             get(task@dataSource)[permutation[out.fold],])
       
-      preds[[itN]] <- it.res@predictions
-      info[[itN]] <- it.res@extraInfo
+      itsInfo[[itN]] <- list(preds=it.res@predictions,
+                             info=it.res@extraInfo,
+                             train=permutation[-out.fold])
       
     }
     cat('\n')
@@ -190,10 +188,10 @@ cvEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,preds,info)
+  scores <- .scoresIts(task,sets,itsInfo)
       
     
-  EstimationResults(task,wf,sets,scores,preds,info)
+  EstimationResults(task,wf,sets,scores,itsInfo)
 }
 
 
@@ -231,10 +229,8 @@ hldEstimates <- function(wf,task,sets) {
   n <- nrow(get(task@dataSource))
   if (!userSplit) n.test <- as.integer(n * sets@hldSz)
 
-  preds <- vector("list",sets@nReps)
-  info <- vector("list",sets@nReps)
+  itsInfo <- vector("list",sets@nReps)
 
-  
   if (!userSplit & sets@strat) {  # stratified sampling
     respVals <- responseValues(task@formula,get(task@dataSource))
     regrProb <- is.numeric(respVals)
@@ -289,8 +285,9 @@ hldEstimates <- function(wf,task,sets) {
                             #perm.data[out.fold,])
                             get(task@dataSource)[permutation[out.fold],])
 
-    preds[[r]] <- it.res@predictions
-    info[[r]] <- it.res@extraInfo
+    itsInfo[[r]] <- list(preds=it.res@predictions,
+                         info=it.res@extraInfo,
+                         train=permutation[-out.fold])
           
   }
   cat('\n')
@@ -300,9 +297,9 @@ hldEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,preds,info)
+  scores <- .scoresIts(task,sets,itsInfo)
   
-  EstimationResults(task,wf,sets,scores,preds,info)
+  EstimationResults(task,wf,sets,scores,itsInfo)
 }
 
 
@@ -340,8 +337,7 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
 
   n <- nrow(get(task@dataSource))
 
-  preds <- vector("list",1)
-  info <- vector("list",n)
+  itsInfo <- vector("list",1)
 
   if (verbose) cat('Iteration: ')
   for(r in 1:n) {
@@ -357,9 +353,9 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
                           get(task@dataSource)[-out.fold,],
                           get(task@dataSource)[out.fold,])
     
-    preds[[r]] <- it.res@predictions
-    info[[r]] <- it.res@extraInfo
-      
+    itsInfo[[r]] <- list(preds=it.res@predictions,
+                         info=it.res@extraInfo,
+                         train=(1:n)[-out.fold])
   }
   if (verbose) cat('\n')
   
@@ -368,9 +364,9 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,preds,info)
+  scores <- .scoresIts(task,sets,itsInfo)
 
-  EstimationResults(task,wf,sets,scores,preds,info)
+  EstimationResults(task,wf,sets,scores,itsInfo)
 
 }
 
@@ -412,8 +408,7 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
 
   n <- nrow(get(task@dataSource))
 
-  preds <- vector("list",sets@nReps)
-  info <- vector("list",sets@nReps)
+  itsInfo <- vector("list",sets@nReps)
 
   cat('Repetition :')
   for(r in 1:sets@nReps) {
@@ -429,8 +424,9 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
                           get(task@dataSource)[idx,],
                           get(task@dataSource)[-idx,])
 
-    preds[[r]] <- it.res@predictions
-    info[[r]] <- it.res@extraInfo
+    itsInfo[[itN]] <- list(preds=it.res@predictions,
+                           info=it.res@extraInfo,
+                           train=idx)
       
   }
   cat('\n')
@@ -441,7 +437,7 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
   
   ## Calculate the metrics estimation
   if (sets@type == ".632") {  # this method is different from all others
-      nIts <- length(preds)
+      nIts <- length(itsInfo)
       if (sets@evaluator=="" ) 
           if (is.classification(task)) sets@evaluator <- "classificationMetrics"
           else                         sets@evaluator <- "regressionMetrics"
@@ -459,23 +455,23 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
       for(i in 1:nIts) {
           if (length(predMs)) {
               scores[i,predMs] <- 0.632*do.call(sets@evaluator,
-                                                c(list(trues=preds[[i]][,"true"],
-                                                       preds=preds[[i]][,"predicted"],
+                                                c(list(trues=itsInfo[[i]]$preds[,"true"],
+                                                       preds=itsInfo[[i]]$preds[,"predicted"],
                                                        stats=predMs),
                                                   sets@evaluator.pars)) +
                                   0.368*resubScores
           }
           if (length(wts)) {
-              allts <- as.numeric(info[[i]]$times)
+              allts <- as.numeric(itsInfo[[i]]$info$times)
               scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],
                                  totTime=allts[1]+allts[2])[wts]
           }
       }
       
-  } else scores <- .scoresIts(task,sets,preds,info)
+  } else scores <- .scoresIts(task,sets,itsInfo)
       
   
-  EstimationResults(task,wf,sets,scores,preds,info)
+  EstimationResults(task,wf,sets,scores,itsInfo)
 
 }
 
@@ -509,8 +505,7 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
   userSplit <- !is.null(mcSet@dataSplits)
   
 
-  preds <- vector("list",mcSet@nReps)
-  info <- vector("list",mcSet@nReps)
+  itsInfo <- vector("list",mcSet@nReps)
 
   n <- NROW(get(task@dataSource))
 
@@ -553,9 +548,9 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
 
     }
 
-    preds[[it]] <- rep.res@predictions
-    info[[it]] <- rep.res@extraInfo
-
+    itsInfo[[it]] <- list(preds=rep.res@predictions,
+                          info=rep.res@extraInfo,
+                          train=(start-train.size):(start-1))
 
   }
   if (verbose) cat('\n')
@@ -565,9 +560,9 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,mcSet,preds,info)
+  scores <- .scoresIts(task,mcSet,itsInfo)
 
-  EstimationResults(task,wf,mcSet,scores,preds,info)
+  EstimationResults(task,wf,mcSet,scores,itsInfo)
 }
 
 
@@ -577,10 +572,8 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
 # Small utility functions 
 # =====================================================
 
-#is.regression <- function(formula,data) is.numeric(model.response(model.frame(formula,data)))
 is.regression <- function(task) task@type == 'regr'
 
-#is.classification <- function(formula,data) is.factor(model.response(model.frame(formula,data)))
 is.classification <- function(task) task@type == 'class'
 
 responseValues <- function(formula,data,na=NULL) model.response(model.frame(formula,data,na.action=na))
@@ -631,8 +624,8 @@ outFold <- function(ds,f,r=NULL)  {
 
 
 ## calculates the scores of all iterations of an estimation exp
-.scoresIts <- function(task,sets,preds,info) {
-    nIts <- length(preds)
+.scoresIts <- function(task,sets,its) {
+    nIts <- length(its)
     if (sets@evaluator=="" ) 
         if (is.classification(task)) sets@evaluator <- "classificationMetrics"
         else                         sets@evaluator <- "regressionMetrics"
@@ -643,13 +636,13 @@ outFold <- function(ds,f,r=NULL)  {
     for(i in 1:nIts) {
         if (length(predMs)) {
             scores[i,predMs] <- do.call(sets@evaluator,
-                                        c(list(trues=preds[[i]][,"true"],
-                                               preds=preds[[i]][,"predicted"],
+                                        c(list(trues=its[[i]]$preds[,"true"],
+                                               preds=its[[i]]$preds[,"predicted"],
                                                stats=predMs),
                                           sets@evaluator.pars))
         }
         if (length(wts)) {
-            allts <- as.numeric(info[[i]]$times)
+            allts <- as.numeric(its[[i]]$info$times)
             scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],totTime=allts[1]+allts[2])[wts]
         }
     }

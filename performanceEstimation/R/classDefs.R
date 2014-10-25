@@ -404,8 +404,7 @@ setClass("EstimationResults",
                         workflow         = "Workflow",
                         estTask          = "EstimationTask",
                         iterationsScores = "matrix",   # nIts x nStats
-                        iterationsPreds  = "list",     # list of nIts matrices or NULL
-                        iterationsInfo   = "list"      # list of nIts lists or NULL
+                        iterationsInfo   = "list"      # list of nIts lists
                         )
          )
 
@@ -413,17 +412,17 @@ setClass("EstimationResults",
 ## --------------------------------------------------------------
 ## constructor
 ##
-EstimationResults <- function(t,w,et,sc,p=NULL,e=NULL) {
+EstimationResults <- function(t,w,et,sc,e) {
   o                  <- new("EstimationResults")
   o@task             <- t
   o@workflow         <- w
   o@estTask          <- et
   o@iterationsScores <- sc
-  o@iterationsPreds <- p
+#  o@iterationsPreds <- p
   ## classification tasks, code back predictions to class labels
   if (!is.null(p) && is.factor(model.response(model.frame(t@formula,get(t@dataSource))))) {
       for (i in 1:length(o@iterationsPreds))
-          o@iterationsPreds[[i]][,"predicted"] <- factor(o@iterationsPreds[[i]][,"predicted"],levels=levels(responseValues(t@formula,get(t@dataSource))))
+          o@iterationsInfo[[i]]$preds[,"predicted"] <- factor(o@iterationsInfo[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,get(t@dataSource))))
   }
   o@iterationsInfo  <- e
   o
