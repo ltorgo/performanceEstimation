@@ -501,9 +501,7 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
 # Luis Torgo, Aug 2009
 # =====================================================
 
-mcEstimates <- function(wf,
-                       task,
-                       mcSet,verbose=TRUE) {
+mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
 
   show(mcSet)
 
@@ -567,18 +565,7 @@ mcEstimates <- function(wf,
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  if (sets@evaluator=="" ) 
-      if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-      else                         sets@evaluator <- "regressionMetrics"
-  scores <- matrix(NA,nrow=length(starting.points),ncol=length(sets@metrics))
-  for(i in 1:length(starting.points))
-      scores[i,] <- do.call(sets@evaluator,
-                              c(list(trues=preds[[i]][,"true"],
-                                     preds=preds[[i]][,"predicted"],
-                                     stats=sets@metrics),
-                                sets@evaluator.pars))
-  colnames(scores) <- sets@metrics
-      
+  scores <- .scoresIts(task,mcSet,preds,info)
 
   EstimationResults(task,wf,mcSet,scores,preds,info)
 }

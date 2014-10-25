@@ -94,6 +94,7 @@ setClass("Workflow",
 
 Workflow <- function(wfID,
                      learner,learner.pars=NULL,
+                     type,relearn.step=1,
                      user,user.pars=NULL,
                      predictor="predict",predictor.pars=NULL,
                      pre=NULL,pre.pars=NULL,
@@ -113,15 +114,27 @@ Workflow <- function(wfID,
     if (!missing(post) && is(post,"function"))
         post <- deparse(substitute(post))
 
-    if (!missing(learner)) {  # user is using the standardWF
-        new("Workflow",
-            name= if (missing(wfID)) learner else wfID,
-            func="standardWF",
-            pars=list(learner=learner,learner.pars=learner.pars,
-                      predictor=predictor,predictor.pars=predictor.pars,
-                      pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
-                      .fullOutput= fullOutput)
-            )
+    if (!missing(learner)) {  # no user-defined workflow
+        if (missing(type)) {  # standard workflow
+            new("Workflow",
+                name= if (missing(wfID)) learner else wfID,
+                func= "standardWF",
+                pars=list(learner=learner,learner.pars=learner.pars,
+                    predictor=predictor,predictor.pars=predictor.pars,
+                    pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
+                    .fullOutput= fullOutput)
+                )
+        } else {              # slide or growing window workflow (time series)
+            new("Workflow",
+                name= if (missing(wfID)) paste(learner,type,sep=".") else wfID,
+                func= "timeseriesWF",
+                pars=list(type=type,relearn.step=relearn.step,
+                    learner=learner,learner.pars=learner.pars,
+                    predictor=predictor,predictor.pars=predictor.pars,
+                    pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
+                    .fullOutput= fullOutput)
+                )
+        }
     } else {
         new("Workflow",
             name= if (missing(wfID)) user else wfID,
@@ -347,7 +360,7 @@ setClass("McTask",
 McTask <- function(metrics,evaluator="",evaluator.pars=NULL,
                    nReps=10,szTrain=0.25,szTest=0.25,
                    seed=1234,dataSplits=NULL)
-    new("McSettings",
+    new("McTask",
         metrics=metrics,evaluator=evaluator,evaluator.pars=evaluator.pars,
         nReps= if (is.null(dataSplits)) nReps else ncol(dataSplits),
         szTrain=szTrain,szTest=szTest,
