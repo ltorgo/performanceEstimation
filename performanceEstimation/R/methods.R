@@ -43,11 +43,13 @@ setMethod("show",
             if (length(object@pars)) {
                 cat('\n\t\tParameter values:\n')
                 for(n in names(object@pars)) {
+                    if (!is.null(object@pars[[n]])) {
 ##                    cat('\t\t',n,' = ',deparse(object@pars[[n]]),'\n')
-                    k <- object@pars[[n]]
-                    k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
-                    k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
-                    cat('\t\t',n,' -> ',k,'\n')
+                        k <- object@pars[[n]]
+                        k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
+                        k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
+                        cat('\t\t',n,' -> ',k,'\n')
+                    }
                 }
             }
             cat('\n')
