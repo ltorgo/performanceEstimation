@@ -41,7 +41,7 @@ setMethod("show",
             cat('Workflow Object:\n\tWorkflow ID       :: ',object@name,
                                 '\n\tWorkflow Function :: ',object@func)
             if (length(object@pars)) {
-                cat('\n\t\tParameter values:\n')
+                cat('\n\t     Parameter values:\n')
                 for(n in names(object@pars)) {
                     if (!is.null(object@pars[[n]])) {
 ##                    cat('\t\t',n,' = ',deparse(object@pars[[n]]),'\n')
@@ -131,7 +131,7 @@ setMethod("show",
           "HldTask",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
-            cat(ifelse(!userSplit & object@strat,'\n Stratified ','\n'),
+            cat(ifelse(!userSplit & object@strat,'Stratified ',''),
                 object@nReps,'x',
                 100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout for estimating ',
                 paste(object@metrics,collapse=","),"\n")
@@ -152,7 +152,7 @@ setMethod("show",
 setMethod("show","LoocvTask",
           function(object) {
               userSplit <- !is.null(object@dataSplits)
-              cat('\n LOOCV experiment for estimating ',
+              cat('LOOCV experiment for estimating ',
                 paste(object@metrics,collapse=","),"\n")
               if (!userSplit)
                   cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and seed = ',object@seed,'\n')
@@ -173,7 +173,7 @@ setMethod("show",
           "BootTask",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
-            cat('\n',object@nReps,' repetitions of ',ifelse(object@type=='e0','e0','.632'),
+            cat(object@nReps,' repetitions of ',ifelse(object@type=='e0','e0','.632'),
                 ' Bootstrap experiment for estimating ',
                 paste(object@metrics,collapse=","),'\n')
             if (!userSplit)
@@ -194,7 +194,7 @@ setMethod("show",
           "McTask",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
-            cat('\n',object@nReps,
+            cat(object@nReps,
                ' repetitions Monte Carlo Simulation for estimating ',
                 paste(object@metrics,collapse=","))
             if (userSplit) {
@@ -223,8 +223,8 @@ setMethod("show",
           "EstimationResults",
           function(object) {
             print(object@estTask)
-            cat("\nTask    :: ",object@task@taskName,"\nWorflow :: ",object@workflow@name,"\n")
-            cat("\nOverview of the Scores of the experiment:\n")
+            cat("\nTask    ID :: ",object@task@taskName,"\nWorflow ID :: ",object@workflow@name,"\n")
+            cat("\nOverview of the Scores Estimates:\n")
             print(.scores2summary(object)[1:2,,drop=FALSE])
             cat("\n")
             })
@@ -242,17 +242,27 @@ setMethod("summary",
                          BootTask='Bootstrap',
                          LoocvTask='Loocv',
                          ),
-                  ' Estimation Experiment ***\n')
+                  ' Estimation Experiment ***\n\n')
 
               print(object@estTask)
-              cat('\n* Predictive Task :: ',object@task@taskName)
-              cat('\n* Workflow        :: ',object@workflow@func,' with parameters ')
-              for(x in names(object@workflow@pars)) {
-                  if (!is.null(object@workflow@pars[[x]])) {
-                      k <- object@workflow@pars[[x]]
-                      k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
-                      k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
-                      cat('\n\t',x,' -> ',k,' ')
+              cat('\n* Predictive Task ID :: ',object@task@taskName)
+              cat('\n\tTask Type         ::',
+                  if (object@task@type == "class") "classification" else "regression","\n")
+              cat('\tTarget Feature    ::',object@task@target,"\n")
+              cat('\tFormula           :: ')
+              print(object@task@formula)
+              cat('\tTask Data Source  ::',deparse(object@task@dataSource),"\n")
+              cat('\n* Workflow        ID :: ',object@workflow@name,
+                  '\n\tWorkflow Function :: ',object@workflow@func)
+              if (length(object@workflow@pars)) {
+                  cat('\n\t     Parameter values:\n')
+                  for(n in names(object@workflow@pars)) {
+                      if (!is.null(object@workflow@pars[[n]])) {
+                          k <- object@workflow@pars[[n]]
+                          k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
+                          k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
+                          cat('\t\t',n,' -> ',k,'\n')
+                      }
                   }
               }
               cat('\n\n* Summary of Score Estimation Results:\n\n')
@@ -355,7 +365,7 @@ setMethod("summary",
                          BootTask='Bootstrap',
                          McTask='Monte Carlo'
                          ),
-                  'Performance Estimation Experiment ==\n')
+                  'Performance Estimation Experiment ==\n\n')
               print(object@tasks[[1]][[1]]@estTask)
               cat('\n* Predictive Tasks :: ',
                   paste(names(object@tasks),collapse=', '))
@@ -396,8 +406,8 @@ setMethod("show",
                        ),
                 'Performance Estimation Experiment ==\n\n')
             print(object@tasks[[1]][[1]]@estTask)
-            cat(length(object@tasks[[1]]),' workflows\n')
-            cat('tested on ',length(object@tasks),' predictive tasks\n')
+            cat("\n",length(object@tasks[[1]]),' workflows applied to ',
+                length(object@tasks),' predictive tasks\n')
           })
 
 
@@ -419,26 +429,27 @@ setMethod("show",
 setMethod("subset",
           signature(x='ComparisonResults'),
           function(x,
-                 tasks=1:length(x@tasks),
-                 workflows=1:length(x@tasks[[1]]),
-                 metrics=1:dim(x@tasks[[1]][[1]]@iterationsScores)[2])
-          {
-            rr <- x
-            if (!identical(workflows,1:length(x@tasks[[1]]))) {
-              if (is.character(workflows) && length(workflows) == 1)
-                workflows <- grep(workflows,names(rr@tasks[[1]]))
-              rr@tasks <- lapply(rr@tasks,function(t) t[workflows])
-            }
-            if (!identical(tasks,1:length(x@tasks))) {
-              if (is.character(tasks) && length(tasks) == 1)
-                tasks <- grep(tasks,names(rr@tasks))
-              rr@tasks <- rr@tasks[tasks]
-            }
-            if (is.character(metrics) && length(metrics) == 1) 
-                metrics <- grep(metrics,colnames(x@tasks[[1]][[1]]@iterationsScores))
-            rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
-
-            rr
+                   tasks=1:length(x@tasks),
+                   workflows=1:length(x@tasks[[1]]),
+                   metrics=1:dim(x@tasks[[1]][[1]]@iterationsScores)[2],
+                   partial=TRUE) {
+              mf <- if (partial) "grep" else "match"
+              rr <- x
+              if (!identical(workflows,1:length(x@tasks[[1]]))) {
+                  if (is.character(workflows))
+                      workflows <- unlist(lapply(workflows,function(w) do.call(mf,list(w,names(rr@tasks[[1]])))))
+                  rr@tasks <- lapply(rr@tasks,function(t) t[workflows])
+              }
+              if (!identical(tasks,1:length(x@tasks))) {
+                  if (is.character(tasks))
+                      tasks <- unlist(lapply(tasks,function(t) do.call(mf,list(t,names(rr@tasks)))))
+                  rr@tasks <- rr@tasks[tasks]
+              }
+              if (is.character(metrics)) 
+                  metrics <- unlist(lapply(metrics,function(m) do.call(mf,list(m,colnames(x@tasks[[1]][[1]]@iterationsScores)))))
+              rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
+              
+              rr
           }
           )
 

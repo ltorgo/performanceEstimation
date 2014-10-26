@@ -529,7 +529,7 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
   if (!userSplit) {
       train.size <- if (mcSet@szTrain < 1) as.integer(n*mcSet@szTrain) else mcSet@szTrain
       test.size <- if (mcSet@szTest < 1) as.integer(n*mcSet@szTest) else mcSet@szTest
-      if (n-test.size+1 <= train.size+1) stop('mcEstimates:: Invalid train/test sizes.')
+      if (n-test.size+1 <= train.size+1) stop('mcEstimates:: Invalid train/test sizes.',call.=FALSE)
   } else {
       train.size <- NROW(mcSet@dataSplits[mcSet@dataSplits[,1] == "TRAIN" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==1,2])
       test.size <- NROW(mcSet@dataSplits[mcSet@dataSplits[,1] == "TEST" & mcSet@dataSplits[,3]==1 & mcSet@dataSplits[,4]==1,2])

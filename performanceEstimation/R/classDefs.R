@@ -38,12 +38,12 @@ setClass("PredTask",
 ##
 PredTask <- function(form,data,taskName=NULL,type=NULL) {
   if (missing(form) || missing(data))
-    stop('\nYou need to provide a formula and a data frame name.\n')
+    stop('\nYou need to provide a formula and a data frame name.\n',call.=FALSE)
   if (is.data.frame(data)) data <- substitute(data)
   if (inherits(try(mf <- model.frame(form,eval(data),na.action=NULL),TRUE),"try-error"))
 #  if (is.data.frame(data)) data <- deparse(substitute(data))
 #  if (inherits(try(mf <- model.frame(form,get(data),na.action=NULL),TRUE),"try-error"))
-    stop('\nInvalid formula for the given data frame.\n')
+    stop('\nInvalid formula for the given data frame.\n',call.=FALSE)
 
   tgt <- deparse(form[[2]])
   if (is.null(taskName)) {
@@ -55,12 +55,12 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
       taskType <- if (is.factor(eval(data)[,tgt])) "class" else "regr"
   } else {
       if (!(type %in% c("class","regr","ts")))
-          stop(paste("PredTask::",type,"tasks not implemented."))
+          stop(paste("PredTask::",type,"tasks not implemented."),call.=FALSE)
       taskType <- type
   }
 
   if (taskType == "ts" && !is.numeric(eval(data)[[tgt]]))
-      stop("PredTask:: time series task should have numeric target.")
+      stop("PredTask:: time series task should have numeric target.",call.=FALSE)
   
   new("PredTask",
       taskName=taskName,formula=form,dataSource=data,
@@ -107,7 +107,7 @@ Workflow <- function(wfID,
                      fullOutput=FALSE,
                      deps=NULL
                      ) {
-    if (missing(learner) && missing(user)) stop("\nYou need to provide either the name of a learner or of a user-defined workflow.\n")
+    if (missing(learner) && missing(user)) stop("\nYou need to provide either the name of a learner or of a user-defined workflow.\n",call.=FALSE)
 
     if (!missing(learner) && is(learner,"function"))
         learner <- deparse(substitute(learner)) 
