@@ -421,9 +421,9 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
                           eval(task@dataSource)[idx,],
                           eval(task@dataSource)[-idx,])
 
-    itsInfo[[itN]] <- list(preds=it.res@predictions,
-                           info=it.res@extraInfo,
-                           train=idx)
+    itsInfo[[r]] <- list(preds=it.res@predictions,
+                         info=it.res@extraInfo,
+                         train=idx)
       
   }
   cat('\n')
@@ -434,6 +434,7 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
   
   ## Calculate the metrics estimation
   if (sets@type == ".632") {  # this method is different from all others
+      trReq <- any(sets@metrics %in% c("nmse","nmae","theil"))
       nIts <- length(itsInfo)
       if (sets@evaluator=="" ) 
           if (is.classification(task)) sets@evaluator <- "classificationMetrics"
@@ -443,20 +444,39 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
       wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
       predMs <- setdiff(sets@metrics,wts)
       if (length(predMs)) {
-          resubScores <- do.call(sets@evaluator,
-                                 c(list(trues=resub@predictions[,"true"],
-                                        preds=resub@predictions[,"predicted"],
-                                        stats=predMs),
+          if (trReq) {
+              resubScores <- do.call(sets@evaluator,
+                                     c(list(trues=resub@predictions[,"true"],
+                                            preds=resub@predictions[,"predicted"],
+                                            stats=predMs,
+                                            train.y=eval(task@dataSource)[1:n,task@target]),
                                    sets@evaluator.pars))
+          } else {
+              resubScores <- do.call(sets@evaluator,
+                                     c(list(trues=resub@predictions[,"true"],
+                                            preds=resub@predictions[,"predicted"],
+                                            stats=predMs),
+                                   sets@evaluator.pars))
+          }
       }
       for(i in 1:nIts) {
           if (length(predMs)) {
-              scores[i,predMs] <- 0.632*do.call(sets@evaluator,
-                                                c(list(trues=itsInfo[[i]]$preds[,"true"],
-                                                       preds=itsInfo[[i]]$preds[,"predicted"],
-                                                       stats=predMs),
-                                                  sets@evaluator.pars)) +
-                                  0.368*resubScores
+              if (trReq) {
+                  scores[i,predMs] <- 0.632*do.call(sets@evaluator,
+                                                    c(list(trues=itsInfo[[i]]$preds[,"true"],
+                                                           preds=itsInfo[[i]]$preds[,"predicted"],
+                                                           stats=predMs,
+                                                           train.y=eval(task@dataSource)[itsInfo[[i]]$train,task@target]),
+                                                      sets@evaluator.pars)) +
+                                      0.368*resubScores
+              } else {
+                  scores[i,predMs] <- 0.632*do.call(sets@evaluator,
+                                                    c(list(trues=itsInfo[[i]]$preds[,"true"],
+                                                           preds=itsInfo[[i]]$preds[,"predicted"],
+                                                           stats=predMs),
+                                                      sets@evaluator.pars)) +
+                                      0.368*resubScores
+              }
           }
           if (length(wts)) {
               allts <- as.numeric(itsInfo[[i]]$info$times)
