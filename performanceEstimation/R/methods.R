@@ -83,34 +83,19 @@ setMethod("show",
           })
 
 
-#setMethod("summary",
-#          "WFoutput",
-#          function(object) {
-#            cat('Summary of workflow output object\n')
-#            cat("Scores:\n ")
-#            print(object@scores)
-#            cat("\n")
-#            if (length(object@predictions))
-#              cat("Object contains predicted and true values of the target variable. \n\tUse# 'workflowPredictions(obj)' to inspect them.\n")
-#            if (length(object@extraInfo)) 
-#              cat("Object contains extra information returned by the used workflow function.# \n\tUse 'workflowInformation(obj)' to inspect it.\n")
-#            cat("\n")
-#          })
-
 
 
 
 ################################################################
-## CvTask Methods:
+## CvSettings Methods:
 ################################################################
 setMethod("show",
-          "CvTask",
+          "CvSettings",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
                 object@nReps,'x',object@nFolds,
-                '- Fold Cross Validation for estimating ',
-                paste(object@metrics,collapse=","),"\n")
+                '- Fold Cross Validation\n')
             if (!userSplit)
               cat('\t Run with seed = ', object@seed,'\n')
             else
@@ -124,17 +109,16 @@ setMethod("show",
 
 
 ################################################################
-## HldTask methods:
+## HldSettings methods:
 ################################################################
 
 setMethod("show",
-          "HldTask",
+          "HldSettings",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
                 object@nReps,'x',
-                100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout for estimating ',
-                paste(object@metrics,collapse=","),"\n")
+                100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout\n')
             if (!userSplit)
               cat('\t Run with seed = ',object@seed,'\n')
             else
@@ -145,15 +129,14 @@ setMethod("show",
 
 
 ################################################################
-## LoocvTask methods:
+## LoocvSettings methods:
 ################################################################
 
 
-setMethod("show","LoocvTask",
+setMethod("show","LoocvSettings",
           function(object) {
               userSplit <- !is.null(object@dataSplits)
-              cat('LOOCV experiment for estimating ',
-                paste(object@metrics,collapse=","),"\n")
+              cat('LOOCV experiment\n')
               if (!userSplit)
                   cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and seed = ',object@seed,'\n')
               else
@@ -165,17 +148,16 @@ setMethod("show","LoocvTask",
 
 
 ################################################################
-## BootTask methods:
+## BootSettings methods:
 ################################################################
 
 
 setMethod("show",
-          "BootTask",
+          "BootSettings",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(object@nReps,' repetitions of ',ifelse(object@type=='e0','e0','.632'),
-                ' Bootstrap experiment for estimating ',
-                paste(object@metrics,collapse=","),'\n')
+                ' Bootstrap experiment\n')
             if (!userSplit)
               cat('\t Run with seed = ', object@seed,'\n')
             else
@@ -184,19 +166,17 @@ setMethod("show",
 
 
 
-
 ################################################################
-## McTask methods:
+## McSettings methods:
 ################################################################
 
 
 setMethod("show",
-          "McTask",
+          "McSettings",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(object@nReps,
-               ' repetitions Monte Carlo Simulation for estimating ',
-                paste(object@metrics,collapse=","))
+               ' repetitions Monte Carlo Simulation')
             if (userSplit) {
               cat(' using user-supplied data splits\n')
             } else {
@@ -210,6 +190,22 @@ setMethod("show",
                   )
             }
          })
+
+
+
+
+################################################################
+## EstimationTask methods:
+################################################################
+
+
+setMethod("show",
+          "EstimationTask",
+          function(object) {
+              cat("Task for estimating ",paste(object@metrics,collapse=",")," using\n")
+              print(object@method)
+          }
+         )
 
 
 
@@ -235,12 +231,12 @@ setMethod("summary",
           "EstimationResults",
           function(object) {
               cat('\n*** Summary of a ',
-                  switch(class(object@estTask),
-                         CvTask='Cross Validation',
-                         HldTask='Hold Out',
-                         McTask='Monte Carlo',
-                         BootTask='Bootstrap',
-                         LoocvTask='Loocv',
+                  switch(class(object@estTask@method),
+                         CvSettings='Cross Validation',
+                         HldSettings='Hold Out',
+                         McSettings='Monte Carlo',
+                         BootSettings='Bootstrap',
+                         LoocvSettings='Loocv',
                          ),
                   ' Estimation Experiment ***\n\n')
 
@@ -279,12 +275,12 @@ setMethod("plot",
               nstats <- ncol(x@iterationsScores)
               
               tit <- paste(x@workflow@name,
-                  switch(class(x@estTask),
-                         CvTask='Cross Validation',
-                         HldTask='Hold Out',
-                         LoocvTask='Leave One Out',
-                         BootTask='Bootstrap',
-                         McTask='Monte Carlo'
+                  switch(class(x@estTask@method),
+                         CvSettings='Cross Validation',
+                         HldSettings='Hold Out',
+                         LoocvSettings='Leave One Out',
+                         BootSettings='Bootstrap',
+                         McSettings='Monte Carlo'
                          ),
                            "estimation on",x@task@taskName,sep=" "
                   )
@@ -336,12 +332,12 @@ setMethod("plot",
                   }
               }
 
-              tlt <- paste(switch(class(x@tasks[[1]][[1]]@estTask),
-                                  CvTask='Cross Validation',
-                                  HldTask='Hold Out',
-                                  LoocvTask='Leave One Out',
-                                  BootTask='Bootstrap',
-                                  McTask='Monte Carlo'
+              tlt <- paste(switch(class(x@tasks[[1]][[1]]@estTask@method),
+                                  CvSettings='Cross Validation',
+                                  HldSettings='Hold Out',
+                                  LoocvSettings='Leave One Out',
+                                  BootSettings='Bootstrap',
+                                  McSettings='Monte Carlo'
                                   ),"Performance Estimation Results")
               plt <- ggplot(allRes,aes_string(y="score",x="sys")) +
                      geom_boxplot(aes_string(group="sys")) + ggtitle(tlt) +
@@ -358,12 +354,12 @@ setMethod("summary",
           "ComparisonResults",
           function(object) {
               cat('\n== Summary of a ',
-                  switch(class(object@tasks[[1]][[1]]@estTask),
-                         CvTask='Cross Validation',
-                         HldTask='Hold Out',
-                         LoocvTask='Leave One Out',
-                         BootTask='Bootstrap',
-                         McTask='Monte Carlo'
+                  switch(class(object@tasks[[1]][[1]]@estTask@method),
+                         CvSettings='Cross Validation',
+                         HldSettings='Hold Out',
+                         LoocvSettings='Leave One Out',
+                         BootSettings='Bootstrap',
+                         McSettings='Monte Carlo'
                          ),
                   'Performance Estimation Experiment ==\n\n')
               print(object@tasks[[1]][[1]]@estTask)
@@ -397,12 +393,12 @@ setMethod("show",
           "ComparisonResults",
           function(object) {
             cat('\n== ',
-                switch(class(object@tasks[[1]][[1]]@estTask),
-                       CvTask='Cross Validation',
-                       HldTask='Hold Out',
-                       BootTask='Bootstrap',
-                       LoocvTask='Leave One Out',
-                       McTask='Monte Carlo'
+                switch(class(object@tasks[[1]][[1]]@estTask@method),
+                       CvSettings='Cross Validation',
+                       HldSettings='Hold Out',
+                       BootSettings='Bootstrap',
+                       LoocvSettings='Leave One Out',
+                       McSettings='Monte Carlo'
                        ),
                 'Performance Estimation Experiment ==\n\n')
             print(object@tasks[[1]][[1]]@estTask)

@@ -42,7 +42,7 @@ topPerformer <- function(compRes,metric,task,max=FALSE) {
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-rankWorkflows <- function(compRes,top=min(5,length(workflowNames(res))),maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])) {
+rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])) {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
   if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])
   else if (length(maxs) != dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
