@@ -42,7 +42,7 @@ topPerformer <- function(compRes,metric,task,max=FALSE) {
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-rankWorkflows <- function(compRes,top=5,maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])) {
+rankWorkflows <- function(compRes,top=min(5,length(workflowNames(res))),maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])) {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
   if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])
   else if (length(maxs) != dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
@@ -100,7 +100,6 @@ pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
     ms <- metricNames(obj);   nms <- length(ms)
 
     if (missing(baseline))  # using the first workflow as baseline if none indicated
-#        baseline <- names(obj@tasks[[1]])[1]
         baseline <- topPerformer(obj,ms[1],ts[1])@name
 
     other <- setdiff(ws,baseline)
