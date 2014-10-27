@@ -224,12 +224,18 @@ standardWF <- function(form,train,test,
     ## Checking for learners that do not ouput as many predictions as test cases!
     ## (e.g. SVM from e1071!)
     trues <- responseValues(form,test)
-    if (length(ps) != length(trues)) {
+    if (NROW(ps) != length(trues)) {
         warning("standardWF:: less predictions than test cases, filling with NAs.")
-        t <- trues
-        t[] <- NA
-        t[names(ps)] <- ps
-        ps <- t
+        if (is.null(dim(ps))) {
+            t <- trues
+            t[] <- NA
+            t[names(ps)] <- ps
+            ps <- t
+        } else {
+            t <- matrix(NA,nrow=length(trues),ncol=ncol(ps),dimnames=list(names(trues),colnames(ps)))
+            t[names(ps),] <- ps
+            ps <- t
+        }
     }    
 
     ## Data post-processing stage

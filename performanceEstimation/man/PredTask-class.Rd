@@ -16,11 +16,16 @@
 \section{Slots}{
 	 \describe{
     \item{\code{formula}:}{Object of class \code{formula} containing
-      the formula representing the predictive task }
-    \item{\code{data}:}{Object coercible to class \code{data.frame} containing
-      the data of the problem }
-    \item{\code{name}:}{Object of class \code{character} containing an
-    internal name of the task}
+      the formula representing the predictive task. }
+    \item{\code{dataSource}:}{Object of class \code{data.frame} or
+      \code{character}. This will be used to know the object from which
+      data is to be fetched when necessary. }
+    \item{\code{taskName}:}{Optional object of class \code{character} containing
+      the ID of the predictive task }
+    \item{\code{type}:}{Optional object of class \code{character} containing
+      the type of the predictive task (it can be "regr", "class" or "ts"). }
+    \item{\code{target}:}{Optional object of class \code{character} containing the
+     name of the target variable.}
   }
 }
 \section{Methods}{
@@ -31,14 +36,16 @@
 }
 
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
 \seealso{
-	\code{\linkS4class{Workflow}}
+  \code{\linkS4class{Workflow}},
+  \code{\linkS4class{EstimationTask}},
+ \code{\link{performanceEstimation}}
 }
 \examples{
 showClass("PredTask")

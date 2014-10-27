@@ -24,11 +24,11 @@ setClassUnion("NameOrCall",c("call","name"))
 ## Definition
 ##
 setClass("PredTask",
-         representation(taskName="character",
-                        formula="formula",
-                        dataSource="NameOrCall",
-                        type="character",
-                        target="character")
+         slots=c(formula="formula",
+                 dataSource="NameOrCall",
+                 taskName="character",
+                 type="character",
+                 target="character")
          )
 
 
@@ -62,7 +62,7 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
       stop("PredTask:: time series task should have numeric target.",call.=FALSE)
   
   new("PredTask",
-      taskName=taskName,formula=form,dataSource=data,
+      formula=form,dataSource=data,taskName=taskName,
       type=taskType,
       target=deparse(form[[2]]))
 }
@@ -80,21 +80,16 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
 ## Definition
 ##
 setClass("Workflow",
-         representation(name="character",
-                        func="character",
-                        pars="list",
-                        deps="OptList"))
+         slots=c(name="character",
+             func="character",
+             pars="list",
+             deps="OptList"))
 
 
 
 ## --------------------------------------------------------------
-## Cnstructor
+## Constructor
 ##
-#Workflow <- function(func,...,wfID=func) {
-#    if (missing(func)) stop("\nYou need to provide the name of a function imple#menting the workflow.\n")
-#    fn <- if (is(func,"function")) deparse(substitute(func)) else func
-#    do.call("new",list("Workflow",name=wfID,func=fn,pars=list(...)))
-#}
 
 Workflow <- function(wfID,
                      learner,learner.pars=NULL,
@@ -165,8 +160,8 @@ Workflow <- function(wfID,
 ## Definition
 ##
 setClass("WFoutput",
-         representation(predictions   = "data.frame",   # a data.frame nTest x 2 (true,pred)
-                        extraInfo     = "list")     # list of whatever info the wf author wants
+         slots=c(predictions   = "data.frame",  # a data.frame nTest x 2 (true,pred)
+                 extraInfo     = "list")        # list of whatever info the wf author wants
 )
 
 
@@ -203,8 +198,8 @@ WFoutput <- function(rIDs,ts,ps,e=list()) {
 ## A class containing the common estimation settings
 ## ==============================================================
 setClass("EstCommon",
-         representation(seed='numeric',         # seed of the random generator
-                        dataSplits='OptMatrix') # user supplied data splits
+         slots=c(seed='numeric',         # seed of the random generator
+                 dataSplits='OptList')   # user supplied data splits
          )
 
 
@@ -220,9 +215,9 @@ setClass("EstCommon",
 ## Definition
 ##
 setClass("CvSettings",
-         representation(nReps='numeric',      # nr. of repetitions
-                        nFolds='numeric',     # nr. of folds of each rep.
-                        strat='logical'),     # is the sampling stratified?
+         slots=c(nReps='numeric',      # nr. of repetitions
+                 nFolds='numeric',     # nr. of folds of each rep.
+                 strat='logical'),     # is the sampling stratified?
          contains="EstCommon"
          )
 
@@ -234,8 +229,8 @@ CvSettings <- function(nReps=1,nFolds=10,
                        seed=1234,strat=FALSE,
                        dataSplits=NULL) {
     new("CvSettings",
-        nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
-        nFolds=if (is.null(dataSplits)) nFolds else ncol(dataSplits[[1]]),
+        nReps=nReps,
+        nFolds=if (is.null(dataSplits)) nFolds else length(dataSplits)/nReps,
         seed=seed,strat=strat,dataSplits=dataSplits)
 }
 
@@ -251,9 +246,9 @@ CvSettings <- function(nReps=1,nFolds=10,
 ## Definition
 ##
 setClass("HldSettings",
-         representation(nReps='numeric', # number of repetitions
-                        hldSz='numeric', # the size (0..1) of the holdout
-                        strat='logical'),# is the sampling stratified?
+         slots=c(nReps='numeric', # number of repetitions
+                 hldSz='numeric', # the size (0..1) of the holdout
+                 strat='logical'),# is the sampling stratified?
          contains="EstCommon"
          )
 
@@ -265,8 +260,8 @@ HldSettings <- function(nReps=1,hldSz=0.3,
                         seed=1234,strat=FALSE,
                         dataSplits=NULL) {
     new("HldSettings",
-        nReps=if (is.null(dataSplits)) nReps else ncol(dataSplits),
-        hldSz=if (is.null(dataSplits)) hldSz else sum(dataSplits[,1])/nrow(dataSplits),
+        nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
+        hldSz=if (is.null(dataSplits)) hldSz else length(dataSplits[[1]]),
         seed=seed,strat=strat,dataSplits=dataSplits)
 }
 
@@ -283,7 +278,7 @@ HldSettings <- function(nReps=1,hldSz=0.3,
 ## Definition
 ##
 setClass("LoocvSettings",
-         representation(verbose='logical'), # function used to evalute preds
+         slots=c(verbose='logical'), # function used to evalute preds
          contains="EstCommon"
          )
 
@@ -308,8 +303,8 @@ LoocvSettings <- function(seed=1234,verbose=FALSE,dataSplits=NULL)
 ## Definition
 ##
 setClass("BootSettings",
-         representation(type='character', # type of boostrap ("e0" or ".632")
-                        nReps='numeric'), # number of repetitions
+         slots=c(type='character', # type of boostrap ("e0" or ".632")
+                 nReps='numeric'), # number of repetitions
          contains="EstCommon"
          )
 
@@ -320,7 +315,7 @@ setClass("BootSettings",
 BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
      new("BootSettings",
          type=type,
-         nReps=if (is.null(dataSplits)) nReps else ncol(dataSplits),
+         nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
          seed=seed,dataSplits=dataSplits)
 }
 
@@ -337,9 +332,9 @@ BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
 ## Definition
 ##
 setClass("McSettings",
-         representation(nReps='numeric',
-                        szTrain='numeric',
-                        szTest='numeric'),
+         slots=c(nReps='numeric',
+                 szTrain='numeric',
+                 szTest='numeric'),
          contains="EstCommon"
          )
 
@@ -350,7 +345,7 @@ setClass("McSettings",
 McSettings <- function(nReps=10,szTrain=0.25,szTest=0.25,
                        seed=1234,dataSplits=NULL)
     new("McSettings",
-        nReps= if (is.null(dataSplits)) nReps else ncol(dataSplits),
+        nReps= if (is.null(dataSplits)) nReps else length(dataSplits),
         szTrain=szTrain,szTest=szTest,
         seed=seed,dataSplits=dataSplits)
 
@@ -378,10 +373,10 @@ setClassUnion("EstimationSettings",
 ## the estimation methodology to use
 ## ==============================================================
 setClass("EstimationTask",
-         representation(metrics='character',        # the metrics to be estimated
-                        evaluator='character',      # function used to calculate the metrics
-                        evaluator.pars='OptList',   # pars to this function
-                        method="EstimationSettings" # the estimation method to use
+         slots=c(metrics='character',        # the metrics to be estimated
+                 evaluator='character',      # function used to calculate the metrics
+                 evaluator.pars='OptList',   # pars to this function
+                 method="EstimationSettings" # the estimation method to use
          )
          )
 
@@ -412,12 +407,12 @@ EstimationTask <- function(metrics,
 ## Constructor
 ##
 setClass("EstimationResults",
-         representation(task             = "PredTask",
-                        workflow         = "Workflow",
-                        estTask          = "EstimationTask",
-                        iterationsScores = "matrix",   # nIts x nStats
-                        iterationsInfo   = "list"      # list of nIts lists
-                        )
+         slots=c(task             = "PredTask",
+                 workflow         = "Workflow",
+                 estTask          = "EstimationTask",
+                 iterationsScores = "matrix",   # nIts x nStats
+                 iterationsInfo   = "list"      # list of nIts lists with comps preds, info and train
+                )
          )
 
 
@@ -430,11 +425,10 @@ EstimationResults <- function(t,w,et,sc,e) {
   o@workflow         <- w
   o@estTask          <- et
   o@iterationsScores <- sc
-#  o@iterationsPreds <- p
   ## classification tasks, code back predictions to class labels
-  if (!is.null(p) && is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
-      for (i in 1:length(o@iterationsPreds))
-          o@iterationsInfo[[i]]$preds[,"predicted"] <- factor(o@iterationsInfo[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,eval(t@dataSource))))
+  if (is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
+      for (i in 1:length(e))
+          e[[i]]$preds[,"predicted"] <- factor(e[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,eval(t@dataSource))))
   }
   o@iterationsInfo  <- e
   o

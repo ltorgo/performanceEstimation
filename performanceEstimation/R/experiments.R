@@ -163,7 +163,7 @@ cvEstimates <- function(wf,task,sets) {
         } else {
           out.fold <- ((i-1)*n.each.part+1):(i*n.each.part)
         }
-      } else out.fold <- outFold(sets@method@dataSplits,i,r)
+      } else out.fold <- outFold(sets@method@dataSplits,itN)
       
       it.res <- runWorkflow(wf,
                             task@formula,
@@ -414,16 +414,23 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
     if (!userSplit) {
       set.seed(sets@method@seed*r)
       idx <- sample(n,n,replace=T)
-    } else idx <- (1:n)[-outFold(sets@method@dataSplits,r)]
-    
-    it.res <- runWorkflow(wf,
-                          task@formula,
-                          eval(task@dataSource)[idx,],
-                          eval(task@dataSource)[-idx,])
+      it.res <- runWorkflow(wf,
+                            task@formula,
+                            eval(task@dataSource)[idx,],
+                            eval(task@dataSource)[-idx,])
+      itsInfo[[r]] <- list(preds=it.res@predictions,
+                           info=it.res@extraInfo,
+                           train=idx)
+    } else {
+      it.res <- runWorkflow(wf,
+                            task@formula,
+                            eval(task@dataSource)[outFold(sets@method@dataSplits,r,"train"),],
+                            eval(task@dataSource)[outFold(sets@method@dataSplits,r),])
+      itsInfo[[r]] <- list(preds=it.res@predictions,
+                           info=it.res@extraInfo,
+                           train=outFold(sets@method@dataSplits,r,"train"))
 
-    itsInfo[[r]] <- list(preds=it.res@predictions,
-                         info=it.res@extraInfo,
-                         train=idx)
+    }
       
   }
   cat('\n')
@@ -520,7 +527,6 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
 
   ## Did the user supplied the data splits for all  repetitions?
   userSplit <- !is.null(mcSet@method@dataSplits)
-  
 
   itsInfo <- vector("list",mcSet@method@nReps)
 
@@ -531,8 +537,8 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
       test.size <- if (mcSet@method@szTest < 1) as.integer(n*mcSet@method@szTest) else mcSet@method@szTest
       if (n-test.size+1 <= train.size+1) stop('mcEstimates:: Invalid train/test sizes.',call.=FALSE)
   } else {
-      train.size <- NROW(mcSet@method@dataSplits[mcSet@method@dataSplits[,1] == "TRAIN" & mcSet@method@dataSplits[,3]==1 & mcSet@method@dataSplits[,4]==1,2])
-      test.size <- NROW(mcSet@method@dataSplits[mcSet@method@dataSplits[,1] == "TEST" & mcSet@method@dataSplits[,3]==1 & mcSet@method@dataSplits[,4]==1,2])
+      train.size <- length(mcSet@method@dataSplits[[1]][[1]]$train)
+      test.size <- length(mcSet@method@dataSplits[[1]][[1]]$test)
   }
   
   set.seed(mcSet@method@seed)
@@ -541,7 +547,7 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
       selection.range <- (train.size+1):(n-test.size+1)
       starting.points <- sort(sample(selection.range,mcSet@method@nReps))
   } else {
-      starting.points <- sapply(1:mcSet@method@nReps,function(r) mcSet@method@dataSplits[mcSet@method@dataSplits[,1] == "TEST" & mcSet@method@dataSplits[,3]==1 & mcSet@method@dataSplits[,4]==r,2][1])
+      starting.points <- sapply(mcSet@method@dataSplits[[1]], function(d) d$test[1])
   }
 
 
@@ -560,8 +566,8 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
     } else {
         rep.res <- runWorkflow(wf,
                                task@formula,
-                               eval(task@dataSource)[mcSet@method@dataSplits[mcSet@method@dataSplits[,1] == "TRAIN" & mcSet@method@dataSplits[,3]==1 & mcSet@method@dataSplits[,4]==it,2],],
-                               eval(task@dataSource)[mcSet@method@dataSplits[mcSet@method@dataSplits[,1] == "TEST" & mcSet@method@dataSplits[,3]==1 & mcSet@method@dataSplits[,4]==it,2],])
+                               eval(task@dataSource)[mcSet@method@dataSplits[[1]][[it]]$train,],
+                               eval(task@dataSource)[mcSet@method@dataSplits[[1]][[it]]$test,])
 
     }
 
@@ -598,11 +604,11 @@ responseValues <- function(formula,data,na=NULL) model.response(model.frame(form
 
 ##outFold <- function(ds,f,r)
 ##  unlist(subset(ds,ds[,1] == "TEST" & ds[,3]==f & ds[,4]==r,colnames(ds)[2]))
-outFold <- function(ds,f,r=NULL)  {
-    if (is.null(r)) which(ds[,f]==1)
-    else which(ds[[r]][,f]==1)
-}
-
+##outFold <- function(ds,f,r=NULL)  {
+##    if (is.null(r)) which(ds[,f]==1)
+##    else which(ds[[r]][,f]==1)
+##}
+outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] else ds[[it]]
 
 .scores2summary <- function(obj)
     apply(obj@iterationsScores,2,function(x)

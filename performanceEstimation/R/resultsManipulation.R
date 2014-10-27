@@ -63,7 +63,7 @@ mergeEstimationRes <- function(...,by='tasks') {
           s[[1]] <- c(s[[1]],e)
       
   }
-  return(s[[1]])
+  return(ComparisonResults(s[[1]]))
 }
 
 # =====================================================

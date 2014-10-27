@@ -31,13 +31,18 @@
 
 \section{Slots}{
   \describe{
+    \item{\code{name}:}{An optional string containing an
+      internal name of the workflow (a kind of ID)}
     \item{\code{func}:}{A character string containing the name of the R
       function that implements the workflow.}
     \item{\code{pars}:}{A named list containing the parameters and
       respective values to be used when calling the workflow (defaulting
       to the empty list).}
-    \item{\code{name}:}{An optional string containing an
-    internal name of the workflow (a kind of ID)}
+    \item{\code{deps}:}{An optional named list with components
+      "packages" and "scripts" each containing a vector of names of the
+      required packages and scripts, respectively, for the workflow to be
+      executable. }
+
   }
 }
 \section{Methods}{
@@ -50,22 +55,31 @@
   }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
-\seealso{\code{\linkS4class{PredTask}},  \code{\link{runWorkflow}}
+\seealso{
+  \code{\linkS4class{PredTask}},
+  \code{\linkS4class{EstimationTask}},
+  \code{\link{runWorkflow}}
 }
 \examples{
 showClass("Workflow")
 
-w1 <- Workflow("mySolution",par1="gaussian",k=10)
+w1 <- Workflow(user="mySolution",user.pars=list(par1="gaussian",k=10))
 w1
 
-w2 <- Workflow("xpto",nmodels=400,ws=1/10,wfID="ensemble420")
-w2
+Workflow(learner="randomForest",learner.pars=list(ntree=420),wfID="rf420")
+
+Workflow(learner="svm",
+         pre=c("centralImp","scale"),
+         post="onlyPos",
+         deps=list(packages=c("e1071"),scripts=c()))
+
+Workflow(learner="rpart",fullOutput=TRUE)
 
 }
 \keyword{classes}

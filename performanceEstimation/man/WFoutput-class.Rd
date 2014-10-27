@@ -26,16 +26,20 @@
 
 \section{Slots}{
   \describe{
-    \item{\code{scores}:}{A named vector with the scores of the metrics
-  being estimated.}
-    \item{\code{predictions}:}{A matrix with two columns, the first with
+    \item{\code{predictions}:}{A \code{data.frame} with at least two columns, the first with
   the true values of the target variable of all  test cases and the
-  second with the predicted values for these cases. This slot is
-  optional and defaults to an empty matrix.}
-    \item{\code{extraInfo}:}{An optional list (defaulting to the empty
-  list) containing any other information the creator of the workflow
-  deems as important to return (e.g. the model obtained with the
-  training data).}
+  second with the predicted values for these cases. In case of
+  probabilistic classifiers it may also contain as many further columns
+  as there are class labels, each with the probability of the respective
+  class label for the test case in the respective row. The row names of
+  this data.frame are the test cases IDs.}
+    \item{\code{extraInfo}:}{A list with extra information returned from
+  the execution of the workflow. This is controled by the workflow
+  function. The standard workflow will at least return a component named
+  \code{times} with the traiun, test and total times of executing the
+  workflow. Setting \code{fullOutput=TRUE} when creating the workflow
+  will generate several other components with information from the
+  different steps of the standard workflow.}
   }
 }
 \section{Methods}{
@@ -48,13 +52,19 @@
     }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
-\seealso{\code{\linkS4class{Workflow}},  \code{\link{workflowInformation}},  \code{\link{workflowPredictions}}, \code{\link{runWorkflow}}
+\seealso{
+  \code{\linkS4class{Workflow}},
+  \code{\link{workflowInformation}},
+  \code{\link{workflowPredictions}},
+  \code{\link{runWorkflow}},
+  \code{\link{standardWF}},
+  \code{\link{timeseriesWF}}
 }
 \examples{
 showClass("WFoutput")
