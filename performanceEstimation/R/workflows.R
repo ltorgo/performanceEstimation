@@ -28,7 +28,8 @@
 #
 
 workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
-    if (missing(wf)) wf <- "standardWF"
+    vars <- list(...)
+    if (missing(wf)) wf <- if ("learner" %in% names(vars)) "standardWF" else vars[['user']]
     wf <- if (is(wf,"function")) deparse(substitute(wf)) else wf
     if (missing(varsRootName)) varsRootName <- wf
 
@@ -38,7 +39,6 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
     ## unfolding the parameters hidden inside the special parameters
 
 
-    vars <- list(...)
     if (!length(vars)) {
         ##vars <- c(Workflow(wf,list()))
         vars <- c(Workflow(wf))
