@@ -159,7 +159,7 @@ cvEstimates <- function(wf,task,sets) {
         if (sets@method@strat) {
           out.fold <- c()
           for(x in seq(along=levels(b))) 
-            if (bct[x]) out.fold <- c(out.fold,which(b == levels(b)[x])[((i-1)*bct[x]+1):((i-1)*bct[x]+bct[x])])
+            if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[((i-1)*bct[x]+1):((i-1)*bct[x]+bct[x])])
         } else {
           out.fold <- ((i-1)*n.each.part+1):(i*n.each.part)
         }
@@ -269,7 +269,7 @@ hldEstimates <- function(wf,task,sets) {
       if (sets@method@strat) {
         out.fold <- c()
         for(x in seq(along=levels(b))) 
-          if (bct[x]) out.fold <- c(out.fold,which(b == levels(b)[x])[1:bct[x]])
+          if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[1:bct[x]])
       } else {
         out.fold <- 1:n.test
       }
