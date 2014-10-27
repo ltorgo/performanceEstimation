@@ -33,15 +33,14 @@
       whether the sampling should or not be stratefied (defaulting to FALSE). }
     \item{\code{seed}:}{Object of class \code{numeric} with the
       random number generator seed (defaulting to 1234). }
-    \item{\code{dataSplits}:}{Object of class \code{matrix} or \code{NULL}
-      containing the data splits to use on each repetition of the
-      holdout experiment (defaulting to \code{NULL}). This  matrix
-      should have as many rows as
-      there are cases in the data sample used in the experiment, and as
-      many columns as there are repetitions in the experiment. Each column of
-      this matrix should contain 1's and 0's, with 1's on rows that are
-      part of the test set of the corresponding repetition, and 0's in the
-      rows that are to be used as training cases in that repetition.   }
+    \item{\code{dataSplits}:}{Object of class \code{list} 
+      containing the data splits to use on each repetition of a
+      \code{nReps} Holdout experiment (defaulting to \code{NULL}). This list
+      should contain \code{nReps} elements. Each element should be a
+      vector with the row ids of the test set of the respective
+      iteration.  On all these
+      iterations the training set will be formed by the ids not
+      appearing in the test set. }
   }
 }
 \section{Extends}{
@@ -70,17 +69,16 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 \examples{
 showClass("HldSettings")
 
+## 10 repetitions of a holdout experiment leaving on each repetition
+## 20\% of the cases randomly chosen as test set (the holdout)
 h1 <- HldSettings(nReps=10,hldSz=0.2,strat=TRUE)
 h1
 
-## small example illustrating the format of user supplied data splits
-## it assumes that the source data is formed by 10 cases and that we
-## will be using two repetitions of a holdout process were half of the
-## rows are used for training and the remaining for testing
-h2 <- HldSettings(dataSplits=matrix(c(rep(0,5),rep(1,5),
-                                      rep(1,5),rep(0,5)),
-                                    nrow=10,ncol=2))
+## Small example illustrating the format of user supplied data splits
+## in this case for 3 repetitions of a Holdout process where each test
+## set has 10 cases
+h2 <- HldSettings(dataSplits=list(1:10,11:20,21:30))
 h2
-h2@dataSplits
+
 }
 \keyword{classes}

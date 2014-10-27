@@ -138,7 +138,7 @@ setMethod("show","LoocvSettings",
               userSplit <- !is.null(object@dataSplits)
               cat('LOOCV experiment\n')
               if (!userSplit)
-                  cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and seed = ',object@seed,'\n')
+                  cat('\t Run with seed = ',object@seed,'\n')
               else
                   cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and user-supplied data splits\n')
          })

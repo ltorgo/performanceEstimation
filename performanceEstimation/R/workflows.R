@@ -361,6 +361,9 @@ standardPRE <- function(form,train,test,steps,...) {
                 if (any(idx <- is.na(train[[i]]))) train[[i]][idx] <- cval
                 if (any(idx <- is.na(test[[i]]))) test[[i]][idx] <- cval
             }
+        } else if (s == "na.omit") {
+            train <- na.omit(train)
+            test <- na.omit(test)
         } else {
             user.pre <- do.call(s,c(list(form,train,test),...))
             train <- user.pre$train

@@ -16,19 +16,15 @@
 }
 \section{Slots}{
   \describe{
-    \item{\code{verbose}:}{Object of class \code{logical} indicating
-      whether the execution of the experiments should be verbose (defaulting to FALSE). }
     \item{\code{seed}:}{Object of class \code{numeric} with the
       random number generator seed (defaulting to 1234). }
-    \item{\code{dataSplits}:}{Object of class \code{matrix} or \code{NULL}
-      containing the data splits to use on each repetition of the
-      holdout experiment (defaulting to \code{NULL}). This  matrix
-      should have as many rows as
-      there are cases in the data sample used in the experiment, and as
-      many columns as there are repetitions in the experiment. Each column of
-      this matrix should contain 1's and 0's, with 1's on rows that are
-      part of the test set of the corresponding repetition, and 0's in the
-      rows that are to be used as training cases in that repetition.   }
+    \item{\code{dataSplits}:}{Object of class \code{list} 
+      containing the data splits to use on each repetition of a
+      leave one out cross validation experiment (defaulting to \code{NULL}). This list
+      should contain as many elements as there are cases in the task
+      data set. Each element should be the row id of the test case of the respective
+      iteration.  On all these
+      iterations the training set will be formed by the remaining ids. }
   }
 }
 \section{Extends}{
@@ -57,7 +53,8 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 \examples{
 showClass("LoocvSettings")
 
-s <- LoocvSettings(verbose=TRUE)
+s <- LoocvSettings()
 s
+
 }
 \keyword{classes}

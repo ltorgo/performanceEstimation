@@ -36,7 +36,7 @@
     \item{\code{extraInfo}:}{A list with extra information returned from
   the execution of the workflow. This is controled by the workflow
   function. The standard workflow will at least return a component named
-  \code{times} with the traiun, test and total times of executing the
+  \code{times} with the train, test and total times of executing the
   workflow. Setting \code{fullOutput=TRUE} when creating the workflow
   will generate several other components with information from the
   different steps of the standard workflow.}

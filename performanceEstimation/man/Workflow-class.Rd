@@ -81,5 +81,18 @@ Workflow(learner="svm",
 
 Workflow(learner="rpart",fullOutput=TRUE)
 
+## A user-defined workflow
+myWF <- function(form,train,test,wL=0.5,...) {
+    require(rpart,quietly=TRUE)
+    ml <- lm(form,train)
+    mr <- rpart(form,train)
+    pl <- predict(ml,test)
+    pr <- predict(mr,test)
+    ps <- wL*pl+(1-wL)*pr
+    WFoutput(rownames(test),responseValues(form,test),ps)
+}
+
+wu <- Workflow(user="myWF",user.pars=list(wL=0.6))
+
 }
 \keyword{classes}

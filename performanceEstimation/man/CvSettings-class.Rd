@@ -31,16 +31,17 @@
       whether the sampling should or not be stratified (defaulting to FALSE). }
     \item{\code{seed}:}{Object of class \code{numeric} with the
       random number generator seed (defaulting to 1234). }
-    \item{\code{dataSplits}:}{Object of class \code{list} or \code{NULL}
+    \item{\code{dataSplits}:}{Object of class \code{list} 
       containing the data splits to use on each repetition of a
-      CV experiment (defaulting to \code{NULL}). This list
-      should contain as many elements as there are repetitions of the CV
-      experiment. Each element should be a matrix with as many rows as
-      there are cases in the data sample used in the experiment, and as
-      many columns as there are folds in CV experiment. Each column of
-      this matrix should contain 1's and 0's, with 1's on rows that are
-      part of the test set of the corresponding fold, and 0's in the
-      rows that are to be used as training cases in that fold. }
+      k-folds CV experiment (defaulting to \code{NULL}). This list
+      should contain \code{nReps x nFolds} elements. Each element should be a
+      vector with the row ids of the test set of the respective
+      iteration. For instance, on a 3 x 10-fold CV experiment the 10th
+      element should contain the ids of the test cases of the 10th fold
+      of the first repetition and the 11th element the ids of the test
+      cases on the 1st fold of the 2nd repetition. On all these
+      iterations the training set will be formed by the ids not
+      appearing in the test set. }
   }
 }
 \section{Extends}{
@@ -69,15 +70,16 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 \examples{
 showClass("CvSettings")
 
+## the defaults (1 x 10-fold CV)
+s <- CvSettings()
+
+## stratified 2 x 5-fold CV
 s1 <- CvSettings(nReps=2,nFolds=5,strat=TRUE)
 
-## small example illustrating the format of user supplied data splits
-## it assumes that the source data is formed by 10 cases and that we
-## will be using a single repetition of a 2-fold CV process
-s2 <- CvSettings(dataSplits=list(matrix(c(rep(0,5),rep(1,5),
-                                          rep(1,5),rep(0,5)),
-                                        nrow=10,ncol=2)))
+## Small example illustrating the format of user supplied data splits.
+## This could be a 3-fold CV process of a data set with 30 cases
+s2 <- CvSettings(dataSplits=list(1:10,11:20,21:30))
 s2
-s2@dataSplits
+
 }
 \keyword{classes}

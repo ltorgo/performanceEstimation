@@ -278,16 +278,15 @@ HldSettings <- function(nReps=1,hldSz=0.3,
 ## Definition
 ##
 setClass("LoocvSettings",
-         slots=c(verbose='logical'), # function used to evalute preds
          contains="EstCommon"
          )
 
 
 ## --------------------------------------------------------------
 ## constructor
-LoocvSettings <- function(seed=1234,verbose=FALSE,dataSplits=NULL)
+LoocvSettings <- function(seed=1234,dataSplits=NULL)
   new("LoocvSettings",
-      seed=seed,verbose=verbose,
+      seed=seed,
       dataSplits=dataSplits)
 
 
