@@ -29,10 +29,10 @@
     \item{\code{hldSz}:}{Object of class \code{numeric} with the
       percentage (a number between 0 and 1) of cases to use as hold out
       (defaulting to 0.3).}
-    \item{\code{seed}:}{Object of class \code{numeric} with the
-      random number generator seed (defaulting to 1234). }
     \item{\code{strat}:}{Object of class \code{logical} indicating
       whether the sampling should or not be stratefied (defaulting to FALSE). }
+    \item{\code{seed}:}{Object of class \code{numeric} with the
+      random number generator seed (defaulting to 1234). }
     \item{\code{dataSplits}:}{Object of class \code{matrix} or \code{NULL}
       containing the data splits to use on each repetition of the
       holdout experiment (defaulting to \code{NULL}). This  matrix
@@ -45,6 +45,7 @@
   }
 }
 \section{Extends}{
+Class \code{\linkS4class{EstCommon}}, directly.
 Class \code{\linkS4class{EstimationSettings}}, directly.
 }
 \section{Methods}{
@@ -54,13 +55,17 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 	 }
        }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
    \code{\linkS4class{McSettings}},
-  \code{\linkS4class{LoocvSettings}}, \code{\linkS4class{BootSettings}},\code{\linkS4class{CvSettings}}, \code{\linkS4class{EstimationSettings}}
+   \code{\linkS4class{LoocvSettings}},
+   \code{\linkS4class{BootSettings}},
+   \code{\linkS4class{CvSettings}},
+   \code{\linkS4class{EstimationSettings}},
+   \code{\linkS4class{EstimationTask}}
 }
 \examples{
 showClass("HldSettings")

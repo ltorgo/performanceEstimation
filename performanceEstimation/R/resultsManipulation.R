@@ -27,40 +27,40 @@ mergeEstimationRes <- function(...,by='tasks') {
       (! by %in% 1:3))
     stop('mergeEstimationRes:: invalid value on "by" argument!')
   for(i in 2:length(s)) 
-    if (!identical(s[[i]]@tasks[[1]][[1]]@estTask@method,s[[1]]@tasks[[1]][[1]]@estTask@method))
+    if (!identical(s[[i]][[1]][[1]]@estTask@method,s[[1]][[1]][[1]]@estTask@method))
       stop('mergeEstimationRes:: trying to join performance estimation objects with different estimation settings!')
 
   if (!is.numeric(by))
     by <- match(by,c('metrics','workflows','tasks'))
 
   if (by == 1) {
-      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
+      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]),names(x)))
       if (!all(sameTasks)) stop("mergeEstimationRes:: to join by metrics all objects need to address the same tasks!")
-      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
+      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]][[1]]),names(x[[1]])))
       if (!all(sameWFs)) stop("mergeEstimationRes:: to join by metrics all objects need to use the same workflows!")
       for(e in s[2:length(s)]) 
-          for(t in 1:length(e@tasks))
-              for(w in 1:length(e@tasks[[t]])) {
-                  s[[1]]@tasks[[t]][[w]]@iterationsScores <- cbind(s[[1]]@tasks[[t]][[w]]@iterationsScores,
-                                                                   e@tasks[[t]][[w]]@iterationsScores)
-                  s[[1]]@tasks[[t]][[w]]@estTask@metrics <- c(s[[1]]@tasks[[t]][[w]]@estTask@metrics,e@tasks[[t]][[w]]@estTask@metrics)
+          for(t in 1:length(e))
+              for(w in 1:length(e[[t]])) {
+                  s[[1]][[t]][[w]]@iterationsScores <- cbind(s[[1]][[t]][[w]]@iterationsScores,
+                                                                   e[[t]][[w]]@iterationsScores)
+                  s[[1]][[t]][[w]]@estTask@metrics <- c(s[[1]][[t]][[w]]@estTask@metrics,e[[t]][[w]]@estTask@metrics)
               }
 
   } else if (by == 2) {
-      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks),names(x@tasks)))
+      sameTasks <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]),names(x)))
       if (!all(sameTasks)) stop("mergeEstimationRes:: to join by workflows all objects need to address the same tasks!")
-      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
+      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]][[1]][[1]]@iterationsScores),colnames(x[[1]][[1]]@iterationsScores)))
       if (!all(sameStats)) stop("mergeEstimationRes:: to join by workflows all objects need to estimate the same metrics!")
       for(e in s[2:length(s)]) 
-          for(t in 1:length(e@tasks))
-              s[[1]]@tasks[[t]] <- c(s[[1]]@tasks[[t]],e@tasks[[t]])
+          for(t in 1:length(e))
+              s[[1]][[t]] <- c(s[[1]][[t]],e[[t]])
   } else if (by == 3) {
-      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]]@tasks[[1]]),names(x@tasks[[1]])))
+      sameWFs <- sapply(s[2:length(s)],function(x) identical(names(s[[1]][[1]]),names(x[[1]])))
       if (!all(sameWFs)) stop("mergeEstimationRes:: to join by tasks all objects need to use the same workflows!")
-      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]]@tasks[[1]][[1]]@iterationsScores),colnames(x@tasks[[1]][[1]]@iterationsScores)))
+      sameStats <- sapply(s[2:length(s)],function(x) identical(colnames(s[[1]][[1]][[1]]@iterationsScores),colnames(x[[1]][[1]]@iterationsScores)))
       if (!all(sameStats)) stop("mergeEstimationRes:: to join by tasks all objects need to estimate the same metrics!")
       for(e in s[2:length(s)]) 
-          s[[1]]@tasks <- c(s[[1]]@tasks,e@tasks)
+          s[[1]] <- c(s[[1]],e)
       
   }
   return(s[[1]])
@@ -72,9 +72,9 @@ mergeEstimationRes <- function(...,by='tasks') {
 # =====================================================
 # Luis Torgo, Aug 2013
 # =====================================================
-taskNames      <- function(o) names(o@tasks)
-workflowNames  <- function(o) names(o@tasks[[1]])
-metricNames    <- function(o) o@tasks[[1]][[1]]@estTask@metrics
+taskNames      <- function(o) names(o)
+workflowNames  <- function(o) names(o[[1]])
+metricNames    <- function(o) o[[1]][[1]]@estTask@metrics
 
 
 
@@ -87,7 +87,7 @@ metricNames    <- function(o) o@tasks[[1]][[1]]@estTask@metrics
 getIterationsScores <- function(results,workflow,task) {
   if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
 
-  results@tasks[[task]][[workflow]]@iterationsScores
+  results[[task]][[workflow]]@iterationsScores
 }
 
 
@@ -95,11 +95,11 @@ getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
     if ((missing(rep) || missing(fold)) && missing(it))
         stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
     if (!missing(it)) {
-        if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]$info
+        if (it > nrow(obj[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[it]]$info
     } else {
-        if (rep >  obj@tasks[[task]][[workflow]]@estTask@method@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@method@nFolds+fold]]$info
+        if (rep >  obj[[task]][[workflow]]@estTask@method@nReps || fold > obj[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]]$info
     }
 }
 
@@ -107,11 +107,11 @@ getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
     if ((missing(rep) || missing(fold)) && missing(it))
         stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
     if (!missing(it)) {
-        if (it > nrow(obj@tasks[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj@tasks[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[it]]$preds
+        if (it > nrow(obj[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[it]]$preds
     } else {
-        if (rep >  obj@tasks[[task]][[workflow]]@estTask@method@nReps || fold > obj@tasks[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj@tasks[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj@tasks[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
-        obj@tasks[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj@tasks[[task]][[workflow]]@estTask@method@nFolds+fold]]$preds
+        if (rep >  obj[[task]][[workflow]]@estTask@method@nReps || fold > obj[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]]$preds
     }
 }
 
@@ -125,7 +125,7 @@ getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
 # =====================================================
 estimationSummary <- function(results,workflow,task) {
   if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
-  .scores2summary(results@tasks[[task]][[workflow]])
+  .scores2summary(results[[task]][[workflow]])
 }
   
 

@@ -12,13 +12,17 @@
 No methods defined with class "EstimationSettings" in the signature.
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\linkS4class{CvSettings}},   \code{\linkS4class{McSettings}},
-  \code{\linkS4class{LoocvSettings}}, \code{\linkS4class{HldSettings}},\code{\linkS4class{BootSettings}}
+  \code{\linkS4class{CvSettings}},
+  \code{\linkS4class{McSettings}},
+  \code{\linkS4class{LoocvSettings}},
+  \code{\linkS4class{HldSettings}},
+  \code{\linkS4class{BootSettings}},
+   \code{\linkS4class{EstimationTask}}
 }
 \examples{
 showClass("EstimationSettings")

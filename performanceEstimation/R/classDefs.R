@@ -454,14 +454,11 @@ EstimationResults <- function(t,w,et,sc,e) {
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("ComparisonResults",representation(tasks="list"))
+setClass("ComparisonResults",contains="list")
 
 ## --------------------------------------------------------------
 ## constructor
 ##
-ComparisonResults <- function(t) {
-  o <- new("ComparisonResults")
-  o@tasks <- t
-  o
-}
+ComparisonResults <- function(t) new("ComparisonResults",t)
+
 

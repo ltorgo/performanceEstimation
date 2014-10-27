@@ -3,10 +3,10 @@
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]),digs=3) {
+topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),digs=3) {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
-  if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])
-  else if (length(maxs) != dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
+  if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes[[1]][[1]]@iterationsScores)[2])
+  else if (length(maxs) != dim(compRes[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
 
   avgScs <- .statScores(compRes,'avg')
   bs <- lapply(avgScs,function(t) {
@@ -42,10 +42,10 @@ topPerformer <- function(compRes,metric,task,max=FALSE) {
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])) {
+rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2])) {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
-  if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2])
-  else if (length(maxs) != dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
+  if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes[[1]][[1]]@iterationsScores)[2])
+  else if (length(maxs) != dim(compRes[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
 
   avgScs <- .statScores(compRes,'avg')
   lapply(avgScs,function(t) {
@@ -66,7 +66,7 @@ rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs
 metricsSummary <- function(compRes,summary='mean',...) {
   if (!inherits(compRes,'ComparisonResults'))
     stop(compRes,' needs to be of class "ComparisonResults".\n')
-  lapply(compRes@tasks,function(t)
+  lapply(compRes,function(t)
          sapply(t,function(w)
                 apply(w@iterationsScores,2,function(x) do.call(summary,list(x,...)))
                 ))
@@ -115,22 +115,22 @@ pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
 
     for(t in ts) {
         ## get the results of the baseline
-        res[baseline,1:2,,t] <- t(apply(obj@tasks[[t]][[baseline]]@iterationsScores,2,
+        res[baseline,1:2,,t] <- t(apply(obj[[t]][[baseline]]@iterationsScores,2,
                              function(x) c(AvgScore=mean(x,na.rm=TRUE),SdScore=sd(x,na.rm=TRUE))))
         for(m in ms) {
-            res[baseline,"AvgScore",m,t] <- mean(obj@tasks[[t]][[baseline]]@iterationsScores[,m],
+            res[baseline,"AvgScore",m,t] <- mean(obj[[t]][[baseline]]@iterationsScores[,m],
                                                  na.rm=TRUE)
-            res[baseline,"SdScore",m,t] <- sd(obj@tasks[[t]][[baseline]]@iterationsScores[,m],
+            res[baseline,"SdScore",m,t] <- sd(obj[[t]][[baseline]]@iterationsScores[,m],
                                               na.rm=TRUE)
             ## get the results of the others and compare
             for(o in other) {
-                #oRes <- obj@tasks[[t]][[o]]@iterationsScores
+                #oRes <- obj[[t]][[o]]@iterationsScores
 
-                a <- mean(obj@tasks[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
-                s <- sd(obj@tasks[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
+                a <- mean(obj[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
+                s <- sd(obj[[t]][[o]]@iterationsScores[,m],na.rm=TRUE)
                 tst <- try(w <- do.call(t.func,
-                                        list(obj@tasks[[t]][[o]]@iterationsScores[,m],
-                                             obj@tasks[[t]][[baseline]]@iterationsScores[,m],
+                                        list(obj[[t]][[o]]@iterationsScores[,m],
+                                             obj[[t]][[baseline]]@iterationsScores[,m],
                                              paired=T))
                          )
                 p <- if (inherits(tst,"try-error"))  NA else tst$p.value

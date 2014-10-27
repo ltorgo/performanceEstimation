@@ -321,18 +321,18 @@ setMethod("plot",
           function(x,y,...) {
               
               allRes <- NULL
-              taskNames <- names(x@tasks)
-              for(t in 1:length(x@tasks)) {
+              taskNames <- names(x)
+              for(t in 1:length(x)) {
                   task <- taskNames[t]
-                  sysNames <- names(x@tasks[[t]])
-                  for(s in 1:length(x@tasks[[t]])) {
-                      d <- .scores2long(x@tasks[[t]][[s]]@iterationsScores)
+                  sysNames <- names(x[[t]])
+                  for(s in 1:length(x[[t]])) {
+                      d <- .scores2long(x[[t]][[s]]@iterationsScores)
                       d <- cbind(d,sys=sysNames[s],task=taskNames[t])
                       allRes <- rbind(allRes,d)
                   }
               }
 
-              tlt <- paste(switch(class(x@tasks[[1]][[1]]@estTask@method),
+              tlt <- paste(switch(class(x[[1]][[1]]@estTask@method),
                                   CvSettings='Cross Validation',
                                   HldSettings='Hold Out',
                                   LoocvSettings='Leave One Out',
@@ -354,7 +354,7 @@ setMethod("summary",
           "ComparisonResults",
           function(object) {
               cat('\n== Summary of a ',
-                  switch(class(object@tasks[[1]][[1]]@estTask@method),
+                  switch(class(object[[1]][[1]]@estTask@method),
                          CvSettings='Cross Validation',
                          HldSettings='Hold Out',
                          LoocvSettings='Leave One Out',
@@ -362,27 +362,27 @@ setMethod("summary",
                          McSettings='Monte Carlo'
                          ),
                   'Performance Estimation Experiment ==\n\n')
-              print(object@tasks[[1]][[1]]@estTask)
+              print(object[[1]][[1]]@estTask)
               cat('\n* Predictive Tasks :: ',
-                  paste(names(object@tasks),collapse=', '))
-              cat('\n* Workflows  :: ',paste(names(object@tasks[[1]]),collapse=', '),"\n")
+                  paste(names(object),collapse=', '))
+              cat('\n* Workflows  :: ',paste(names(object[[1]]),collapse=', '),"\n")
               
               ##cat('\n\n* Summary of Experiment Results:\n')
               ld <- list()
-              for(d in 1:length(object@tasks)) {
+              for(d in 1:length(object)) {
                   lv <- list()
-                  cat("\n-> Task: ",names(object@tasks)[d])
-                  for(v in 1:length(object@tasks[[d]])) {
-                      cat("\n  *Workflow:",names(object@tasks[[d]])[v],"\n")
-                      ss <- .scores2summary(object@tasks[[d]][[v]])
+                  cat("\n-> Task: ",names(object)[d])
+                  for(v in 1:length(object[[d]])) {
+                      cat("\n  *Workflow:",names(object[[d]])[v],"\n")
+                      ss <- .scores2summary(object[[d]][[v]])
                       print(ss)
                       lv <- c(lv,list(ss))
                   }
                   ##cat('\n')
-                  names(lv) <- names(object@tasks[[d]])
+                  names(lv) <- names(object[[d]])
                   ld <- c(ld,list(lv))
               }
-              names(ld) <- names(object@tasks)
+              names(ld) <- names(object)
               invisible(ld)
               
           })
@@ -393,7 +393,7 @@ setMethod("show",
           "ComparisonResults",
           function(object) {
             cat('\n== ',
-                switch(class(object@tasks[[1]][[1]]@estTask@method),
+                switch(class(object[[1]][[1]]@estTask@method),
                        CvSettings='Cross Validation',
                        HldSettings='Hold Out',
                        BootSettings='Bootstrap',
@@ -401,9 +401,9 @@ setMethod("show",
                        McSettings='Monte Carlo'
                        ),
                 'Performance Estimation Experiment ==\n\n')
-            print(object@tasks[[1]][[1]]@estTask)
-            cat("\n",length(object@tasks[[1]]),' workflows applied to ',
-                length(object@tasks),' predictive tasks\n')
+            print(object[[1]][[1]]@estTask)
+            cat("\n",length(object[[1]]),' workflows applied to ',
+                length(object),' predictive tasks\n')
           })
 
 
@@ -425,27 +425,27 @@ setMethod("show",
 setMethod("subset",
           signature(x='ComparisonResults'),
           function(x,
-                   tasks=1:length(x@tasks),
-                   workflows=1:length(x@tasks[[1]]),
-                   metrics=1:dim(x@tasks[[1]][[1]]@iterationsScores)[2],
+                   tasks=1:length(x),
+                   workflows=1:length(x[[1]]),
+                   metrics=1:dim(x[[1]][[1]]@iterationsScores)[2],
                    partial=TRUE) {
               mf <- if (partial) "grep" else "match"
               rr <- x
-              if (!identical(workflows,1:length(x@tasks[[1]]))) {
+              if (!identical(workflows,1:length(x[[1]]))) {
                   if (is.character(workflows))
-                      workflows <- unlist(lapply(workflows,function(w) do.call(mf,list(w,names(rr@tasks[[1]])))))
-                  rr@tasks <- lapply(rr@tasks,function(t) t[workflows])
+                      workflows <- unlist(lapply(workflows,function(w) do.call(mf,list(w,names(rr[[1]])))))
+                  rr <- lapply(rr,function(t) t[workflows])
               }
-              if (!identical(tasks,1:length(x@tasks))) {
+              if (!identical(tasks,1:length(x))) {
                   if (is.character(tasks))
-                      tasks <- unlist(lapply(tasks,function(t) do.call(mf,list(t,names(rr@tasks)))))
-                  rr@tasks <- rr@tasks[tasks]
+                      tasks <- unlist(lapply(tasks,function(t) do.call(mf,list(t,names(rr)))))
+                  rr <- rr[tasks]
               }
               if (is.character(metrics)) 
-                  metrics <- unlist(lapply(metrics,function(m) do.call(mf,list(m,colnames(x@tasks[[1]][[1]]@iterationsScores)))))
-              rr@tasks <- lapply(rr@tasks,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
+                  metrics <- unlist(lapply(metrics,function(m) do.call(mf,list(m,colnames(x[[1]][[1]]@iterationsScores)))))
+              rr <- lapply(rr,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
               
-              rr
+              ComparisonResults(rr)
           }
           )
 

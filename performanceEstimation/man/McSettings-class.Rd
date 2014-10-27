@@ -50,6 +50,7 @@
   }
 }
 \section{Extends}{
+Class \code{\linkS4class{EstCommon}}, directly.
 Class \code{\linkS4class{EstimationSettings}}, directly.
 }
 \section{Methods}{
@@ -59,13 +60,17 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 	 }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
    \code{\linkS4class{LoocvSettings}},
-  \code{\linkS4class{CvSettings}}, \code{\linkS4class{BootSettings}},\code{\linkS4class{HldSettings}}, \code{\linkS4class{EstimationSettings}}
+   \code{\linkS4class{CvSettings}},
+   \code{\linkS4class{BootSettings}},
+   \code{\linkS4class{HldSettings}},
+   \code{\linkS4class{EstimationSettings}},
+   \code{\linkS4class{EstimationTask}}
 }
 \examples{
 showClass("McSettings")

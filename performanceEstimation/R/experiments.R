@@ -623,21 +623,21 @@ outFold <- function(ds,f,r=NULL)  {
 
 .statScores <- function(compRes,stat=1) {
     r <- list()
-    for(t in compRes@tasks) {
+    for(t in compRes) {
         ws <- NULL
         for(w in t)
             ws <- cbind(ws,t(.scores2summary(w)[stat,,drop=FALSE]))
         colnames(ws) <- names(t)
         r <- c(r,list(ws))
     }
-    names(r) <- names(compRes@tasks)
+    names(r) <- names(compRes)
     r
 }
 
 ## Though simpler and more elegant this one fails due to over-simplification of
 ## sapply when we have only one metric (and it did not worked with simplify=FALSE
 ## on sapply)
-## .statScores.old <- function(compRes,stat=1) lapply(compRes@tasks,function(t) sapply(t,function(w) .scores2summary(w)[stat,,drop=FALSE]))
+## .statScores.old <- function(compRes,stat=1) lapply(compRes,function(t) sapply(t,function(w) .scores2summary(w)[stat,,drop=FALSE]))
 
 
 ## calculates the scores of all iterations of an estimation exp

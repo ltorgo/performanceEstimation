@@ -24,9 +24,8 @@ Objects can be created by calls of the form \code{EstimationResults(...)}
   \describe{
     \item{\code{task}:}{Object of class \code{PredTask}  }
     \item{\code{workflow}:}{Object of class \code{Workflow}  }
-    \item{\code{settings}:}{Object belonging to class union \code{EstimationSettings} }
+    \item{\code{estTask}:}{Object belonging to class \code{EstimationTask} }
     \item{\code{iterationsScores}:}{Object of class \code{matrix} }
-    \item{\code{iterationsPreds}:}{Object of class \code{list} }
     \item{\code{iterationsInfo}:}{Object of class \code{list} }
   }
 }
@@ -40,12 +39,16 @@ Objects can be created by calls of the form \code{EstimationResults(...)}
 	 }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\linkS4class{EstimationSettings}},  \code{\linkS4class{PredTask}},\code{\linkS4class{Workflow}},\code{\link{performanceEstimation}}
+  \code{\linkS4class{EstimationSettings}},
+  \code{\linkS4class{EstimationTask}},
+  \code{\linkS4class{PredTask}},
+  \code{\linkS4class{Workflow}},
+  \code{\link{performanceEstimation}}
 }
 \examples{
 showClass("EstimationResults")
@@ -55,15 +58,11 @@ library(e1071)
 data(swiss)
 
 ## Estimating the MAE and NMSE of an SVM on the swiss task
-eval.res <- crossValidation(
-             Workflow("standardWF",
-                      list(learner="svm",
-                           learner.pars=list(cost=10,gamma=0.1),
-                           evaluator.pars=list(stats=c("mae","nmse"))
-                          )
-                     ),
-             PredTask(Infant.Mortality ~ ., swiss),
-             CvSettings(2,10,1234))
+eval.res <- cvEstimates(
+                 Workflow(learner="svm",learner.pars=list(cost=10,gamma=0.1)),
+                 PredTask(Infant.Mortality ~ .,swiss),
+                 EstimationTask(metrics=c("mae","nmse"),method=CvSettings(nReps=2))
+                       )
 
 ## Check a summary of the results
 summary(eval.res)

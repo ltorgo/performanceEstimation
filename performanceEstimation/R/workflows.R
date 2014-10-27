@@ -141,7 +141,7 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
 #               medv~.,Boston[1:100,],Boston[-(1:100),])
 #
 getWorkflow <- function(var,obj)
-    obj@tasks[[1]][[which(names(obj@tasks[[1]]) == var)]]@workflow
+    obj[[1]][[which(names(obj[[1]]) == var)]]@workflow
 
 
 
