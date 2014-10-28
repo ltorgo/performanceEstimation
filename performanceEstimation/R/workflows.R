@@ -29,9 +29,22 @@
 
 workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
     vars <- list(...)
-    if (missing(wf)) wf <- if ("learner" %in% names(vars)) "standardWF" else vars[['user']]
-    wf <- if (is(wf,"function")) deparse(substitute(wf)) else wf
-    if (missing(varsRootName)) varsRootName <- wf
+    
+    ## if no ID was provided then it is one of the standard workflows
+    if (missing(wf)) {
+        if ("type" %in% names(vars)) {
+            n <- paste(vars[["learner"]],vars[["type"]],sep='.')
+            wf <- "timeseriesWF"
+        } else {
+            n <- vars[["learner"]]
+            wf <- "standardWF"
+        }
+    ## using a user-defined workflow
+    } else {
+        n <- wf <- wf
+    }
+    
+    if (missing(varsRootName)) varsRootName <- n
 
     default.novar <- c('evaluator.pars.stats','evaluator.pars.allCls','evaluator.pars.benMtrx')
     allnovar <- c(as.is,default.novar)

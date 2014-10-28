@@ -105,19 +105,19 @@ performanceEstimation <- function(tasks,workflows,estTask,...) {
 ##                      PredTask(medv~.,Boston),
 ##                      CvTask(1,10,1234))
 ##
-cvEstimates <- function(wf,task,sets) {
+cvEstimates <- function(wf,task,estTask) {
 
-  show(sets)
+  show(estTask)
 
   ## Did the user supplied the data splits for all folds and repetitions?
-  userSplit <- !is.null(sets@method@dataSplits)
+  userSplit <- !is.null(estTask@method@dataSplits)
   
   n <- nrow(eval(task@dataSource))
-  if (!userSplit) n.each.part <- n %/% sets@method@nFolds
+  if (!userSplit) n.each.part <- n %/% estTask@method@nFolds
 
-  itsInfo <- vector("list",sets@method@nFolds*sets@method@nReps)
+  itsInfo <- vector("list",estTask@method@nFolds*estTask@method@nReps)
 
-  if (!userSplit && sets@method@strat) {  # stratified sampling
+  if (!userSplit && estTask@method@strat) {  # stratified sampling
     respVals <- responseValues(task@formula,eval(task@dataSource))
     regrProb <- is.numeric(respVals)
     if (regrProb) {  # regression problem
@@ -129,7 +129,7 @@ cvEstimates <- function(wf,task,sets) {
     ## how many on each bucket
     bc <- table(b)
     ## how many should be on each test partition
-    bct <- bc %/% sets@method@nFolds
+    bct <- bc %/% estTask@method@nFolds
     ## still missing (due to rounding effects of the previous statement)
     ##rem <- n.test-sum(bct)
     ##ib <- 1
@@ -143,27 +143,27 @@ cvEstimates <- function(wf,task,sets) {
 
   }
   
-  for(r in 1:sets@method@nReps) {
+  for(r in 1:estTask@method@nReps) {
     cat('Repetition ',r,'\nFold:')
 
     if (!userSplit) {
-      set.seed(sets@method@seed*r)
+      set.seed(estTask@method@seed*r)
       permutation <- sample(n)
     } else permutation <- 1:n
 
-    for(i in seq(sets@method@nFolds)) {
-      itN <- (r-1)*sets@method@nFolds+i  # the iteration number
+    for(i in seq(estTask@method@nFolds)) {
+      itN <- (r-1)*estTask@method@nFolds+i  # the iteration number
       cat(' ',i)
       
       if (!userSplit) {
-        if (sets@method@strat) {
+        if (estTask@method@strat) {
           out.fold <- c()
           for(x in seq(along=levels(b))) 
             if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[((i-1)*bct[x]+1):((i-1)*bct[x]+bct[x])])
         } else {
           out.fold <- ((i-1)*n.each.part+1):(i*n.each.part)
         }
-      } else out.fold <- outFold(sets@method@dataSplits,itN)
+      } else out.fold <- outFold(estTask@method@dataSplits,itN)
       
       it.res <- runWorkflow(wf,
                             task@formula,
@@ -185,10 +185,10 @@ cvEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,itsInfo)
+  scores <- .scoresIts(task,estTask,itsInfo)
       
     
-  EstimationResults(task,wf,sets,scores,itsInfo)
+  EstimationResults(task,wf,estTask,scores,itsInfo)
 }
 
 
@@ -216,19 +216,19 @@ cvEstimates <- function(wf,task,sets) {
 #              dataset(medv~.,Boston),
 #              hldTask(4,0.25,1234))
 #
-hldEstimates <- function(wf,task,sets) {
+hldEstimates <- function(wf,task,estTask) {
 
-  show(sets)
+  show(estTask)
 
   ## Did the user supplied the data splits for all folds and repetitions?
-  userSplit <- !is.null(sets@method@dataSplits)
+  userSplit <- !is.null(estTask@method@dataSplits)
 
   n <- nrow(eval(task@dataSource))
-  if (!userSplit) n.test <- as.integer(n * sets@method@hldSz)
+  if (!userSplit) n.test <- as.integer(n * estTask@method@hldSz)
 
-  itsInfo <- vector("list",sets@method@nReps)
+  itsInfo <- vector("list",estTask@method@nReps)
 
-  if (!userSplit & sets@method@strat) {  # stratified sampling
+  if (!userSplit & estTask@method@strat) {  # stratified sampling
     respVals <- responseValues(task@formula,eval(task@dataSource))
     regrProb <- is.numeric(respVals)
     if (regrProb) {  # regression problem
@@ -240,7 +240,7 @@ hldEstimates <- function(wf,task,sets) {
     # how many on each bucket
     bc <- table(b)
     # how many should be on each test partition
-    bct <- as.integer(bc * sets@method@hldSz)
+    bct <- as.integer(bc * estTask@method@hldSz)
     # still missing (due to rounding effects of the previous statement)
     #rem <- n.test-sum(bct)
     #ib <- 1
@@ -254,11 +254,11 @@ hldEstimates <- function(wf,task,sets) {
   }
 
   cat('Repetition :')
-  for(r in 1:sets@method@nReps) {
+  for(r in 1:estTask@method@nReps) {
     cat(' ',r)
 
     if (!userSplit) {
-      set.seed(sets@method@seed*r)
+      set.seed(estTask@method@seed*r)
       permutation <- sample(n)
       #perm.data <- task@data[permutation,]
 #    } else perm.data <- task@data
@@ -266,14 +266,14 @@ hldEstimates <- function(wf,task,sets) {
 
 
     if (!userSplit) {
-      if (sets@method@strat) {
+      if (estTask@method@strat) {
         out.fold <- c()
         for(x in seq(along=levels(b))) 
           if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[1:bct[x]])
       } else {
         out.fold <- 1:n.test
       }
-    } else out.fold <- outFold(sets@method@dataSplits,r)
+    } else out.fold <- outFold(estTask@method@dataSplits,r)
 
     it.res <- runWorkflow(wf,
                           task@formula,
@@ -294,9 +294,9 @@ hldEstimates <- function(wf,task,sets) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,itsInfo)
+  scores <- .scoresIts(task,estTask,itsInfo)
   
-  EstimationResults(task,wf,sets,scores,itsInfo)
+  EstimationResults(task,wf,estTask,scores,itsInfo)
 }
 
 
@@ -325,12 +325,12 @@ hldEstimates <- function(wf,task,sets) {
 # x <- loocvEstimates(learner('cv.rpartXse',list(se=2)),
 #            dataset(medv~.,Boston))
 #
-loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
+loocvEstimates <- function(wf,task,estTask,verbose=FALSE) {
 
-  show(sets)
+  show(estTask)
 
   ## Did the user supplied the data splits for all folds and repetitions?
-  userSplit <- !is.null(sets@method@dataSplits)
+  userSplit <- !is.null(estTask@method@dataSplits)
 
   n <- nrow(eval(task@dataSource))
 
@@ -341,9 +341,9 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
     if (verbose) cat('*')
 
     if (!userSplit) {
-        set.seed(sets@method@seed*r)
+        set.seed(estTask@method@seed*r)
         out.fold <- r
-    } else out.fold <- outFold(sets@method@dataSplits,r)
+    } else out.fold <- outFold(estTask@method@dataSplits,r)
 
     it.res <- runWorkflow(wf,
                           task@formula,
@@ -361,9 +361,9 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
 
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,sets,itsInfo)
+  scores <- .scoresIts(task,estTask,itsInfo)
 
-  EstimationResults(task,wf,sets,scores,itsInfo)
+  EstimationResults(task,wf,estTask,scores,itsInfo)
 
 }
 
@@ -393,26 +393,26 @@ loocvEstimates <- function(wf,task,sets,verbose=FALSE) {
 #                      dataset(medv~.,Boston),
 #                      bootTask(1234,10))
 #
-bootEstimates <- function(wf,task,sets,verbose=TRUE) {
+bootEstimates <- function(wf,task,estTask,verbose=TRUE) {
 
-  show(sets)
+  show(estTask)
 
-  if (sets@method@type == '.632')
+  if (estTask@method@type == '.632')
       resub <- runWorkflow(wf,task@formula,eval(task@dataSource),eval(task@dataSource))
 
   ## Did the user supplied the data splits for all folds and repetitions?
-  userSplit <- !is.null(sets@method@dataSplits)
+  userSplit <- !is.null(estTask@method@dataSplits)
 
   n <- nrow(eval(task@dataSource))
 
-  itsInfo <- vector("list",sets@method@nReps)
+  itsInfo <- vector("list",estTask@method@nReps)
 
   cat('Repetition :')
-  for(r in 1:sets@method@nReps) {
+  for(r in 1:estTask@method@nReps) {
     cat(' ',r)
 
     if (!userSplit) {
-      set.seed(sets@method@seed*r)
+      set.seed(estTask@method@seed*r)
       idx <- sample(n,n,replace=T)
       it.res <- runWorkflow(wf,
                             task@formula,
@@ -424,11 +424,11 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
     } else {
       it.res <- runWorkflow(wf,
                             task@formula,
-                            eval(task@dataSource)[outFold(sets@method@dataSplits,r,"train"),],
-                            eval(task@dataSource)[outFold(sets@method@dataSplits,r),])
+                            eval(task@dataSource)[outFold(estTask@method@dataSplits,r,"train"),],
+                            eval(task@dataSource)[outFold(estTask@method@dataSplits,r),])
       itsInfo[[r]] <- list(preds=it.res@predictions,
                            info=it.res@extraInfo,
-                           train=outFold(sets@method@dataSplits,r,"train"))
+                           train=outFold(estTask@method@dataSplits,r,"train"))
 
     }
       
@@ -440,48 +440,48 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  if (sets@method@type == ".632") {  # this method is different from all others
-      trReq <- any(sets@metrics %in% c("nmse","nmae","theil"))
+  if (estTask@method@type == ".632") {  # this method is different from all others
+      trReq <- any(estTask@metrics %in% c("nmse","nmae","theil"))
       nIts <- length(itsInfo)
-      if (sets@evaluator=="" ) 
-          if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-          else                         sets@evaluator <- "regressionMetrics"
-      scores <- matrix(NA,nrow=nIts,ncol=length(sets@metrics))
-      colnames(scores) <- sets@metrics
-      wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
-      predMs <- setdiff(sets@metrics,wts)
+      if (estTask@evaluator=="" ) 
+          if (is.classification(task)) estTask@evaluator <- "classificationMetrics"
+          else                         estTask@evaluator <- "regressionMetrics"
+      scores <- matrix(NA,nrow=nIts,ncol=length(estTask@metrics))
+      colnames(scores) <- estTask@metrics
+      wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
+      predMs <- setdiff(estTask@metrics,wts)
       if (length(predMs)) {
           if (trReq) {
-              resubScores <- do.call(sets@evaluator,
+              resubScores <- do.call(estTask@evaluator,
                                      c(list(trues=resub@predictions[,"true"],
                                             preds=resub@predictions[,"predicted"],
                                             stats=predMs,
                                             train.y=eval(task@dataSource)[1:n,task@target]),
-                                   sets@evaluator.pars))
+                                   estTask@evaluator.pars))
           } else {
-              resubScores <- do.call(sets@evaluator,
+              resubScores <- do.call(estTask@evaluator,
                                      c(list(trues=resub@predictions[,"true"],
                                             preds=resub@predictions[,"predicted"],
                                             stats=predMs),
-                                   sets@evaluator.pars))
+                                   estTask@evaluator.pars))
           }
       }
       for(i in 1:nIts) {
           if (length(predMs)) {
               if (trReq) {
-                  scores[i,predMs] <- 0.632*do.call(sets@evaluator,
+                  scores[i,predMs] <- 0.632*do.call(estTask@evaluator,
                                                     c(list(trues=itsInfo[[i]]$preds[,"true"],
                                                            preds=itsInfo[[i]]$preds[,"predicted"],
                                                            stats=predMs,
                                                            train.y=eval(task@dataSource)[itsInfo[[i]]$train,task@target]),
-                                                      sets@evaluator.pars)) +
+                                                      estTask@evaluator.pars)) +
                                       0.368*resubScores
               } else {
-                  scores[i,predMs] <- 0.632*do.call(sets@evaluator,
+                  scores[i,predMs] <- 0.632*do.call(estTask@evaluator,
                                                     c(list(trues=itsInfo[[i]]$preds[,"true"],
                                                            preds=itsInfo[[i]]$preds[,"predicted"],
                                                            stats=predMs),
-                                                      sets@evaluator.pars)) +
+                                                      estTask@evaluator.pars)) +
                                       0.368*resubScores
               }
           }
@@ -492,10 +492,10 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
           }
       }
       
-  } else scores <- .scoresIts(task,sets,itsInfo)
+  } else scores <- .scoresIts(task,estTask,itsInfo)
       
   
-  EstimationResults(task,wf,sets,scores,itsInfo)
+  EstimationResults(task,wf,estTask,scores,itsInfo)
 
 }
 
@@ -521,33 +521,33 @@ bootEstimates <- function(wf,task,sets,verbose=TRUE) {
 # Luis Torgo, Aug 2009
 # =====================================================
 
-mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
+mcEstimates <- function(wf, task, estTask, verbose=TRUE) {
 
-  show(mcSet)
+  show(estTask)
 
   ## Did the user supplied the data splits for all  repetitions?
-  userSplit <- !is.null(mcSet@method@dataSplits)
+  userSplit <- !is.null(estTask@method@dataSplits)
 
-  itsInfo <- vector("list",mcSet@method@nReps)
+  itsInfo <- vector("list",estTask@method@nReps)
 
   n <- NROW(eval(task@dataSource))
 
   if (!userSplit) {
-      train.size <- if (mcSet@method@szTrain < 1) as.integer(n*mcSet@method@szTrain) else mcSet@method@szTrain
-      test.size <- if (mcSet@method@szTest < 1) as.integer(n*mcSet@method@szTest) else mcSet@method@szTest
+      train.size <- if (estTask@method@szTrain < 1) as.integer(n*estTask@method@szTrain) else estTask@method@szTrain
+      test.size <- if (estTask@method@szTest < 1) as.integer(n*estTask@method@szTest) else estTask@method@szTest
       if (n-test.size+1 <= train.size+1) stop('mcEstimates:: Invalid train/test sizes.',call.=FALSE)
   } else {
-      train.size <- length(mcSet@method@dataSplits[[1]][[1]]$train)
-      test.size <- length(mcSet@method@dataSplits[[1]][[1]]$test)
+      train.size <- length(estTask@method@dataSplits[[1]][[1]]$train)
+      test.size <- length(estTask@method@dataSplits[[1]][[1]]$test)
   }
   
-  set.seed(mcSet@method@seed)
+  set.seed(estTask@method@seed)
 
   if (!userSplit) {
       selection.range <- (train.size+1):(n-test.size+1)
-      starting.points <- sort(sample(selection.range,mcSet@method@nReps))
+      starting.points <- sort(sample(selection.range,estTask@method@nReps))
   } else {
-      starting.points <- sapply(mcSet@method@dataSplits[[1]], function(d) d$test[1])
+      starting.points <- sapply(estTask@method@dataSplits[[1]], function(d) d$test[1])
   }
 
 
@@ -566,8 +566,8 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
     } else {
         rep.res <- runWorkflow(wf,
                                task@formula,
-                               eval(task@dataSource)[mcSet@method@dataSplits[[1]][[it]]$train,],
-                               eval(task@dataSource)[mcSet@method@dataSplits[[1]][[it]]$test,])
+                               eval(task@dataSource)[estTask@method@dataSplits[[1]][[it]]$train,],
+                               eval(task@dataSource)[estTask@method@dataSplits[[1]][[it]]$test,])
 
     }
 
@@ -583,9 +583,9 @@ mcEstimates <- function(wf, task, mcSet, verbose=TRUE) {
   set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
   
   ## Calculate the metrics estimation
-  scores <- .scoresIts(task,mcSet,itsInfo)
+  scores <- .scoresIts(task,estTask,itsInfo)
 
-  EstimationResults(task,wf,mcSet,scores,itsInfo)
+  EstimationResults(task,wf,estTask,scores,itsInfo)
 }
 
 
@@ -647,32 +647,32 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
 
 ## calculates the scores of all iterations of an estimation exp
-.scoresIts <- function(task,sets,its) {
-    trReq <- any(sets@metrics %in% c("nmse","nmae","theil"))
+.scoresIts <- function(task,estTask,its) {
+    trReq <- any(estTask@metrics %in% c("nmse","nmae","theil"))
 
     nIts <- length(its)
-    if (sets@evaluator=="" ) 
-        if (is.classification(task)) sets@evaluator <- "classificationMetrics"
-        else                         sets@evaluator <- "regressionMetrics"
-    scores <- matrix(NA,nrow=nIts,ncol=length(sets@metrics))
-    colnames(scores) <- sets@metrics
-    wts <- intersect(sets@metrics,c("trTime","tsTime","totTime"))
-    predMs <- setdiff(sets@metrics,wts)
+    if (estTask@evaluator=="" ) 
+        if (is.classification(task)) estTask@evaluator <- "classificationMetrics"
+        else                         estTask@evaluator <- "regressionMetrics"
+    scores <- matrix(NA,nrow=nIts,ncol=length(estTask@metrics))
+    colnames(scores) <- estTask@metrics
+    wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
+    predMs <- setdiff(estTask@metrics,wts)
     for(i in 1:nIts) {
         if (length(predMs)) {
             if (trReq) {
-                scores[i,predMs] <- do.call(sets@evaluator,
+                scores[i,predMs] <- do.call(estTask@evaluator,
                                             c(list(trues=its[[i]]$preds[,"true"],
                                                    preds=its[[i]]$preds[,"predicted"],
                                                    stats=predMs,
                                                    train.y=eval(task@dataSource)[its[[i]]$train,task@target]),
-                                              sets@evaluator.pars))
+                                              estTask@evaluator.pars))
             } else {
-                scores[i,predMs] <- do.call(sets@evaluator,
+                scores[i,predMs] <- do.call(estTask@evaluator,
                                             c(list(trues=its[[i]]$preds[,"true"],
                                                    preds=its[[i]]$preds[,"predicted"],
                                                    stats=predMs),
-                                              sets@evaluator.pars))
+                                              estTask@evaluator.pars))
             }
         }
         if (length(wts)) {

@@ -51,18 +51,20 @@ absolute error metrics the function includes currently the following:
 
   "rmse": root mean squared error that is calculated as sqrt(mse)
 
-  The remaining measures ("mape", "nmse" and "nmae") are relative
-  measures, the two later
+  The remaining measures ("mape", "nmse", "nmae" and "theil") are relative
+  measures, the three later
   comparing the performance of the model with a baseline. They are
   unit-less measures with values always greater than 0. In the case of
-  "nmse" and "nmae" the values are expected to be in the interval [0,1]
+  "nmse", "nmae" and "theil" the values are expected to be in the interval [0,1]
   though occasionaly scores can overcome 1, which means that your model
-  is performing worse than the baseline model. The baseline used in our
-  implementation is a constant model that always predicts the average
+  is performing worse than the baseline model. The baseline used in both
+  "nmse" and "nmae" is a constant model that always predicts the average
   target variable value, estimated using the values of this variable on
   the training data (data used to obtain the model that generated the
   predictions), which should be 
-  provided in the parameter \code{train.y}. The relative error measure
+  provided in the parameter \code{train.y}. The "theil" metric is
+  typically used in time series tasks and the used baseline is the last
+  observed value of the target variable. The relative error measure
   "mape" does not require a baseline. It simply calculates the average
   percentage difference between the true values and the
   predictions.
@@ -76,9 +78,12 @@ absolute error metrics the function includes currently the following:
 
   "nmae": sum(|t_i - p_i|) / sum(|t_i - AVG(Y)|)
 
+  "theil": sum( (t_i - p_i)^2 ) / sum( (t_i - t_\{i-1\})^2 ), where
+  t_\{i-1\} is the last observed value of the target variable
+
   The user may also indicate the value "all" in the parameter
   \code{stats}. In this case all possible metrics will be
-  calculated. This will only include the "nmse" and "nmae" metrics if
+  calculated. This will only include the "nmse", "nmae" and "theil" metrics if
   the value of the \code{train.y} parameter is set, otherwise only the
   other metrics will be returned.
 }
@@ -86,19 +91,19 @@ absolute error metrics the function includes currently the following:
 A named vector with the calculated evaluation scores.
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \note{
-In case you require either "nmse" or "nmae" to be calculated you must
+In case you require either "nmse", "nmae" or "theil" to be calculated you must
   supply a vector of numeric values through the parameter
   \code{train.y}, otherwise the function will return an error
-  message. The average of the values in this vector will be used as the baseline
-  model against which your model predictions will be compared to. 
+  message. These values are required to obtain a fair baseline against
+  which your model predictions will be compared to. 
 }
 \seealso{
- \code{\link{classificationMetrics}}, \code{\link{timeseriesMetrics}}
+ \code{\link{classificationMetrics}}
 }
 \examples{
 \dontrun{

@@ -15,8 +15,8 @@ Performance estimation using cross validation
 
   The function implements k-fold cross validation (CV)
 estimation. Different settings concerning this methodology are available
-through the argument \code{sets} (check the help page of
-\code{\linkS4class{CvSettings}}).
+through the argument \code{estTask} (check the help page of
+\code{\linkS4class{EstimationTask}} and \code{\linkS4class{CV}}).
 
 Please note that most of the times you will not call this function
 directly (though there is nothing wrong in doing it) but instead you
@@ -28,21 +28,21 @@ you may prefer to use this function directly.
 }
 
 \usage{
-cvEstimates(wf,task,sets)
+cvEstimates(wf,task,estTask)
 }
 
 \arguments{
   \item{wf}{
- an object of the class \code{Workflow} representing the
+ an object of the class \code{\linkS4class{Workflow}} representing the
   modeling approach to be evaluated on a certain task.
 }
   \item{task}{
- an object of the class \code{PredTask} defining the
+ an object of the class \code{\linkS4class{PredTask}} defining the
   prediction task for which we want estimates.
 }
-  \item{sets}{
-an object of the class \code{CvSettings} indicating the
-  cross validation settings to use.
+  \item{estTask}{
+an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
+  be estimated and the cross validation settings to use.
 }
 }
 

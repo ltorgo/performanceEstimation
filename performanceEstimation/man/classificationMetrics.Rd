@@ -173,10 +173,9 @@ In the
 \value{
 A named vector with the calculated statistics.
 }
-\references{ Torgo, L. (2010) \emph{Data Mining using R: learning with case studies},
-  CRC Press (ISBN: 9781439810187).
-
-  \url{http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR}  
+\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models}.
+  \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \note{
@@ -188,7 +187,7 @@ A named vector with the calculated statistics.
   with all the possible class values in parameter \code{allCls}.
 }
 \seealso{
- \code{\link{regressionMetrics}}, \code{\link{timeseriesMetrics}}
+ \code{\link{regressionMetrics}}
 }
 \examples{
 \dontrun{

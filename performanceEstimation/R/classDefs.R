@@ -81,9 +81,9 @@ PredTask <- function(form,data,taskName=NULL,type=NULL) {
 ##
 setClass("Workflow",
          slots=c(name="character",
-             func="character",
-             pars="list",
-             deps="OptList"))
+                 func="character",
+                 pars="list",
+                 deps="OptList"))
 
 
 
@@ -91,60 +91,27 @@ setClass("Workflow",
 ## Constructor
 ##
 
-Workflow <- function(wfID,
-                     learner,learner.pars=NULL,
-                     type,relearn.step=1,
-                     user,user.pars=NULL,
-                     predictor="predict",predictor.pars=NULL,
-                     pre=NULL,pre.pars=NULL,
-                     post=NULL,post.pars=NULL,
-                     fullOutput=FALSE,
-                     deps=NULL
-                     ) {
-    if (missing(learner) && missing(user)) stop("\nYou need to provide either the name of a learner or of a user-defined workflow.\n",call.=FALSE)
+Workflow <- function(wf, ..., wfID, deps=NULL) {
 
-    if (!missing(learner) && is(learner,"function"))
-        learner <- deparse(substitute(learner)) 
-    if (!missing(user) && is(user,"function"))
-        user <- deparse(substitute(user))
-     if (!missing(predictor) && is(predictor,"function"))
-         predictor <- deparse(substitute(predictor))
-    if (!missing(pre) && is(pre,"function"))
-        pre <- deparse(substitute(pre))
-    if (!missing(post) && is(post,"function"))
-        post <- deparse(substitute(post))
-
-    if (!missing(learner)) {  # no user-defined workflow
-        if (missing(type)) {  # standard workflow
-            new("Workflow",
-                name= if (missing(wfID) || wfID %in% c("standardWF","timeseriesWF")) learner else wfID,
-                func= "standardWF",
-                pars=list(learner=learner,learner.pars=learner.pars,
-                    predictor=predictor,predictor.pars=predictor.pars,
-                    pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
-                    .fullOutput= fullOutput),
-                deps=deps
-                )
-        } else {              # slide or growing window workflow (time series)
-            new("Workflow",
-                name= if (missing(wfID) || wfID %in% c("standardWF","timeseriesWF")) paste(learner,type,sep=".") else wfID,
-                func= "timeseriesWF",
-                pars=list(type=type,relearn.step=relearn.step,
-                    learner=learner,learner.pars=learner.pars,
-                    predictor=predictor,predictor.pars=predictor.pars,
-                    pre=pre,pre.pars=pre.pars,post=post,post.pars=post.pars,
-                    .fullOutput= fullOutput),
-                deps=deps
-                )
+    wf.pars <- list(...)
+    
+    ## if no ID was provided then it is one of the standard workflows
+    if (missing(wf)) {
+        if ("type" %in% names(wf.pars)) {
+            n <- paste(wf.pars[["learner"]],wf.pars[["type"]],sep='.')
+            f <- "timeseriesWF"
+        } else {
+            n <- wf.pars[["learner"]]
+            f <- "standardWF"
         }
+    ## using a user-defined workflow
     } else {
-        new("Workflow",
-            name= if (missing(wfID)) user else wfID,
-            func=user,
-            pars=user.pars,
-            deps=deps
-            )
+        n <- f <- wf
     }
+    if (!missing(wfID)) n <- wfID
+    
+    new("Workflow", name=n, func=f, pars=wf.pars, deps=deps)
+
 }
 
 

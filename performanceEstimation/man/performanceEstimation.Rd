@@ -14,24 +14,24 @@ few assumptions are met. The function implements different estimation procedures
 hold-out, monte carlo simulations and bootstrap.
 }
 \usage{
-performanceEstimation(tasks,workflows,setts,...)
+performanceEstimation(tasks,workflows,estTask,...)
 }
 
 \arguments{
   \item{tasks}{
-This is a list of objects of class \code{\linkS4class{PredTask}}, containing the
+This is a vector of objects of class \code{\linkS4class{PredTask}}, containing the
   predictive tasks that will be used in the estimation procedure.
 }
   \item{workflows}{
-This is a list of objects of class \code{\linkS4class{Workflow}}, containing the
+This is a vector of objects of class \code{\linkS4class{Workflow}}, containing the
   workflows representing different approaches to the predictive tasks,
   and whose performance we want to estimate.
 
 }
-  \item{setts}{
-This is an object belonging to any of the sub-classes of the virtual
-  class \code{\linkS4class{EstimationSettings}}. It is the class of this object that
-  determines the type of estimation methodology that will be used.  See
+  \item{estTask}{
+This is an object belonging to class
+\code{\linkS4class{EstimationTask}}. It is used to specify the metrics
+  to be estimated and the method to use to obtain these estimates.  See
   section Details for the possible values. 
 }
   \item{...}{
@@ -49,39 +49,77 @@ of alternative modelling approaches to a set of predictive tasks. The estimation
   adequate statistical tests for checking the significance of the
   observed differences in performance.
 
+  The first parameter of this function is a vector of
+  \code{\linkS4class{PredTask}} objects that define the tasks to use in
+  the estimation process.
+
+  The second argument is a vector of \code{\linkS4class{Workflow}}
+  objects. These can be created in two different ways: either directly
+  by calling the constructor of this class; or by using the
+  \code{\link{workflowVariants}} function that can be used to
+  automatically generate different workflow objects as variants of some
+  base workflow. Either way there are two types of workflows:
+  user-defined workflows and what we call "standard" workflows. The
+  later are workflows that people typically follow to solve predictive
+  tasks and that are already implemented in this package to facilitate
+  the task of the user. These standard workflows are implemented in
+  functions \code{\link{standardWF}} and
+  \code{\link{timeseriesWF}}. When specifying the vector of workflows if
+  you use (either in the constructor or in the function
+  \code{\link{workflowVariants}}) the parameter \code{user}, the package
+  will assume that you will be providing your own workflow function. If
+  instead you supply a value for parameter \code{learner} the package
+  assumes you are using a "standard" workflow. If on top of supplying a
+  value for \code{learner} you also supply a value for \code{type}
+  (either 'slide' or 'grow'), the \code{\link{timeseriesWF}} will be
+  used, otherwise the function uses \code{\link{standardWF}}. See the
+  Examples section and the accompanying vignette for illustrations of
+  all these combinations. Summarizing, in terms of workflows you can
+  use: i) your own user-defined workflows; ii) the standard workflow
+  implemented by function \code{\link{standardWF}}; or iii) the standard
+  time series workflow implementd by \code{\link{timeseriesWF}}.
+
   Currently, the function allows for 5 different types of estimation
   methods to be used. These are different  methods for providing
-  reliable estimates of the true value of the selected evaluation  statistics. The method to be used is determined by the class of the object
-  provided in the argument \code{setts}. The following are the
-  possibilities:
+  reliable estimates of the true value of the selected evaluation
+  metrics. Both the metrics and the estimation method are defined
+  through the value provided in argument \code{estTask}. The 5
+  estimation methodologies are the following:
 
   \emph{Cross validation}: this type of estimates can be obtained by
-  providing in the \code{setts} argument an object of class
-  \code{\linkS4class{CvSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{cvEstimates}}.
+  providing in \code{estTask} argument an object of class
+  \code{\linkS4class{EstimationTask}} with \code{method} set to an
+  object of class \code{\linkS4class{CV}} (this is the default). More
+  details on this type of method can be 
+  obtained in the help page of the class \code{\linkS4class{CV}}.
 
   \emph{Leave one out cross validation}: this type of estimates can be obtained by
-  providing in the \code{setts} argument and object of class
-  \code{\linkS4class{LoocvSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{loocvEstimates}}.
+  providing in \code{estTask} argument an object of class
+  \code{\linkS4class{EstimationTask}} with \code{method} set to an
+  object of class \code{\linkS4class{LOOCV}}. More
+  details on this type of method can be 
+  obtained in the help page of the class \code{\linkS4class{LOOCV}}.
 
-   \emph{Hold out}: this type of estimates can be obtained by
-  providing in the \code{setts} argument and object of class
-  \code{\linkS4class{HldSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{hldEstimates}}.
+  \emph{Hold out}: this type of estimates can be obtained by
+  providing in \code{estTask} argument an object of class
+  \code{\linkS4class{EstimationTask}} with \code{method} set to an
+  object of class \code{\linkS4class{Holdout}}. More
+  details on this type of method can be 
+  obtained in the help page of the class \code{\linkS4class{Holdout}}.
   
-   \emph{Monte Carlo}: this type of estimates can be obtained by
-  providing in the \code{setts} argument and object of class
-  \code{\linkS4class{McSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{mcEstimates}}.
+  \emph{Monte Carlo}: this type of estimates can be obtained by
+  providing in \code{estTask} argument an object of class
+  \code{\linkS4class{EstimationTask}} with \code{method} set to an
+  object of class \code{\linkS4class{MonteCarlo}}. More
+  details on this type of method can be 
+  obtained in the help page of the class \code{\linkS4class{MonteCarlo}}.
 
-   \emph{Bootstrap}: this type of estimates can be obtained by
-  providing in the \code{setts} argument and object of class
-  \code{\linkS4class{BootSettings}}. More details on this type of experiments can be
-  obtained in the help page of the function \code{\link{bootEstimates}}.
-
-  Further functions within this package can then be used to analyse the
-  results of the estimation process.
+  \emph{Bootstrap}: this type of estimates can be obtained by
+  providing in \code{estTask} argument an object of class
+  \code{\linkS4class{EstimationTask}} with \code{method} set to an
+  object of class \code{\linkS4class{Bootstrap}}. More
+  details on this type of method can be 
+  obtained in the help page of the class \code{\linkS4class{Bootstrap}}.
 
 }
 \value{
@@ -112,12 +150,12 @@ data(mtcars)
 ## running the estimation experiment
 res <- performanceEstimation(
   c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
+  c(workflowVariants(learner="svm",
                      learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
+    workflowVariants(learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  EstimationTask(metrics="mse")
   )
 
 ## Check a summary of the results
@@ -126,6 +164,14 @@ summary(res)
 ## best performers for each metric and task
 topPerformers(res)
 
+
+## Estimating the accuracy of a default SVM on IRIS using 10 repetitions
+## of a 80\%-20\% Holdout
+data(iris)
+res1 <- performanceEstimation(PredTask(Species  ~ .,iris),
+             Workflow(learner="svm"),
+             EstimationTask(metrics="acc",method=Holdout(nReps=10,hldSz=0.2)))
+summary(res1)
 }
 
 }
