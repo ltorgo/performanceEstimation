@@ -22,7 +22,7 @@ calculate these metrics.
 \section{Slots}{
   \describe{
     \item{\code{metrics}:}{A vector of objects of class
-      \code{"character"} containing the names of the metrics to be
+      \code{character} containing the names of the metrics to be
       estimated. These can be any of the metrics provided by the
       functions \code{\link{classificationMetrics}} and
       \code{\link{regressionMetrics}} or "trTime", "tsTime" or "totTime" for
@@ -31,16 +31,16 @@ calculate these metrics.
       to use the slots \code{evaluator} and \code{evaluator.pars} to
       indicate the function to be use to calculate them.}
     \item{\code{evaluator}:}{An optional object of class
-      \code{"character"} containing the name of a function to be used to
+      \code{character} containing the name of a function to be used to
     calculate the specified metrics. It will default to either
     \code{\link{classificationMetrics}} or
     \code{\link{regressionMetrics}} depending on the type of prediction
     task.}
     \item{\code{evaluator.pars}:}{An optional  list containing
       the parameters to be passed to the function calculating the metrics.}
-    \item{\code{method}:}{Object of class \code{"EstimationSettings"}
+    \item{\code{method}:}{Object of class \code{EstimationSettings}
       containing the estimation method and its settings to be used to
-      obtain the estimates of the metrics (defaulting to \code{CvSettings()}). }
+      obtain the estimates of the metrics (defaulting to \code{CV()}). }
   }
 }
 \section{Methods}{
@@ -58,12 +58,12 @@ Torgo, L. (2013) \emph{An Infra-Structure for Performance
 Luis Torgo \email{ltorgo@dcc.fc.up.pt} 
 }
 \seealso{
-   \code{\linkS4class{McSettings}},
-   \code{\linkS4class{CvSettings}},
-   \code{\linkS4class{LoocvSettings}},
-   \code{\linkS4class{BootSettings}},
-   \code{\linkS4class{HldSettings}},
-   \code{\linkS4class{EstimationSettings}}
+   \code{\linkS4class{MonteCarlo}},
+   \code{\linkS4class{CV}},
+   \code{\linkS4class{LOOCV}},
+   \code{\linkS4class{Bootstrap}},
+   \code{\linkS4class{Holdout}},
+   \code{\linkS4class{EstimationMethod}}
 }
 \examples{
 showClass("EstimationTask")
@@ -74,20 +74,21 @@ et
 
 ## Estimating Accuracy and Total Time (train+test times) using 3
 ## repetitions of holdout with 20\% of the cases used for testing. 
-EstimationTask(metrics=c("acc","totTime"),method=HldSettings(nReps=3,hldSz=0.2))
+EstimationTask(metrics=c("acc","totTime"),method=Holdout(nReps=3,hldSz=0.2))
 
 ## An example with a user-defined metric: the average differences between true
 ## predicted values raised to a certain power.
 
 ## The first we define the function that calculates this metric. It
 ## needs to have 'trues' and 'preds' as the first two arguments
-powErr <- function(trues,preds,pow=3,...) c(pow.err =
-## mean((trues-preds)^pow))
+powErr <- function(trues,preds,pow=3,...) {
+     c(pow.err = mean((trues-preds)^pow))
+}
 
 ## Now the estimation task (10-fold cv in this example)
 EstimationTask(metrics="pow.err",
                evaluator="powErr",
                evaluator.pars=list(pow=4),
-               method=CvSettings())
+               method=CV())
 }
 \keyword{classes}

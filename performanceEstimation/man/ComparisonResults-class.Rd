@@ -14,10 +14,10 @@
   workflows being applied and compared to several predictive tasks. For
   each workflow and task, a set of predictive performance metrics are
   estimated using some methodology and the results of this process are
-  store on this class of objets. }
+  stored on this class of objets. }
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{ComparisonResults(...)}
-  providing the values for the class slots. These object are essentially
+  Objects can be created by calls of the form
+  \code{ComparisonResults(...)}. These object are essentially
   a list of lists of objects of class
   \code{\linkS4class{EstimationResults}}. The top level list has as many
   components as there are tasks. For each task there will be a sub-list
@@ -26,11 +26,7 @@
   \code{\linkS4class{EstimationResults}} with the estimation results for
   the particular workflow / task combination.
 }
-\section{Slots}{
-  \describe{
-    \item{\code{tasks}:}{Object of class \code{list}. }
-  }
-}
+
 \section{Methods}{
   \describe{
     \item{plot}{\code{signature(x = "ComparisonResults", y = "missing")}: plots
@@ -48,12 +44,17 @@
 	 }
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\link{performanceEstimation}}, \code{\link{pairedComparisons}}, \code{\link{rankWorkflows}}, \code{\link{topPerformers}}, \code{\link{metricsSummary}}, \code{\link{mergeEstimationRes}}  
+  \code{\link{performanceEstimation}},
+  \code{\link{pairedComparisons}},
+  \code{\link{rankWorkflows}},
+  \code{\link{topPerformers}},
+  \code{\link{metricsSummary}},
+  \code{\link{mergeEstimationRes}}  
 }
 \examples{
 showClass("ComparisonResults")
@@ -69,12 +70,12 @@ data(mtcars)
 ## running the estimation experiment
 res <- performanceEstimation(
   c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
+  c(workflowVariants(learner="svm",
                      learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
+    workflowVariants(learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  EstimationTask(metrics=c("mae","mse","rmse","mape"),method=CV())
   )
 
 ## Check a summary of the results

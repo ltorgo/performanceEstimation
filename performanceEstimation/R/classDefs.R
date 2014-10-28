@@ -205,7 +205,7 @@ setClass("EstCommon",
 
 
 ## ==============================================================
-## CLASS: CvSettings
+## CLASS: CV
 ##
 ## A class containing the settings of a cross validation experiment
 ## ==============================================================
@@ -214,7 +214,7 @@ setClass("EstCommon",
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("CvSettings",
+setClass("CV",
          slots=c(nReps='numeric',      # nr. of repetitions
                  nFolds='numeric',     # nr. of folds of each rep.
                  strat='logical'),     # is the sampling stratified?
@@ -225,10 +225,10 @@ setClass("CvSettings",
 ## --------------------------------------------------------------
 ## constructor
 ##
-CvSettings <- function(nReps=1,nFolds=10,
+CV <- function(nReps=1,nFolds=10,
                        seed=1234,strat=FALSE,
                        dataSplits=NULL) {
-    new("CvSettings",
+    new("CV",
         nReps=nReps,
         nFolds=if (is.null(dataSplits)) nFolds else length(dataSplits)/nReps,
         seed=seed,strat=strat,dataSplits=dataSplits)
@@ -236,7 +236,7 @@ CvSettings <- function(nReps=1,nFolds=10,
 
 
 ## ==============================================================
-## CLASS: HldSettings
+## CLASS: Holdout
 ##
 ## A class containing the settings of a holdout experiment
 ## ==============================================================
@@ -245,7 +245,7 @@ CvSettings <- function(nReps=1,nFolds=10,
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("HldSettings",
+setClass("Holdout",
          slots=c(nReps='numeric', # number of repetitions
                  hldSz='numeric', # the size (0..1) of the holdout
                  strat='logical'),# is the sampling stratified?
@@ -256,10 +256,10 @@ setClass("HldSettings",
 ## --------------------------------------------------------------
 ## Constructor
 ##
-HldSettings <- function(nReps=1,hldSz=0.3,
+Holdout <- function(nReps=1,hldSz=0.3,
                         seed=1234,strat=FALSE,
                         dataSplits=NULL) {
-    new("HldSettings",
+    new("Holdout",
         nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
         hldSz=if (is.null(dataSplits)) hldSz else length(dataSplits[[1]]),
         seed=seed,strat=strat,dataSplits=dataSplits)
@@ -267,7 +267,7 @@ HldSettings <- function(nReps=1,hldSz=0.3,
 
 
 ## ==============================================================
-## CLASS: LoocvSettings
+## CLASS: LOOCV
 ##
 ## A class containing the settings of a leave one out cross validation
 ## experiment
@@ -277,22 +277,22 @@ HldSettings <- function(nReps=1,hldSz=0.3,
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("LoocvSettings",
+setClass("LOOCV",
          contains="EstCommon"
          )
 
 
 ## --------------------------------------------------------------
 ## constructor
-LoocvSettings <- function(seed=1234,dataSplits=NULL)
-  new("LoocvSettings",
+LOOCV <- function(seed=1234,dataSplits=NULL)
+  new("LOOCV",
       seed=seed,
       dataSplits=dataSplits)
 
 
 
 ## ==============================================================
-## CLASS: BootSettings
+## CLASS: Bootstrap
 ##
 ## A class containing the settings of a boostrap experiment
 ## ==============================================================
@@ -301,7 +301,7 @@ LoocvSettings <- function(seed=1234,dataSplits=NULL)
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("BootSettings",
+setClass("Bootstrap",
          slots=c(type='character', # type of boostrap ("e0" or ".632")
                  nReps='numeric'), # number of repetitions
          contains="EstCommon"
@@ -311,8 +311,8 @@ setClass("BootSettings",
 ## --------------------------------------------------------------
 ## constructor
 ##
-BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
-     new("BootSettings",
+Bootstrap <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
+     new("Bootstrap",
          type=type,
          nReps=if (is.null(dataSplits)) nReps else length(dataSplits),
          seed=seed,dataSplits=dataSplits)
@@ -321,7 +321,7 @@ BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
 
 
 ## ==============================================================
-## CLASS: McSettings
+## CLASS: MonteCarlo
 ##
 ## A class containing the settings of a monte carlo experiment
 ## ==============================================================
@@ -330,7 +330,7 @@ BootSettings <- function(type='e0',nReps=200,seed=1234,dataSplits=NULL) {
 ## --------------------------------------------------------------
 ## Definition
 ##
-setClass("McSettings",
+setClass("MonteCarlo",
          slots=c(nReps='numeric',
                  szTrain='numeric',
                  szTest='numeric'),
@@ -341,9 +341,9 @@ setClass("McSettings",
 ## --------------------------------------------------------------
 ## constructor
 ##
-McSettings <- function(nReps=10,szTrain=0.25,szTest=0.25,
+MonteCarlo <- function(nReps=10,szTrain=0.25,szTest=0.25,
                        seed=1234,dataSplits=NULL)
-    new("McSettings",
+    new("MonteCarlo",
         nReps= if (is.null(dataSplits)) nReps else length(dataSplits),
         szTrain=szTrain,szTest=szTest,
         seed=seed,dataSplits=dataSplits)
@@ -351,14 +351,14 @@ McSettings <- function(nReps=10,szTrain=0.25,szTest=0.25,
 
 
 ## ==============================================================
-## CLASS UNION: EstimationSettings
+## CLASS UNION: EstimationMethod
 ##
 ## A class encapsulating all types of Estimation Experiments
 ## ==============================================================
 
-setClassUnion("EstimationSettings",
-              c("CvSettings", "McSettings", "HldSettings",
-                "LoocvSettings","BootSettings"))
+setClassUnion("EstimationMethod",
+              c("CV", "MonteCarlo", "Holdout",
+                "LOOCV","Bootstrap"))
 
 
 
@@ -375,7 +375,7 @@ setClass("EstimationTask",
          slots=c(metrics='character',        # the metrics to be estimated
                  evaluator='character',      # function used to calculate the metrics
                  evaluator.pars='OptList',   # pars to this function
-                 method="EstimationSettings" # the estimation method to use
+                 method="EstimationMethod"   # the estimation method to use
          )
          )
 
@@ -384,7 +384,7 @@ setClass("EstimationTask",
 ##
 EstimationTask <- function(metrics,
                            evaluator="",evaluator.pars=NULL,
-                           method=CvSettings()) {
+                           method=CV()) {
     new("EstimationTask",
         metrics=metrics,
         evaluator=evaluator,evaluator.pars=evaluator.pars,

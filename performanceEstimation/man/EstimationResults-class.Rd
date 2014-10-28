@@ -10,15 +10,13 @@
 \title{Class "EstimationResults" }
 \description{This is the class of the objects storing the results of
   estimating the  performance of a workflow on a predictive task
-  independently of the used estimation method.}
+  using some estimation method.}
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{EstimationResults(...)}
   providing the values for the class slots. The objects contain
   information on the predictive task, the workflow, the estimation
-  settings, the metric scores and optionally also information on the
-  true and predictive values for all test cases and any other
-  information the author of the workflow decided to include in the
-  object returned by the workflow function.
+  task, the metric scores and optionally also information on results
+  obtained at each iteration of the estimation process.
 }
 \section{Slots}{
   \describe{
@@ -61,7 +59,7 @@ data(swiss)
 eval.res <- cvEstimates(
                  Workflow(learner="svm",learner.pars=list(cost=10,gamma=0.1)),
                  PredTask(Infant.Mortality ~ .,swiss),
-                 EstimationTask(metrics=c("mae","nmse"),method=CvSettings(nReps=2))
+                 EstimationTask(metrics=c("mae","nmse"),method=CV(nReps=2))
                        )
 
 ## Check a summary of the results

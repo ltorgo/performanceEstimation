@@ -1,15 +1,15 @@
-\name{CvSettings-class}
+\name{CV-class}
 \Rdversion{1.1}
 \docType{class}
-\alias{CvSettings}
-\alias{CvSettings-class}
-\alias{show,CvSettings-method}
+\alias{CV}
+\alias{CV-class}
+\alias{show,CV-method}
 
-\title{Class "CvSettings"}
+\title{Class "CV"}
 \description{	This class of objects contains the information
   describing a cross validation experiment, i.e. its settings.}
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{CvSettings(...)}
+  Objects can be created by calls of the form \code{CV(...)}
   providing the values for the class slots. 
   These objects include information on the number of repetitions of the
   cross validation (CV) experiment, the number of folds, the random number generator seed,
@@ -46,12 +46,12 @@
 }
 \section{Extends}{
 Class \code{\linkS4class{EstCommon}}, directly.
-Class \code{\linkS4class{EstimationSettings}}, directly.
+Class \code{\linkS4class{EstimationMethod}}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{show}{\code{signature(object = "CvSettings")}: method used to
-      show the contents of a \code{CvSettings} object. }
+    \item{show}{\code{signature(object = "CV")}: method used to
+      show the contents of a \code{CV} object. }
 	 }
        }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
@@ -60,25 +60,25 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-   \code{\linkS4class{McSettings}},
-   \code{\linkS4class{LoocvSettings}},
-   \code{\linkS4class{BootSettings}},
-   \code{\linkS4class{HldSettings}},
-   \code{\linkS4class{EstimationSettings}},
+   \code{\linkS4class{MonteCarlo}},
+   \code{\linkS4class{LOOCV}},
+   \code{\linkS4class{Bootstrap}},
+   \code{\linkS4class{Holdout}},
+   \code{\linkS4class{EstimationMethod}},
    \code{\linkS4class{EstimationTask}}
 }
 \examples{
-showClass("CvSettings")
+showClass("CV")
 
 ## the defaults (1 x 10-fold CV)
-s <- CvSettings()
+s <- CV()
 
 ## stratified 2 x 5-fold CV
-s1 <- CvSettings(nReps=2,nFolds=5,strat=TRUE)
+s1 <- CV(nReps=2,nFolds=5,strat=TRUE)
 
 ## Small example illustrating the format of user supplied data splits.
 ## This could be a 3-fold CV process of a data set with 30 cases
-s2 <- CvSettings(dataSplits=list(1:10,11:20,21:30))
+s2 <- CV(dataSplits=list(1:10,11:20,21:30))
 s2
 
 }

@@ -39,11 +39,11 @@ performanceEstimation <- function(tasks,workflows,estTask,...) {
   
   cat('\n\n##### PERFORMANCE ESTIMATION USING ',
       switch(class(estTask@method),
-             CvSettings='CROSS VALIDATION',
-             HldSettings='HOLD OUT',
-             McSettings='MONTE CARLO',
-             BootSettings='BOOTSTRAP',
-             LoocvSettings='LOOCV',
+             CV='CROSS VALIDATION',
+             Holdout='HOLD OUT',
+             MonteCarlo='MONTE CARLO',
+             Bootstrap='BOOTSTRAP',
+             LOOCV='LOOCV',
              ),
       ' #####')
   
@@ -60,11 +60,11 @@ performanceEstimation <- function(tasks,workflows,estTask,...) {
       
       taskRes[[s]] <- do.call(
                switch(class(estTask@method),
-                      CvSettings='cvEstimates',
-                      HldSettings='hldEstimates',
-                      BootSettings='bootEstimates',
-                      McSettings='mcEstimates',
-                      LoocvSettings='loocvEstimates'
+                      CV='cvEstimates',
+                      Holdout='hldEstimates',
+                      Bootstrap='bootEstimates',
+                      MonteCarlo='mcEstimates',
+                      LOOCV='loocvEstimates'
                       ),
 
                c(list(workflows[[s]],

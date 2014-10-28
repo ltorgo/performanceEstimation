@@ -87,10 +87,10 @@ setMethod("show",
 
 
 ################################################################
-## CvSettings Methods:
+## CV Methods:
 ################################################################
 setMethod("show",
-          "CvSettings",
+          "CV",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
@@ -109,11 +109,11 @@ setMethod("show",
 
 
 ################################################################
-## HldSettings methods:
+## Holdout methods:
 ################################################################
 
 setMethod("show",
-          "HldSettings",
+          "Holdout",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
@@ -129,11 +129,11 @@ setMethod("show",
 
 
 ################################################################
-## LoocvSettings methods:
+## LOOCV methods:
 ################################################################
 
 
-setMethod("show","LoocvSettings",
+setMethod("show","LOOCV",
           function(object) {
               userSplit <- !is.null(object@dataSplits)
               cat('LOOCV experiment\n')
@@ -148,12 +148,12 @@ setMethod("show","LoocvSettings",
 
 
 ################################################################
-## BootSettings methods:
+## Bootstrap methods:
 ################################################################
 
 
 setMethod("show",
-          "BootSettings",
+          "Bootstrap",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(object@nReps,' repetitions of ',ifelse(object@type=='e0','e0','.632'),
@@ -167,12 +167,12 @@ setMethod("show",
 
 
 ################################################################
-## McSettings methods:
+## MonteCarlo methods:
 ################################################################
 
 
 setMethod("show",
-          "McSettings",
+          "MonteCarlo",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(object@nReps,
@@ -232,11 +232,11 @@ setMethod("summary",
           function(object) {
               cat('\n*** Summary of a ',
                   switch(class(object@estTask@method),
-                         CvSettings='Cross Validation',
-                         HldSettings='Hold Out',
-                         McSettings='Monte Carlo',
-                         BootSettings='Bootstrap',
-                         LoocvSettings='Loocv',
+                         CV='Cross Validation',
+                         Holdout='Hold Out',
+                         MonteCarlo='Monte Carlo',
+                         Bootstrap='Bootstrap',
+                         LOOCV='Loocv',
                          ),
                   ' Estimation Experiment ***\n\n')
 
@@ -276,11 +276,11 @@ setMethod("plot",
               
               tit <- paste(x@workflow@name,
                   switch(class(x@estTask@method),
-                         CvSettings='Cross Validation',
-                         HldSettings='Hold Out',
-                         LoocvSettings='Leave One Out',
-                         BootSettings='Bootstrap',
-                         McSettings='Monte Carlo'
+                         CV='Cross Validation',
+                         Holdout='Hold Out',
+                         LOOCV='Leave One Out',
+                         Bootstrap='Bootstrap',
+                         MonteCarlo='Monte Carlo'
                          ),
                            "estimation on",x@task@taskName,sep=" "
                   )
@@ -333,11 +333,11 @@ setMethod("plot",
               }
 
               tlt <- paste(switch(class(x[[1]][[1]]@estTask@method),
-                                  CvSettings='Cross Validation',
-                                  HldSettings='Hold Out',
-                                  LoocvSettings='Leave One Out',
-                                  BootSettings='Bootstrap',
-                                  McSettings='Monte Carlo'
+                                  CV='Cross Validation',
+                                  Holdout='Hold Out',
+                                  LOOCV='Leave One Out',
+                                  Bootstrap='Bootstrap',
+                                  MonteCarlo='Monte Carlo'
                                   ),"Performance Estimation Results")
               plt <- ggplot(allRes,aes_string(y="score",x="sys")) +
                      geom_boxplot(aes_string(group="sys")) + ggtitle(tlt) +
@@ -355,11 +355,11 @@ setMethod("summary",
           function(object) {
               cat('\n== Summary of a ',
                   switch(class(object[[1]][[1]]@estTask@method),
-                         CvSettings='Cross Validation',
-                         HldSettings='Hold Out',
-                         LoocvSettings='Leave One Out',
-                         BootSettings='Bootstrap',
-                         McSettings='Monte Carlo'
+                         CV='Cross Validation',
+                         Holdout='Hold Out',
+                         LOOCV='Leave One Out',
+                         Bootstrap='Bootstrap',
+                         MonteCarlo='Monte Carlo'
                          ),
                   'Performance Estimation Experiment ==\n\n')
               print(object[[1]][[1]]@estTask)
@@ -394,11 +394,11 @@ setMethod("show",
           function(object) {
             cat('\n== ',
                 switch(class(object[[1]][[1]]@estTask@method),
-                       CvSettings='Cross Validation',
-                       HldSettings='Hold Out',
-                       BootSettings='Bootstrap',
-                       LoocvSettings='Leave One Out',
-                       McSettings='Monte Carlo'
+                       CV='Cross Validation',
+                       Holdout='Hold Out',
+                       Bootstrap='Bootstrap',
+                       LOOCV='Leave One Out',
+                       MonteCarlo='Monte Carlo'
                        ),
                 'Performance Estimation Experiment ==\n\n')
             print(object[[1]][[1]]@estTask)

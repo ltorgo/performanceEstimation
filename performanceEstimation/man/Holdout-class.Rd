@@ -1,15 +1,15 @@
-\name{HldSettings-class}
+\name{Holdout-class}
 \Rdversion{1.1}
 \docType{class}
-\alias{HldSettings}
-\alias{HldSettings-class}
-\alias{show,HldSettings-method}
+\alias{Holdout}
+\alias{Holdout-class}
+\alias{show,Holdout-method}
 
-\title{Class "HldSettings" }
+\title{Class "Holdout" }
 \description{	 This class of objects contains the information
   describing a hold out experiment, i.e. its settings.}
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{HldSettings(...)}
+  Objects can be created by calls of the form \code{Holdout(...)}
   providing the values for the class slots.
   The objects contain information on the number of repetitions of the
   hold out experiment, the percentage of the given data to set as hold
@@ -45,12 +45,12 @@
 }
 \section{Extends}{
 Class \code{\linkS4class{EstCommon}}, directly.
-Class \code{\linkS4class{EstimationSettings}}, directly.
+Class \code{\linkS4class{EstimationMethod}}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{show}{\code{signature(object = "HldSettings")}: method used to
-      show the contents of a \code{HldSettings} object. }
+    \item{show}{\code{signature(object = "Holdout")}: method used to
+      show the contents of a \code{Holdout} object. }
 	 }
        }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
@@ -59,25 +59,25 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-   \code{\linkS4class{McSettings}},
-   \code{\linkS4class{LoocvSettings}},
-   \code{\linkS4class{BootSettings}},
-   \code{\linkS4class{CvSettings}},
-   \code{\linkS4class{EstimationSettings}},
+   \code{\linkS4class{MonteCarlo}},
+   \code{\linkS4class{LOOCV}},
+   \code{\linkS4class{Bootstrap}},
+   \code{\linkS4class{CV}},
+   \code{\linkS4class{EstimationMethod}},
    \code{\linkS4class{EstimationTask}}
 }
 \examples{
-showClass("HldSettings")
+showClass("Holdout")
 
 ## 10 repetitions of a holdout experiment leaving on each repetition
 ## 20\% of the cases randomly chosen as test set (the holdout)
-h1 <- HldSettings(nReps=10,hldSz=0.2,strat=TRUE)
+h1 <- Holdout(nReps=10,hldSz=0.2,strat=TRUE)
 h1
 
 ## Small example illustrating the format of user supplied data splits
 ## in this case for 3 repetitions of a Holdout process where each test
 ## set has 10 cases
-h2 <- HldSettings(dataSplits=list(1:10,11:20,21:30))
+h2 <- Holdout(dataSplits=list(1:10,11:20,21:30))
 h2
 
 }

@@ -1,15 +1,15 @@
-\name{LoocvSettings-class}
+\name{LOOCV-class}
 \Rdversion{1.1}
 \docType{class}
-\alias{LoocvSettings}
-\alias{LoocvSettings-class}
-\alias{show,LoocvSettings-method}
+\alias{LOOCV}
+\alias{LOOCV-class}
+\alias{show,LOOCV-method}
 
-\title{Class "LoocvSettings"  }
+\title{Class "LOOCV"  }
 \description{	This class of objects contains the information
   describing a leave one out cross validation estimation experiment, i.e. its settings. }
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{LoocvSettings(...)}
+  Objects can be created by calls of the form \code{LOOCV(...)}
   providing the values for the class slots.
   These objects contain infoprmation on the random number generator seed
   and also whether the execution of the experiments should be verbose.
@@ -29,12 +29,12 @@
 }
 \section{Extends}{
 Class \code{\linkS4class{EstCommon}}, directly.
-Class \code{\linkS4class{EstimationSettings}}, directly.
+Class \code{\linkS4class{EstimationMethod}}, directly.
 }
 \section{Methods}{
   \describe{
-    \item{show}{\code{signature(object = "LoocvSettings")}: method used to
-      show the contents of a \code{LoocvSettings} object. }
+    \item{show}{\code{signature(object = "LOOCV")}: method used to
+      show the contents of a \code{LOOCV} object. }
 	 }
        }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
@@ -43,17 +43,17 @@ Class \code{\linkS4class{EstimationSettings}}, directly.
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-   \code{\linkS4class{McSettings}},
-   \code{\linkS4class{CvSettings}},
-   \code{\linkS4class{BootSettings}},
-   \code{\linkS4class{HldSettings}},
-   \code{\linkS4class{EstimationSettings}},
+   \code{\linkS4class{MonteCarlo}},
+   \code{\linkS4class{CV}},
+   \code{\linkS4class{Bootstrap}},
+   \code{\linkS4class{Holdout}},
+   \code{\linkS4class{EstimationMethod}},
    \code{\linkS4class{EstimationTask}}
 }
 \examples{
-showClass("LoocvSettings")
+showClass("LOOCV")
 
-s <- LoocvSettings()
+s <- LOOCV()
 s
 
 }

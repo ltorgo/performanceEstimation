@@ -25,12 +25,12 @@ No methods defined with class "EstCommon" in the signature.
 }
 \author{Luis Torgo \email{ltorgo@dcc.fc.up.pt}}
 \seealso{
-   \code{\linkS4class{CvSettings}},
-   \code{\linkS4class{McSettings}},
-   \code{\linkS4class{LoocvSettings}},
-   \code{\linkS4class{BootSettings}},
-   \code{\linkS4class{HldSettings}},
-   \code{\linkS4class{EstimationSettings},
+   \code{\linkS4class{CV}},
+   \code{\linkS4class{MonteCarlo}},
+   \code{\linkS4class{LOOCV}},
+   \code{\linkS4class{Bootstrap}},
+   \code{\linkS4class{Holdout}},
+   \code{\linkS4class{EstimationMethod},
    \code{\linkS4class{EstimationTask}}
 }
 \examples{

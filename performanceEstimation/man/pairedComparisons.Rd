@@ -114,7 +114,7 @@ res <- performanceEstimation(
     workflowVariants("standardWF",learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  CV(nReps=1,nFolds=10,seed=1234)
   )
 
 ## checking the top performers
