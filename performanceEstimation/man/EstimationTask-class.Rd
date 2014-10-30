@@ -1,6 +1,7 @@
 \name{EstimationTask-class}
 \Rdversion{1.1}
 \docType{class}
+\alias{EstimationTask}
 \alias{EstimationTask-class}
 \alias{show,EstimationTask-method}
 

@@ -30,7 +30,7 @@ No methods defined with class "EstCommon" in the signature.
    \code{\linkS4class{LOOCV}},
    \code{\linkS4class{Bootstrap}},
    \code{\linkS4class{Holdout}},
-   \code{\linkS4class{EstimationMethod},
+   \code{\linkS4class{EstimationMethod}},
    \code{\linkS4class{EstimationTask}}
 }
 \examples{

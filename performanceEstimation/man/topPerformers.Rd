@@ -13,7 +13,7 @@ Obtain the best scores from a performance estimation experiment
 }
 \usage{
 topPerformers(compRes,
-           maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]),
+           maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),
            digs=3)
 }
 %- maybe also 'usage' for other objects documented here.

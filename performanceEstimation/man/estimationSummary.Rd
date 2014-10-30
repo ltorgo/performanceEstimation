@@ -40,7 +40,7 @@ A string with the ID of a task (it can also be an integer).
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
-\code{\link{getIterationsResults}}, \code{\link{performanceEstimation}}
+\code{\link{getScores}}, \code{\link{performanceEstimation}}
 }
 \examples{
 \dontrun{

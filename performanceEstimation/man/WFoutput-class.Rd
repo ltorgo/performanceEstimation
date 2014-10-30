@@ -90,7 +90,7 @@ myWF <- function(form,train,test,wL=0.5,...) {
     ps <- wL*pl+(1-wL)*pr
     res <- WFoutput(rownames(test),responseValues(form,test),ps)
     workflowInformation(res) <-
-      list(models=list(lm=ml,tree=mr),indivPreds=list(lm=pl,tree=pr)))
+      list(models=list(lm=ml,tree=mr),indivPreds=list(lm=pl,tree=pr))
     res
 }
 }

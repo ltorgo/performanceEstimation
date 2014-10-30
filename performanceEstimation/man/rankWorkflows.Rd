@@ -13,7 +13,7 @@
 }
 \usage{
 rankWorkflows(compRes,top=min(5,length(workflowNames(compRes))),
-              maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]))
+              maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]))
 }
 
 \arguments{

@@ -8,7 +8,7 @@ import(ggplot2)
 
 exportClasses(
     CV, Holdout, LOOCV,
-    MonteCarlo, Bootstrap, EstimationMethod,
+    MonteCarlo, Bootstrap, 
 
     EstimationResults,
     ComparisonResults,
@@ -29,13 +29,15 @@ exportMethods(subset)
 export(
     ## constructors (classDefs.R file)
     CV, Holdout, LOOCV,
-    MonteCarlo, Bootstrap, EstimationMethod,
+    MonteCarlo, Bootstrap, 
 
     EstimationResults,
     ComparisonResults,
 
     PredTask,
     
+    EstimationTask,
+
     Workflow,
     
     WFoutput,

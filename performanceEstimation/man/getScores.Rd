@@ -1,5 +1,5 @@
-\name{getIterationsScores}
-\alias{getIterationsScores}
+\name{getScores}
+\alias{getScores}
 
 \title{
 Obtaining the metric scores on the different iterations for a workflow /
@@ -11,7 +11,7 @@ task combination
   performance estimation experiment.
 }
 \usage{
-getIterationsScores(results, workflow, task)
+getScores(results, workflow, task)
 }
 \arguments{
   \item{results}{
@@ -59,7 +59,7 @@ res <- performanceEstimation(
   )
 
 ## Get the iterations scores of svm.v2 on swiss
-getIterationsScores(res,"svm.v2","swiss.Infant.Mortality")
+getScores(res,"svm.v2","swiss.Infant.Mortality")
 
 }
 }
