@@ -1,0 +1,16 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{MDH{\etalchar{+}}12}
+
+\bibitem[MDH{\etalchar{+}}12]{e1071}
+David Meyer, Evgenia Dimitriadou, Kurt Hornik, Andreas Weingessel, and
+  Friedrich Leisch.
+\newblock {\em e1071: Misc Functions of the Department of Statistics (e1071),
+  TU Wien}, 2012.
+\newblock R package version 1.6-1.
+
+\bibitem[Tor10]{Tor10}
+Luis Torgo.
+\newblock {\em Data Mining with R: learning with case studies}.
+\newblock Chapman \& Hall/CRC Press, 2010.
+
+\end{thebibliography}

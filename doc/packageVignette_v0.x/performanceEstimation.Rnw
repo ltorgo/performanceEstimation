@@ -32,7 +32,7 @@ options(replace.assign=TRUE,width=90)
 ## Load the package (later this should be substituted by library(performanceEstimation))
 ##library(devtools)
 ##load_all("~/Software/R/MyPackages/performanceEstimation/performanceEstimation")
-library(performanceEstimation,lib.loc="~/R/dev.libs/")
+library(performanceEstimation)
 @
 %$
 \maketitle
@@ -70,59 +70,58 @@ performance - the user just needs to provide a workflow function
 (following some interface rules) that implements the approach for
 which the predictive performance is to be estimated. The package
 includes some standard workflow functions that implement the standard
-learn+test approach that most users will be interested
+learn+test+evaluate approach that most users will be interested
 in. This means that if you just want to estimate the performance of
 some variants of a method already implemented in R (e.g. an SVM), on
 some particular tasks, you will be able to use these standard workflow
-functions and thus your required input will be limited to the minimum. The
+functions and thus your input will be limited to the minimum. The
 package also provides a series of predictive performance metrics for
 different tasks. Still, you are not limited to these metrics and can
 use any metric as long as it exists in R or you provide a function
-calculating it. Finally, the most recent versions of the package also
-include several standard data pre-processing and predictions
-post-processing steps that again can be incorporated into the
-workflows being evaluated.  
+calculating it.
 
 This infra-structure implements different methods for estimating the
 predictive performance. Namely, you can select among: (i) cross
-validation, (ii) holdout and random sub-sampling, (iii) leave one out
+validation, (ii) holdout and random subsampling, (iii) leave one out
 cross validation, (iv) ($\epsilon_0$ and .631) bootstrap and also (v)
 Monte-Carlo experiments for time series forecasting tasks. For each of
 these tasks different options are implemented (e.g. use of stratified
 sampling).
 
 Most of the times experimental methodologies for performance estimation are iterative
-processes that repeat the modeling task several times using different
-train+test samples with the goal of improving the accuracy of the
+processes that repeat the modelling task several times using different
+data samples with the goal of improving the accuracy of the
 estimates. The estimates are the result of aggregating the scores
 obtained on each of the repetitions. For each of these
 repetitions different training and testing samples are generated and
 the process being evaluated is "asked" to: (i) obtain the predictive
 model using the training data, and then (ii) use this model to obtain
-predictions for the respective test sample. These predictions can then be
+predictions for the respective test sample, which in turn (iii) can be
 used to calculate the scores of the performance metrics being
 estimated. This means that there is a workflow that starts with a
 predictive task for which training and testing samples are given, and
-that it should produce as result the predictions of the workflow for
-the given test sample. There are far too many possible approaches and
+that it should produce as result the scores of the performance metrics
+being estimated. There are far too many possible approaches and
 sub-steps for the implementation of this workflow.  To ensure full
-generality of the infra-structure, we allow the user to provide a
+generality of the infra-structure, we ask the user to provide a
 function that implements this workflow for each of the predictive
 approaches he/she wishes to compare and/or evaluate. This function can
-be parameterizable in the sense that there may be variants of the
+be parametrizable in the sense that there may be variants of the
 workflow that the user wishes to evaluate and/or compare. Still, the
-goal of this workflow  functions is very clear: (i)
+goal of this workflow implementation functions is very clear: (i)
 receive as input a predictive task for which training  and  test
 samples are given, as well as any eventual workflow specific parameters; and
-(ii) produce as result a set of predictions for the given test
-set.  These predictions
-will then be used to obtain the scores of the predictive metrics for which the
+(ii) produce as result a set of scores for the evaluation metrics
+being estimated. These scores should be obtained by applying some
+modelling technique to the training sample and then use the resulting
+to model to obtain predictions for the test sample. These predictions
+should then be used to obtain the scores of the predictive metrics for which the
 user is interested in obtaining reliable estimates.
 
 The infra-structure we describe here provides means for the user to
 indicate: (i) a set of predictive tasks with the respective data sets;
-(ii) a set of workflows and respective variants; and (iii) the
-information on the estimation task. The infra-structure then takes care of all
+(ii) a set of workflows and respective variants; and (iii) an
+experimental methodology. The infra-structure then takes care of all
 the process of experimentally estimating the predictive performance of the different approaches on
 the tasks, producing as result an object that can be
 explored in different ways to obtain the results of the estimation process.
@@ -148,25 +147,20 @@ an SVM on the
 obtain a reliable estimate of the error rate of these variants using
 10-fold cross validation. The following code illustrates how these
 estimates could be obtained with our proposed infra-structure.
-<<echo=FALSE>>=
-library(performanceEstimation,lib.loc="~/R/dev.libs/")
-@ 
-<<eval=FALSE>>=
-library(performanceEstimation)  # Loading our infra-structure
-@ 
+
 <<iris_small_ex, eval=FALSE, size="footnotesize">>=
+library(performanceEstimation)  # Loading our infra-structure
 library(e1071)                  # A package containing SVMs
 
 data(iris)                      # The data set we are going to use
 
 res <- performanceEstimation(
          PredTask(Species ~ .,iris),
-         workflowVariants(wf="standardWF",
+         workflowVariants('standardWF',
                           learner='svm',
                           learner.pars=list(cost=c(1,5,10),gamma=c(0.1,0.001))
                          ),
-         EstimationTask(metrics="err",method=CV(nFolds=10))
-         )  
+         CvSettings(nReps=1,nFolds=10))
 @ 
 
 This simple example illustrates several key concepts of our
@@ -174,7 +168,7 @@ infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
 the estimation process. It has 3 arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows; and (iii) the
-specification of the estimation task (essentially the metrics to be estimated and the estimation methodology).   
+estimation settings. 
 
 Predictive tasks are S4 objects of class
 \textbf{PredTask}. This class, also defined in our package,
@@ -210,22 +204,33 @@ to the \texttt{workflowVariants()} function as generating the following vector:\
 
 <<eval=FALSE,size="small">>=
 c(Workflow('standardWF',
-           pars=list(learner='svm',
-                     learner.pars=list(cost=1,gamma=0.1))
+          pars=list(learner='svm',
+                    learner.pars=list(cost=1,gamma=0.1))
          ), 
   Workflow('standardWF',
-           pars=list(learner='svm',
-                     learner.pars=list(cost=5,gamma=0.1))
+          pars=list(learner='svm',
+                    learner.pars=list(cost=5,gamma=0.1))
          ),
 ...
 ...
  ) 
 @ 
  
+The workflow implemented through function \texttt{standardWF()} by
+default calculates the error rate of the used modelling techniques if
+handling classification tasks, though we will see later that we can
+specify other metrics.
 
 Finally, the third parameter of the function
-\texttt{performanceEstimation()} specifies the estimation task to carry out. It is an S4 object of class
-\textbf{EstimationTask}. These objects include information on the vector of metrics to be estimated (a large of them are already known by the infra-structure, but you may include your own metrics provided you tell R how to calculate them), and also the estimation method to use. For this latter issue several standard estimation methodologies are implemented by our package. For instance, in the simple example above we are using cross validation experiments with 10-folds.
+\texttt{performanceEstimation()} specifies the estimation settings
+to use in the process. It is an S4 object of class
+\textbf{EstimationSettings} that in effect is an union that includes among
+others the S4 class \textbf{CvSettings}. Objects of this latter class
+include information on the number of repetitions of the cross
+validation process (in our example 1 single repetition, which is the
+default), the number of folds (10 above, which is also the default),
+the random number generator seed and a logical indicating whether stratified
+samples should be used (defaulting to \texttt{FALSE}, i.e. no stratification).
 
 The result of the call to \texttt{performanceEstimation()} is an S4
 object of the class \textbf{ComparisonResults}. These objects tipically are not
@@ -310,12 +315,10 @@ data(iris)
 PredTask(Species ~ Petal.Length + Sepal.Length,iris,'ShortIrisTask')
 @ 
 
-By default the constructor will not copy the data source (provided in the second argument) into the created S4 object. This means that you should not delete this data source until you finish your estimation experiments with this task. The reason for this default behavior is essentially optimization of computer memory resources, particularly if you are using large data sets. If you want to override this default behavior, thus storing an internal copy of the data within the PredTask object, you may proceed as follows:
-
-<<size="footnotesize">>=
-PredTask(Species ~ Petal.Length + Sepal.Length,iris,'ShortIrisTask',copy=TRUE)
-@ 
-
+So, although we have supplied the full data frame to the constructor
+function, as the task only uses 3 of the columns, the resulting
+\textbf{PredTask} object only includes the information on the columns
+required for this task.
 
 % ====================================================================
 \section{Workflows}
@@ -330,139 +333,6 @@ sample and then use it to obtain predictions for the given test
 set. This process can include several steps, e.g. specific data
 pre-processing steps, and may use any modelling approach, eventually
 developed  by the user. 
-
-
-\subsection{Generic Workflows}
-
-Most of the times users want to evaluate standard workflows on some tasks. This means that they want to use existing out-of-the-box tools within R and apply them to some data sets.  This means that
-the most frequently used workflows will essentially build a model
-using some existing algorithm, obtain its predictions and then
-calculate some standard prediction error metrics. To facilitate this type of tasks, we
-also provide generic workflow functions that carry out this type
-of process for any modeling technique available in R. The idea is to save the user
-from having to write her/his own workflow functions provided her/his workflow fits
-this generic schema.
-
-\subsubsection{Classification and Regression Tasks}
-
-Function \texttt{standardWF()} implements a typical workflow for both
-classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following parameters that help the user to specify is intended workflow:
-
-\begin{description}
-\item[learner] - the name of a R function that obtains a model from the training data. This function will be called with a formula in the first argument and the training set data frame in the second.
-\item[learner.pars] - a list specifying any extra parameter settings that should be added to the formula and training set, at the time the learner function is called (defaults to \texttt{NULL}).
-\item[predictor] - the name of a R function that is able to obtain the predictions of the model obtained with \texttt{learner}. This function will be called with the object resulting from the \texttt{learner} call on the first argument and the test set data frame in the second (it defaults to function \texttt{predict()}).
-\item[predictor.pars] - a list specifying any extra parameter settings that should be added to the model and test set, at the time the predictor function is called (defaults to \texttt{NULL}).
-\end{description}
-
-
-Below you find an example of one of the most frequent type of
-comparisons users carry out - checking which is the ``best'' model for
-a given predictive task. Let us restrict the search to a small set of
-models for illustrative purposes and let us play with the well-known
-Boston housing regression task:
-
-<<standardWF_ex1,eval=FALSE>>=
-data(Boston,package='MASS')
-library(DMwR)
-library(e1071)
-library(randomForest)
-bostonRes <- performanceEstimation(
-  PredTask(medv ~ .,Boston),
-  workflowVariants(wf='standardWF',
-                   learner=c('rpartXse','svm','randomForest')),
-  EstimationTask(metrics="mse",method=CV())
-  )
-@ 
-
-Notice that on this simple example we have used all modeling tools
-with their default parameter settings which is not necessarily a good
-idea when we are looking for the best performance. Still, the goal of
-this illustration is to show you how simple this type of experiments
-can be if you are using a standard workflow setting. In case you want
-to use the modelling tools with other parameter settings then you
-should separate them in different \texttt{workflowVariants()} calls because each learner will most probably use different parameters, as shown
-in the following example:
-
-<<standardWF_ex2,eval=FALSE,size="small">>=
-data(Boston,package='MASS')
-library(DMwR)
-library(e1071)
-library(randomForest)
-bostonRes <- performanceEstimation(
-  PredTask(medv ~ .,Boston),
-  c(workflowVariants(wf='standardWF',learner='rpartXse',
-                     learner.pars=list(se=c(0,1))),
-    workflowVariants(wf='standardWF',learner='svm',
-                     learner.pars=list(cost=c(1,5),gamma=c(0.01,0.1))),
-    workflowVariants(wf='standardWF',learner='randomForest',
-                     learner.pars=list(ntree=c(500,1000)))),
-  EstimationTask(metrics="mse",method=CV())
-  )
-@ 
-
-Notice that this code involves estimating the mean squared error on the Boston Housing task for 8 different models through
-10-fold cross validation (the \texttt{CV()} function assumes \texttt{nFolds=10} by default).
-
-Sometimes users also want to apply some standard data pre-processing steps to the data prior to learning the models, e.g. handling unknown feature values using some standard procedure, or normalizing the numeric features. The \texttt{standardWF} function also allows users to indicate sequences of pre-processing steps through parameter \texttt{pre}, and some common techniques are already implemented, although the user may also specify her/his own pre-processing functions.
-
-\subsubsection{Time Series Tasks}
-
-Our infra-structure also includes another generic workflow function
-that is specific for predictive tasks with time-dependent data
-(e.g. time series forecasting problems). This workflow function
-implements two different approaches to the problem of training a
- model with a set of time-dependent data and then use it to
-obtain predictions for a test set in the future. These two approaches
-contrast with the standard approach of learning a model with the
-available training sample and then use it to obtain predictions for
-all test period. This standard approach could be applied using the previously
-described \texttt{standardWF()} function. However, there are
-alternatives to this procedure, two of the most common being the
-sliding and growing window approaches, which are implemented in another workflow function developed specifically for time series tasks.
-
-Predictive tasks for time-dependent data are different from standard
-classification and regression tasks because they require that the test
-samples have time stamps that are more recent then training
-samples. In this context, experimental methodologies handling these
-tasks typically do not shuffle the observations to maintain the time ordering
-in the original data. The most common setup is that we have a $L$  time steps
-training window containing observations in the period $[t_1,t_L]$ and a $F$
-time steps test window typically containing the observations in the
-time window $[t_{L+1},t_{L+F}]$. 
-
-The idea of the
-sliding window method is that if we want a prediction for time point
-$t_k$ belonging to the test interval $[t_{L+1},t_{L+F}]$ then we can
-assume that all data from $t_{L+1}$ till $t_{k-1}$ is already past,
-and thus usable by the model. In this context, it may be wise to use
-this new data in the interval $[t_{L+1},t_{k-1}]$ to update the
-original model obtained using only the initial training period data. This is
-particularly advisable if we suspect that the conditions may have
-changed since the training period has ended. Model updating using the
-sliding window method is carried out by using the data in the $L$ last
-time steps, i.e. every new model is always obtained using the last $L$
-data observations, as if the training window was slided forward in
-time. Our \texttt{timeseriesWF()} function implements this idea for
-both time series with a numeric target variable and a nominal target
-variable. This function has a parameter (\texttt{type}) that if set to
-``slide'' will use a sliding window approach. As with the
-\texttt{standardWF()} function, this \texttt{timeseriesWF()} function
-also accepts parameters specifying the learner, predictor, evaluator
-and their respective parameters. Moreover, this function also includes
-an extra parameter, named \texttt{relearn.step}, which allows the user
-to establish the frequency of model updating. By default this is every
-new test sample, i.e. $1$, but the user may set a less frequent
-model-updating policy by using higher values of this parameter.  
-
-The
-idea of the growing window approach is very similar. The only difference
-is on the data used when updating the models. Whilst sliding window
-uses the data occurring in the last $L$ time steps, growing window
-keeps increasing the original training window with the newly available
-data points, i.e. the models are obtained with increasingly larger
-training samples. By setting the parameter \texttt{type} to ``grow''
-you get the \texttt{timseriesWF()} function to use this method.
 
 \subsection{User-defined Workflows}
 
@@ -601,6 +471,143 @@ In this experimental comparison we have used 100 repetitions of a $\epsilon_0$
 bootstrap estimation procedure as estimation methodology (further
 details on this and other methodologies will be given later), to
 compare 12 variants of our workflow. 
+
+\subsection{Generic Workflows}
+
+Writing workflow functions may be tedious on large comparisons,
+particularly when few details change among them. Moreover, the most
+frequent use of our infra-structure will probably be to compare
+existing modelling techniques (or variants of them) on one or more problems. This means that
+the most frequently used workflows will essentially build a model
+using some existing algorithm, obtain its predictions and then
+calculate some standard prediction error metrics. To facilitate this type of tasks, we
+also provide generic workflow functions that carry out this type
+of process for any modelling technique. The idea is to save the user
+from having to write these functions provided his/her workflow fits
+this generic schema.
+
+\subsubsection{Classification and Regression Tasks}
+
+Function \texttt{standardWF()} implements a typical workflow for both
+classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following parameters that help the user to specify is intended workflow:
+
+\begin{description}
+\item[learner] - the name of a R function that obtains a model from the training data. This function will be called with a formula in the first argument and the training set data frame in the second.
+\item[learner.pars] - a list specifying any extra parameter settings that should be added to the formula and training set, at the time the learner function is called (defaults to \texttt{NULL}).
+\item[predictor] - the name of a R function that is able to obtain the predictions of the model obtained with \texttt{learner}. This function will be called with the object resulting from the \texttt{learner} call on the first argument and the test set data frame in the second (it defaults to function \texttt{predict()}).
+\item[predictor.pars] - a list specifying any extra parameter settings that should be added to the model and test set, at the time the predictor function is called (defaults to \texttt{NULL}).
+\item[evaluator] - the name of a R function that is able to calculate the evaluation metrics you want to estimate based on the predictions of the model and the true values of the target variable on the given test set (it will default to \texttt{classificationMetrics()} function if it is a classification task, and to \texttt{regressionMetrics()} if a regression task - check the respective help pages to see what are the default metrics that are calculated for each). This function will be called with the values of the target variable in the test set on the first argument and with the result of the call to the predictor function on the second.
+\item[evaluator.pars] -  a list specifying any extra parameter settings that should be added to the true values and predictions, at the time the evaluator function is called (defaults to \texttt{NULL}). A typical usage here would be to use the parameter \texttt{stats} of functions \texttt{classificationMetrics()} and \texttt{regressionMetrics()} to specify the metrics you want to calculate, provided you are using these functions as evaluators.
+\end{description}
+
+
+Below you find an example of one of the most frequent type of
+comparisons users carry out - checking which is the ``best'' model for
+a given predictive task. Let us restrict the search to a small set of
+models for illustrative purposes and let us play with the well-known
+Boston housing regression task:
+
+<<standardWF_ex1,eval=FALSE>>=
+data(Boston,package='MASS')
+library(DMwR)
+library(e1071)
+library(randomForest)
+bostonRes <- performanceEstimation(
+  PredTask(medv ~ .,Boston),
+  workflowVariants('standardWF',
+                   learner=c('rpartXse','svm','randomForest')),
+  CvSettings(nReps=1,nFolds=10)
+  )
+@ 
+
+Notice that on this simple example we have used all modelling tools
+with their default parameter settings which is not necessarily a good
+idea when we are looking for the best performance. Still, the goal of
+this illustration is to show you how simple this type of experiments
+can be if you are using a standard workflow setting. In case you want
+to use the modelling tools with other parameter settings then you
+should separate them in different \texttt{workflowVariants()} calls, as shown
+in the following example:
+
+<<standardWF_ex2,eval=FALSE,size="small">>=
+data(Boston,package='MASS')
+library(DMwR)
+library(e1071)
+library(randomForest)
+bostonRes <- performanceEstimation(
+  PredTask(medv ~ .,Boston),
+  c(workflowVariants('standardWF',learner='rpartXse',
+                     learner.pars=list(se=c(0,1))),
+    workflowVariants('standardWF',learner='svm',
+                     learner.pars=list(cost=c(1,5),gamma=c(0.01,0.1))),
+    workflowVariants('standardWF',learner='randomForest',
+                     learner.pars=list(ntree=c(500,1000)))),
+  CvSettings(nReps=1,nFolds=10)
+  )
+@ 
+
+Notice that this code involves estimating the mean squared error on the Boston Housing task for 8 different models through
+10-fold cross validation. 
+
+
+\subsubsection{Time Series Tasks}
+
+Our infra-structure also includes another generic workflow function
+that is specific for predictive tasks with time-dependent data
+(e.g. time series forecasting problems). This workflow function
+implements two different approaches to the problem of training a
+ model with a set of time-dependent data and then use it to
+obtain predictions for a test set in the future. These two approaches
+contrast with the standard approach of learning a model with the
+available training sample and then use it to obtain predictions for
+all test period. This standard approach could be applied using the previously
+described \texttt{standardWF()} function. However, there are
+alternatives to this procedure, two of the most common being the
+sliding and growing window approaches, which are implemented in another workflow function developed specifically for time series tasks.
+
+Predictive tasks for time-dependent data are different from standard
+classification and regression tasks because they require that the test
+samples have time stamps that are more recent then training
+samples. In this context, experimental methodologies handling these
+tasks typically do not shuffle the observations to maintain the time ordering
+in the original data. The most common setup is that we have a $L$  time steps
+training window containing observations in the period $[t_1,t_L]$ and a $F$
+time steps test window typically containing the observations in the
+time window $[t_{L+1},t_{L+F}]$. 
+
+The idea of the
+sliding window method is that if we want a prediction for time point
+$t_k$ belonging to the test interval $[t_{L+1},t_{L+F}]$ then we can
+assume that all data from $t_{L+1}$ till $t_{k-1}$ is already past,
+and thus usable by the model. In this context, it may be wise to use
+this new data in the interval $[t_{L+1},t_{k-1}]$ to update the
+original model obtained using only the initial training period data. This is
+particularly advisable if we suspect that the conditions may have
+changed since the training period has ended. Model updating using the
+sliding window method is carried out by using the data in the $L$ last
+time steps, i.e. every new model is always obtained using the last $L$
+data observations, as if the training window was slided forward in
+time. Our \texttt{timeseriesWF()} function implements this idea for
+both time series with a numeric target variable and a nominal target
+variable. This function has a parameter (\texttt{type}) that if set to
+``slide'' will use a sliding window approach. As with the
+\texttt{standardWF()} function, this \texttt{timeseriesWF()} function
+also accepts parameters specifying the learner, predictor, evaluator
+and their respective parameters. Moreover, this function also includes
+an extra parameter, named \texttt{relearn.step}, which allows the user
+to establish the frequency of model updating. By default this is every
+new test sample, i.e. $1$, but the user may set a less frequent
+model-updating policy by using higher values of this parameter.  
+
+The
+idea of the growing window approach is very similar. The only difference
+is on the data used when updating the models. Whilst sliding window
+uses the data occurring in the last $L$ time steps, growing window
+keeps increasing the original training window with the newly available
+data points, i.e. the models are obtained with increasingly larger
+training samples. By setting the parameter \texttt{type} to ``grow''
+you get the \texttt{timseriesWF()} function to use this method.
+
 
 % ====================================================================
 \section{Estimation Methodologies}\label{sec:expMeth}
