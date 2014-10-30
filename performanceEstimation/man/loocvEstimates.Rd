@@ -14,8 +14,8 @@ Performance estimation using  Leave One Out Cross Validation
 
 The function implements leave one out cross validation
 estimation. Different settings concering this methodology are 
-available through the argument \code{sets} (check the help page of
-\code{\linkS4class{LoocvSettings}}).
+available through the argument \code{estTask} (check the help page of
+\code{\linkS4class{LOOCV}}).
 
 Please note that most of the times you will not call this function
 directly, though there is nothing wrong in doing it, but instead you
@@ -27,21 +27,21 @@ workflow on one task, you may use this function directly.
 }
 
 \usage{
-loocvEstimates(wf,task,sets,verbose=FALSE)
+loocvEstimates(wf,task,estTask,verbose=FALSE)
 }
 
 \arguments{
   \item{wf}{
- an object of the class \code{Workflow} representing the
+ an object of the class \code{\linkS4class{Workflow}} representing the
   modeling approach to be evaluated on a certain task.
 }
   \item{task}{
-an object of the class \code{PredTask} representing the
+an object of the class \code{\linkS4class{PredTask}} representing the
   prediction task to be used in the evaluation.
 }
-  \item{sets}{
-an object of the class \code{LoocvSettings} representing the
-  cross validation settings to use.
+  \item{estTask}{
+an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
+  be estimated and the leave one out cross validation settings to use.
 }
   \item{verbose}{
     A boolean value controlling the level of output of the function
@@ -68,27 +68,6 @@ an object of the class \code{LoocvSettings} representing the
   resulting estimates are obtained by averaging over the \emph{N}
   iteration scores. 
 
-  It is the user responsibility to decide which statistics are to be
-  evaluated on each iteration and how they are calculated. This is done
-  by creating a function that the user must assume it will be called by this
-  leave one out CV routine at each iteration of the
-  process. This user-defined workflow function must assume that it will
-  receive in the first 3 arguments a formula, a training set and a
-  testing set, respectively. It should also assume that it may receive
-  any other set of parameters that should be passed towards the
-  modeling algorithm. The result of this user-defined function should
-  be an object of class \code{\linkS4class{WFoutput}}. See the Examples
-  section below for an example of these functions. Further examples are
-  given in the package vignette.
-
-  To facilitate the task of creating these user-defined workflow
-  functions we provide the \code{\link{standardWF}} function that can be used
-  as a kind of skeleton of a general purpose workflow for predictive
-  tasks where the user simply indicates a few small details (e.g. the
-  learning algorithm to use). Check the help page of this function for
-  more details and examples. In the Examples section of the current
-  function you will also find some illustrations of the use of this
-  function.
 }
 
 \value{
@@ -103,8 +82,17 @@ an object of the class \code{LoocvSettings} representing the
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
 \seealso{
-\code{\link{performanceEstimation}},
-\code{\linkS4class{EstimationResults}},\code{\linkS4class{BootSettings}}, \code{\link{mcEstimates}}, \code{\link{cvEstimates}}, \code{\link{hldEstimates}}, \code{\link{bootEstimates}}
+  \code{\linkS4class{LOOCV}},
+  \code{\linkS4class{Workflow}},
+  \code{\link{standardWF}},
+  \code{\linkS4class{PredTask}},
+  \code{\linkS4class{EstimationTask}},
+  \code{\link{performanceEstimation}},
+  \code{\link{hldEstimates}},
+  \code{\link{bootEstimates}},  
+  \code{\link{cvEstimates}},
+  \code{\link{mcEstimates}},
+  \code{\linkS4class{EstimationResults}}
 }
 
 \examples{
@@ -117,11 +105,11 @@ data(iris)
 
 ## Now the evaluation
 eval.res <- loocvEstimates(
-             Workflow("standardWF",wfID="svmTrial",
+             Workflow(wfID="svmTrial",
                       learner="svm",learner.pars=list(cost=10,gamma=0.1)
                      ),
              PredTask(Species ~ ., iris),
-             LoocvSettings(seed=1234))
+             EstimationTask("err",method=LOOCV()))
 
 ## Check a summary of the results
 summary(eval.res)

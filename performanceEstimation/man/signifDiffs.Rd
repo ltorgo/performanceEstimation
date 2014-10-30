@@ -2,8 +2,8 @@
 \alias{signifDiffs}
 
 \title{
-  Obtains a list with the set of paired differences are statistically
-  significant
+  Obtains a list with the set of paired differences that are statistically
+  significant according to a p-value threshold
 
 }
 \description{
@@ -51,12 +51,13 @@ signifDiffs(ps,p.limit=0.05,metrics=dimnames(ps)[[3]],tasks=dimnames(ps)[[4]])
   The result of this function is a list.
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-\code{\link{pairedComparisons}},\code{\link{performanceEstimation}}
+  \code{\link{pairedComparisons}},
+  \code{\link{performanceEstimation}}
 }
 \examples{
 \dontrun{
@@ -76,7 +77,7 @@ res <- performanceEstimation(
     workflowVariants("standardWF",learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  EstimationTask(metrics=c("mse","mae"),method=CV())
   )
 
 ## carrying out parired comparisons against the workflow "svm.v2"

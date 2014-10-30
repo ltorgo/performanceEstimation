@@ -18,8 +18,8 @@
     you can use to supply the subsetting criteria.
 
     Namely, the parameter
-    \code{statistics} allows you to indicate a vector with the subset of
-    evaluation statistics in the orginal object. Alternatively, you can
+    \code{metrics} allows you to indicate a vector with the subset of
+    evaluation metrics in the orginal object. Alternatively, you can
      provide a regular expression to be matched against the name
     of the statistics measured in the experiment (see function
     \code{\link{metricNames}}) to specify the subset of metrics 

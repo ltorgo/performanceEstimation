@@ -14,14 +14,14 @@
   workflows being applied and compared to several predictive tasks. For
   each workflow and task, a set of predictive performance metrics are
   estimated using some methodology and the results of this process are
-  stored on this class of objets. }
+  stored in these objets. }
 \section{Objects from the Class}{
   Objects can be created by calls of the form
   \code{ComparisonResults(...)}. These object are essentially
   a list of lists of objects of class
-  \code{\linkS4class{EstimationResults}}. The top level list has as many
-  components as there are tasks. For each task there will be a sub-list
-  containing as many components as there are alternative workflows. Each
+  \code{\linkS4class{EstimationResults}}. The top level is named list
+  with has as many components as there are tasks. For each task there
+  will be a named sub-list containing as many components as there are alternative workflows. Each
   of these components will contain and object of class
   \code{\linkS4class{EstimationResults}} with the estimation results for
   the particular workflow / task combination.
@@ -37,7 +37,7 @@
     \item{subset}{\code{signature(x = "ComparisonResults")}: can be used to obtain
     a smaller ComparisonResults object containing only a subset of the information
   of the provided object. This method also accepts the arguments "tasks",
-  "workflows" and "statistics". All are vectors of numbers or names
+  "workflows" and "metrics". All are vectors of numbers or names
   that can be used to subset the original object. They default to all values of each dimension. See "methods?subset" for further details.}
     \item{summary}{\code{signature(object = "ComparisonResults")}: provides a
       summary of the performance estimation experiment. }
@@ -83,6 +83,9 @@ summary(res)
 
 topPerformers(res)
 
+summary(subset(res,metrics="mse"))
+summary(subset(res,metrics="mse",partial=FALSE))
+summary(subset(res,workflows="v1"))
 }
 
 }

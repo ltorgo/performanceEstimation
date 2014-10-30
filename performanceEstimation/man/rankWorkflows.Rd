@@ -12,7 +12,7 @@
   task and for each evaluation metric. 
 }
 \usage{
-rankWorkflows(compRes,top=5,
+rankWorkflows(compRes,top=min(5,length(workflowNames(compRes))),
               maxs=rep(FALSE,dim(compRes@tasks[[1]][[1]]@iterationsScores)[2]))
 }
 
@@ -22,7 +22,8 @@ rankWorkflows(compRes,top=5,
   performance estimation experiment.
 }
   \item{top}{
-    The number of workflows to include in the rankings (defaulting to 5)
+    The number of workflows to include in the rankings (defaulting to 5
+  or the number of workflows in the experiment if less than 5)
 }
   \item{maxs}{
     A vector of booleans with as many elements are there are statistics measured in
@@ -43,14 +44,17 @@ rankWorkflows(compRes,top=5,
 }
 
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
 \seealso{
-\code{\link{performanceEstimation}}, \code{\link{topPerformers}}, \code{\link{metricsSummary}}
+  \code{\link{performanceEstimation}},
+  \code{\link{topPerformers}},
+  \code{\link{topPerformer}},
+  \code{\link{metricsSummary}}
 }
 
 \examples{
@@ -67,15 +71,13 @@ library(e1071)
 results <- performanceEstimation(
                c(PredTask(Infant.Mortality ~ ., swiss),
                  PredTask(mpg ~ ., mtcars)),
-               c(workflowVariants('standardWF',
-                                  learner='svm',
-                                  learner.pars=list(cost=c(1,5,10),gamma=c(0.1,0.01)),
-                                  evaluator.pars=list(stats="all")
+               c(workflowVariants(learner='svm',
+                                  learner.pars=list(cost=c(1,5),gamma=c(0.1,0.01))
                                  )
                ),
-               CvSettings(2,5,1234)
+               EstimationTask(metrics=c("mse","mae"),method=CV(nReps=2,nFolds=5))
                                  )
-## get a ranking of the top 5 workflows for each task and evaluation metric
+## get a ranking of the top workflows for each task and evaluation metric
 rankWorkflows(results)
 }
 }

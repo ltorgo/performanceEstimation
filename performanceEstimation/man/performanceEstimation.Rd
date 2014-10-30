@@ -30,7 +30,7 @@ This is a vector of objects of class \code{\linkS4class{Workflow}}, containing t
 }
   \item{estTask}{
 This is an object belonging to class
-\code{\linkS4class{EstimationTask}}. It is used to specify the metrics
+  \code{\linkS4class{EstimationTask}}.  It is used to specify the metrics
   to be estimated and the method to use to obtain these estimates.  See
   section Details for the possible values. 
 }
@@ -41,7 +41,7 @@ Any further parameters that are to be passed to the lower-level
 }
 \details{
 The goal of this function is to allow estimating the perfomance of a set
-of alternative modelling approaches to a set of predictive tasks. The estimation
+of alternative modelling approaches on a set of predictive tasks. The estimation
   can be carried out using different methodologies. All alternative
   approaches (which we will refer to as \emph{workflows}) will be
   applied using the same exact data partitions for each  task thus
@@ -66,21 +66,25 @@ of alternative modelling approaches to a set of predictive tasks. The estimation
   functions \code{\link{standardWF}} and
   \code{\link{timeseriesWF}}. When specifying the vector of workflows if
   you use (either in the constructor or in the function
-  \code{\link{workflowVariants}}) the parameter \code{user}, the package
-  will assume that you will be providing your own workflow function. If
-  instead you supply a value for parameter \code{learner} the package
-  assumes you are using a "standard" workflow. If on top of supplying a
-  value for \code{learner} you also supply a value for \code{type}
-  (either 'slide' or 'grow'), the \code{\link{timeseriesWF}} will be
-  used, otherwise the function uses \code{\link{standardWF}}. See the
-  Examples section and the accompanying vignette for illustrations of
-  all these combinations. Summarizing, in terms of workflows you can
+  \code{\link{workflowVariants}}) the parameter \code{wf} to indicate
+  which workflow you which to use. If you supply a name different from
+  the two provided standard workflows the function will assume that this
+  is a name of a function you have created to implement your own
+  workflow (see the Examples section for illustrations). In case you
+  omit the value of the \code{wf} parameter the function assumes you
+  want to use one of the standard workflows and will try to "guess"
+  which one. Namely, if you provide some value for the parameter
+  \code{type} (either "slide" or "grow"), it will assume that you are
+  addressing a time series task and thus will set \code{wf} to
+  \code{\link{timeseriesWF}}. In all other cases will set it to
+  \code{\link{standardWF}}.  Summarizing, in terms of workflows you can
   use: i) your own user-defined workflows; ii) the standard workflow
   implemented by function \code{\link{standardWF}}; or iii) the standard
   time series workflow implementd by \code{\link{timeseriesWF}}.
 
   Currently, the function allows for 5 different types of estimation
-  methods to be used. These are different  methods for providing
+  methods to be used that are specified when you indicate the esitmation
+  task. These are different  methods for providing
   reliable estimates of the true value of the selected evaluation
   metrics. Both the metrics and the estimation method are defined
   through the value provided in argument \code{estTask}. The 5
@@ -131,10 +135,15 @@ of alternative modelling approaches to a set of predictive tasks. The estimation
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\link{workflowVariants}},\code{\link{topPerformers}},\code{\link{rankWorkflows}},
-  \code{\link{pairedComparisons}}, \code{\link{cvEstimates}}, \code{\link{loocvEstimates}},
-\code{\link{hldEstimates}}, \code{\link{mcEstimates}},
-  \code{\link{bootEstimates}}
+  \code{\link{workflowVariants}},
+  \code{\link{topPerformers}},
+  \code{\link{rankWorkflows}},
+  \code{\link{pairedComparisons}},
+  \code{\link{CV}},
+  \code{\link{LOOCV}},
+  \code{\link{Holdout}},
+  \code{\link{MonteCarlo}},
+  \code{\link{Bootstrap}}
 
 }
 \examples{
@@ -147,7 +156,8 @@ library(DMwR)
 data(swiss)
 data(mtcars)
 
-## running the estimation experiment
+## Estimating MSE using 10-fold CV for 4 variants of a standard workflow
+## using an SVM as base learner and 3 variants of a regression tree. 
 res <- performanceEstimation(
   c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
   c(workflowVariants(learner="svm",
@@ -172,6 +182,24 @@ res1 <- performanceEstimation(PredTask(Species  ~ .,iris),
              Workflow(learner="svm"),
              EstimationTask(metrics="acc",method=Holdout(nReps=10,hldSz=0.2)))
 summary(res1)
+
+## Now an example with a user-defined workflow
+myWF <- function(form,train,test,wL=0.5,...) {
+    require(rpart,quietly=TRUE)
+    ml <- lm(form,train)
+    mr <- rpart(form,train)
+    pl <- predict(ml,test)
+    pr <- predict(mr,test)
+    ps <- wL*pl+(1-wL)*pr
+    WFoutput(rownames(test),responseValues(form,test),ps)
+}
+resmywf <- performanceEstimation(
+             PredTask(mpg ~ ., mtcars),
+             workflowVariants(wf="myWF",wL=seq(0,1,by=0.1)),
+             EstimationTask(metrics="mae",method=Bootstrap(nReps=50))
+           )
+summary(resmywf)
+
 }
 
 }

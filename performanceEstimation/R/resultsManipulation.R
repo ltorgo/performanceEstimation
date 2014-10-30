@@ -79,18 +79,26 @@ metricNames    <- function(o) o[[1]][[1]]@estTask@metrics
 
 
   
-# ======================================================================
-# Obtaining some information from the estimation experiments
-# ======================================================================
-# Luis Torgo, Jan 2009, 2014
-# ======================================================================
-getIterationsScores <- function(results,workflow,task) {
+## ======================================================================
+## Obtaining some information from the estimation experiments
+## ======================================================================
+## Luis Torgo, Jan 2009, 2014
+## ======================================================================
+
+
+## ----------------------------------------------------------
+## The scores on all iterations
+## ----------------------------------------------------------
+getScores <- function(results,workflow,task) {
   if (!inherits(results,"ComparisonResults")) stop(results," is not of class 'ComparisonResults''.\n")
 
   results[[task]][[workflow]]@iterationsScores
 }
 
 
+## ----------------------------------------------------------
+## The scores on all iterations
+## ----------------------------------------------------------
 getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
     if ((missing(rep) || missing(fold)) && missing(it))
         stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
@@ -103,6 +111,9 @@ getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
     }
 }
 
+## ----------------------------------------------------------
+## The scores on all iterations
+## ----------------------------------------------------------
 getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
     if ((missing(rep) || missing(fold)) && missing(it))
         stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")

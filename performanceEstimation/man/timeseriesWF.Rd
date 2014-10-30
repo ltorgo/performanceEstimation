@@ -2,15 +2,15 @@
 \alias{timeseriesWF}
 
 \title{
-  A function implementing sliding and growing window workflows for time series
+  A function implementing sliding and growing window standard workflows for time series
   forecasting tasks
 }
 \description{
   This function implements sliding and growing window workflows for the
-  prediction of both nominal and numerical time series. The sliding window workflow consists of: (i) starting by
+  prediction  time series. The sliding window workflow consists of: (i) starting by
   learning a prediction model based on the given training set, (ii) use
   this model to obtain predictions for a pre-defined number of future
-  time steps; (iii) then  slide the training window forward this
+  time steps of the test set; (iii) then  slide the training window forward this
   pre-defined number of steps and obtain a new model with this new
   training set; (iv) use this new model for obtaining another set of
   predictions; and (v) keep repeting this sliding process until
@@ -26,11 +26,9 @@ timeseriesWF(form,train,test,
    learner,learner.pars=NULL,
    type='slide',relearn.step=1,
    predictor='predict',predictor.pars=NULL,
-   evaluator=if (is.factor(responseValues(form,train))) 'classificationMetrics' 
-             else 'timeseriesMetrics',
-   evaluator.pars=NULL,
-   .outPreds=TRUE,.outModels=FALSE,
-   verbose=T)
+   pre=NULL,pre.pars=NULL,
+   post=NULL,post.pars=NULL,
+   .fullOutput=FALSE,verbose=FALSE)
 }
 
 \arguments{
@@ -71,69 +69,73 @@ timeseriesWF(form,train,test,
     A list of parameter values to be passed to the predictor (defaults
   to \code{NULL}).
   }
-  \item{evaluator}{
-    A character string with the name of a function that is to be used to
-  obtain the evaluation metrics for the predictions of the model (if the
-  target is a factor defaults to 'class.eval' else to 'ts.eval').
+  \item{pre}{
+A vector of function names that will be applied in sequence to the train
+  and test data frames, generating new versions, i.e. a sequence of data
+  pre-processing functions.
   }
-  \item{evaluator.pars}{
-    A list of parameter values to be passed to the evaluator (defaults
-  to \code{NULL}).
+  \item{pre.pars}{
+A named list of parameter values to be passed to the pre-processing functions.
   }
-  \item{.outPreds}{
-    A boolean indicating whether the function should include the
-  predictions of the workflow in the \code{\linkS4class{WFoutput}}
-  object that is returned (defaults to \code{TRUE})
+  \item{post}{
+A vector of function names that will be applied in sequence to the
+  predictions of the model, generating a new version, i.e. a sequence of data
+  post-processing functions.
+
   }
-  \item{.outModels}{
-    A boolean indicating whether the function should include the
-  models learned by the workflow in the \code{\linkS4class{WFoutput}}
-  object that is returned (defaults to \code{FALSE})
+  \item{post.pars}{
+A named list of parameter values to be passed to the post-processing functions.
+  }
+  \item{.fullOutput}{
+    A boolean that if set to \code{TRUE} will make the function return
+  the models that was obtained in the extra information of the workflow
+  output object (you may inspect it using function \code{\link{workflowInformation}}) (defaults  to \code{FALSE}).
   }
   \item{verbose}{
     A Boolean indicating whether a "*" character should be printed every
-    time the window slides (defaults to TRUE).
+    time the window slides (defaults to \code{FALSE}).
   }
 }
 \details{
   The main goal of this function is to facilitate the task of the users
   of the experimental comparison infra-structure provided by function
   \code{\link{performanceEstimation}} for time series problems where
-  the target variable can be numeric or nominal. This latter function requires
-  the user to write down a function implementing each of the workflows
-  to be evaluated/compared by the infra-structure through a Monte Carlo
-  simulation process, which is the experimental methodology recommended
-  for time series problems in this infra-structure. Frequently, users
+  the target variable can be numeric or nominal.  Frequently, users
   just want to compare existing algorithms or variants of these algorithms on a
   set of forecasting tasks, using some standard  error
-  metrics. In these situations, it may be tedious  having to write these
-  functions. The goal of the \code{timeseriesWF} function is to facilitate
-  this task.
+  metrics.  The goal of the \code{timeseriesWF} function is to facilitate
+  this task by providing a standard workflow for time series tasks.
 
-  We have considered two typical workflow approaches for time series
+  The function works, and has almost the same parameters, as function
+  \code{\link{standardWF}}. The help page of this latter function
+  describes most of the parameters used in the current function and thus
+  we will not repeat the description here. The main difference to the
+  \code{\link{standardWF}} function is on the existance of two extra
+  parameters that control the sliding and growing window approaches to
+  time series forecasting. These are parameters \code{type} and
+  \code{relearn.step}.  We have considered two typical workflow approaches for time series
   tasks where the user wants predictions for a certain future time
-  period (a test set provided as a data frame in parameter
-  \code{test}). Both are based on the assumption that after "some" time
+  period. Both are based on the assumption that after "some" time
   the model that we have obtained with the given training period data
-  (parameter \code{train}) might have become out-dated, and thus a new
+   may have become out-dated, and thus a new
   model should be obtained with the most recent data. The idea is that
   as we move in the testing period and get predictions for the successive
-  rows of the test set, it is like a clock is advancing. Previous rows
-  for which we already got a prediction are "past" as we assume that the
+  rows of the test set, it is like if a clock is advancing. Previous rows
+  for which we already made a prediction are "past" as we assume that the
   successive rows in both the \code{train} and \code{test} data frames
   are ordered by time (they are time series). In this context, as we
   move forward in the test period we can regard the rows for which we
-  already got a prediction as past data, and thus potentially useful to be
-  added  to our training set with the goal of obtaining a fresh new
+  already made a prediction as past data, and thus potentially useful to be
+  added  to our initial training set with the goal of obtaining a fresh new
   model with more recent data. This type of reasoning only makes sense
   if we suspect that there is some kind of concept drift on our
   data. For stationary data this makes no sense and we would be better
   off using the workflow provided by function
   \code{\link{standardWF}}. Still, the current function implements two
   workflows following this model-updating reasoning: (i) sliding window;
-  and (ii) growing window. Both have as user-defined parameter
-  (\code{relearn.step}) the number of time periods after which we re-learn
-  the model using fresh new data. The difference between them lies on
+  and (ii) growing window. Both use the value of the parameter
+  (\code{relearn.step}) to decide the number of time periods after which we re-learn
+  the model using fresh new data. The difference between the two strategies lies on
   how they treat the oldest data (the initial rows of the provided
   training set). Sliding window, as the name suggests, after each
   relearn step slides the training set forward thus forgetting the
@@ -144,62 +146,33 @@ timeseriesWF(form,train,test,
   rows and thus the training sets keep growing in size after each
   relearn step.
 
-  Independently of the process used to obtain the predictions for the
-  test set, these are based on a prediction model. Through parameter
-  \code{learner} users may indicate the modeling algorithm to use to
-  obtain this model. This can be any  R function, provided it can be
-  called with a formula on the first argument and a training set on the
-  second (as most R modeling functions do). As usual, these functions
-  may include other arguments that are specific to the modeling approach
-  (i.e. are parameters of the model). The values to be used for these
-  parameters are specified as a list through the parameter
-  \code{learner.pars} of function \code{timeseriesWF}. The learning
-  function can return any class of object that represents the learned
-  model. This object will be used to  obtain the predictions.
-
-  Equivalently, the user may specify a function for obtaining the
-  predictions for the test set using the previously learned model. Again
-  this can be any function, and it is indicated in parameter
-  \code{predictor} (defaulting to the usual \code{predict}
-  function). This function should be prepared to accept in the first
-  argument the learned model and in the second the test set, and should
-  return the predictions of the model for this set of data. It may also
-  have additional parameters whose values are specified as a list in
-  parameter \code{predictor.pars}.
-
-  Finally, the user may also specify a function that is to be used to
-  obtain evaluation metrics using the predictions and true values of the
-  test set. This can be any function which is specified through
-  parameter \code{evaluator} (defaulting to \code{\link{classificationMetrics}} for
-  nominal target variables and \code{\link{timeseriesMetrics}} for numeric
-  targets). The function will be called with the true values on the
-  first argument and the predictions  on the
-  second. Further arguments are supplied next, as specified in the
-  parameter \code{evaluator.pars} that should be a list of the values of
-  these extra parameters of the evaluation function. The result of this
-  evaluator function should be a named vector of the evaluation metrics,
-  which will be the result returned by function \code{timeseriesWF}.
 }
 \value{
-  A named vector with the calculated statistics as returned by the
-  function specified in parameter \code{evaluator}.
+  An object of class \code{\linkS4class{WFoutput}}
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
- \code{\link{standardWF}},  \code{\link{performanceEstimation}},
- \code{\link{classificationMetrics}},  \code{\link{timeseriesMetrics}}
+  \code{\link{standardWF}},
+  \code{\link{performanceEstimation}},
+  \code{\link{workflowPredictions}},
+  \code{\link{workflowInformation}},
+  \code{\link{getIterationInfo}},
+  \code{\link{getIterationPreds}},
+  \code{\link{standardPRE}},
+  \code{\link{standardPOST}},
+  \code{\linkS4class{WFoutput}}
 }
 \examples{
 
 ## The following is a small illustrative example using the quotes of the
 ## SP500 index. This example compares two random forests with 500
 ## regression trees, one applyed in a standard way, and the other using
-## a growing window with a relearn step of every 5 days. The experiment
+## a sliding window with a relearn step of every 10 days. The experiment
 ## uses 10 repetitions of a train+test cycle using 50\% of the available
 ## data for training and 25\% for testing.
 \dontrun{
@@ -208,18 +181,24 @@ library(randomForest)
 getSymbols('^GSPC',from='2008-01-01',to='2012-12-31')
 data.model <- specifyModel(
   Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10)+Delt(Vo(GSPC),k=1:3))
-data <- modelData(data.model)
+data <- as.data.frame(modelData(data.model))
 colnames(data)[1] <- 'PercVarClose'
 spExp <- performanceEstimation(
   PredTask(PercVarClose ~ .,data,'SP500_2012'),
-  c(Workflow('standardWF',wfID="standRF",
+  c(Workflow(wf='standardWF',wfID="standRF",
              learner='randomForest',
              learner.pars=list(ntree=500)),
-    Workflow('timeseriesWF',wfID="slideRF",
+    Workflow(wf='timeseriesWF',wfID="slideRF",
              learner='randomForest',
-             learner.pars=list(ntree=500,relearn.step=5))
+             learner.pars=list(ntree=500),
+             type="slide",
+             relearn.step=10)
    ),
-  McSettings(10,0.5,0.25))
+  EstimationTask(
+     metrics=c("mse","theil"),
+     method=MonteCarlo(nReps=5,szTrain=0.5,szTest=0.25)
+     )
+)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

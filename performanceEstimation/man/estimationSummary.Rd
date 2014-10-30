@@ -12,7 +12,7 @@
   and for one of the prediction tasks involved in the experiment.
 }
 \usage{
-estimationSummary(results,wf,task)
+estimationSummary(results,workflow,task)
 }
 
 \arguments{
@@ -21,11 +21,11 @@ estimationSummary(results,wf,task)
     that contains the results of a performance estimation  experiment obtained
     through the \code{performanceEstimation()} function. 
 }
-\item{wf}{
-  This is the string that identifies the workflow.
+\item{workflow}{
+A string with the ID of a workflow (it can also be an integer).
 }
 \item{task}{
-  The string that identifies the task for which we want the summary of estimates.
+A string with the ID of a task (it can also be an integer).
 }
 }
 \value{
@@ -36,7 +36,7 @@ estimationSummary(results,wf,task)
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
@@ -48,26 +48,20 @@ estimationSummary(results,wf,task)
 ## regression trees and SVMs, on  two data sets, using one repetition
 ## of 10-fold CV
 library(e1071)
-library(DMwR)
 data(swiss)
-data(mtcars)
 
 ## running the estimation experiment
 res <- performanceEstimation(
-  c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
-                     learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
-                     learner.pars=list(se=c(0,0.5,1)))
-  ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  PredTask(Infant.Mortality ~ .,swiss),
+  workflowVariants(learner="svm",
+                   learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
+  EstimationTask("mse",method=CV(nReps=2,nFolds=5))
   )
 
-## Get the statistics of a specific learner
-estimationSummary(res,'svm.v1','swiss')
+## Get the summary of the estimations of svm.v2 on swiss
+estimationSummary(res,"svm.v2","swiss.Infant.Mortality")
 
 }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ models }
+\keyword{models}
+

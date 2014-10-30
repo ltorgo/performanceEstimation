@@ -393,7 +393,7 @@ loocvEstimates <- function(wf,task,estTask,verbose=FALSE) {
 #                      dataset(medv~.,Boston),
 #                      bootTask(1234,10))
 #
-bootEstimates <- function(wf,task,estTask,verbose=TRUE) {
+bootEstimates <- function(wf,task,estTask) {
 
   show(estTask)
 
@@ -595,6 +595,7 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE) {
 # Small utility functions 
 # =====================================================
 
+
 is.regression <- function(task) task@type == 'regr'
 
 is.classification <- function(task) task@type == 'class'
@@ -602,12 +603,9 @@ is.classification <- function(task) task@type == 'class'
 responseValues <- function(formula,data,na=NULL) model.response(model.frame(formula,data,na.action=na))
 
 
-##outFold <- function(ds,f,r)
-##  unlist(subset(ds,ds[,1] == "TEST" & ds[,3]==f & ds[,4]==r,colnames(ds)[2]))
-##outFold <- function(ds,f,r=NULL)  {
-##    if (is.null(r)) which(ds[,f]==1)
-##    else which(ds[[r]][,f]==1)
-##}
+## ----------------------------------------
+## Internal functions that are not exported
+
 outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] else ds[[it]]
 
 .scores2summary <- function(obj)

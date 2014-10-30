@@ -47,11 +47,14 @@ metricsSummary(compRes, summary = "mean", ...)
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
-\code{\link{performanceEstimation}}, \code{\link{rankWorkflows}}
+  \code{\link{performanceEstimation}},
+  \code{\link{topPerformers}},
+  \code{\link{topPerformer}},
+  \code{\link{rankWorkflows}}
 }
 \examples{
 \dontrun{
@@ -67,14 +70,13 @@ library(e1071)
 results <- performanceEstimation(
                c(PredTask(Infant.Mortality ~ ., swiss),
                  PredTask(mpg ~ ., mtcars)),
-               c(workflowVariants('standardWF',
-                                  learner='svm',
-                                  learner.pars=list(cost=c(1,5),gamma=c(0.1,0.01)),
-                                  evaluator.pars=list(stats="all")
+               c(workflowVariants(learner='svm',
+                                  learner.pars=list(cost=c(1,5),gamma=c(0.1,0.01))
                                  )
                ),
-               CvSettings(2,5,1234)
+               EstimationTask(metrics=c("mse","mae"),method=CV(nReps=2,nFolds=5))
                                  )
+
 ## Get the minium value of each metric on all iterations of the CV
 ## process. 
 metricsSummary(results,summary="min")

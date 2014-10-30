@@ -7,7 +7,7 @@
 #################################################################
 
 
-setClassUnion("StrOrDF",c("character","data.frame"))
+setClassUnion("DataSource",c("call","name","data.frame"))
 setClassUnion("OptList",c("list","NULL"))
 setClassUnion("OptMatrix",c("matrix","NULL"))
 setClassUnion("OptString",c("character","NULL"))
@@ -25,7 +25,7 @@ setClassUnion("NameOrCall",c("call","name"))
 ##
 setClass("PredTask",
          slots=c(formula="formula",
-                 dataSource="NameOrCall",
+                 dataSource="DataSource",
                  taskName="character",
                  type="character",
                  target="character")
@@ -35,36 +35,37 @@ setClass("PredTask",
 ## --------------------------------------------------------------
 ## constructor
 ##
-PredTask <- function(form,data,taskName=NULL,type=NULL) {
+PredTask <- function(form,data,taskName=NULL,type=NULL,copy=FALSE) {
   if (missing(form) || missing(data))
-    stop('\nYou need to provide a formula and a data frame name.\n',call.=FALSE)
-  if (is.data.frame(data)) data <- substitute(data)
-  if (inherits(try(mf <- model.frame(form,eval(data),na.action=NULL),TRUE),"try-error"))
-#  if (is.data.frame(data)) data <- deparse(substitute(data))
-#  if (inherits(try(mf <- model.frame(form,get(data),na.action=NULL),TRUE),"try-error"))
-    stop('\nInvalid formula for the given data frame.\n',call.=FALSE)
+    stop('\nYou need to provide a formula and a data frame.\n',call.=FALSE)
 
   tgt <- deparse(form[[2]])
-  if (is.null(taskName)) {
-    m <- match.call()
-    taskName <- paste(data,tgt,sep=".")
+
+  if (!copy) {
+      data <- substitute(data)
+      eval.env <- 2
+      if (is.null(taskName)) taskName <- paste(deparse(data),tgt,sep=".")
+  } else {
+      eval.env <- 1
+      if (is.null(taskName)) taskName <-  paste(deparse(substitute(data)),tgt,sep=".")
   }
+
+  if (inherits(try(mf <- model.frame(form,eval(data,envir=eval.env),na.action=NULL),TRUE),"try-error"))
+    stop('\nInvalid formula for the given data frame.\n',call.=FALSE)
+
   
   if (is.null(type)) {
-      taskType <- if (is.factor(eval(data)[,tgt])) "class" else "regr"
+      taskType <- if (is.factor(eval(data,envir=eval.env)[,tgt])) "class" else "regr"
   } else {
       if (!(type %in% c("class","regr","ts")))
           stop(paste("PredTask::",type,"tasks not implemented."),call.=FALSE)
       taskType <- type
   }
 
-  if (taskType == "ts" && !is.numeric(eval(data)[[tgt]]))
-      stop("PredTask:: time series task should have numeric target.",call.=FALSE)
+#  if (taskType == "ts" && !is.numeric(eval(data,envir=eval.env)[[tgt]]))
+#      stop("PredTask:: time series tasks should have numeric target.",call.=FALSE)
   
-  new("PredTask",
-      formula=form,dataSource=data,taskName=taskName,
-      type=taskType,
-      target=deparse(form[[2]]))
+  new("PredTask", formula=form, dataSource=data, taskName=taskName, type=taskType, target=tgt)
 }
 
 

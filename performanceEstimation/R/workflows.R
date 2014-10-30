@@ -176,7 +176,7 @@ runWorkflow <- function(l,...) {
 
 
 ## --------------------------------------------------------------
-## Workflow output
+## Workflow output manipulation
 ## --------------------------------------------------------------
 
 
@@ -378,7 +378,7 @@ standardPRE <- function(form,train,test,steps,...) {
             train <- na.omit(train)
             test <- na.omit(test)
         } else {
-            user.pre <- do.call(s,c(list(form,train,test),...))
+            user.pre <- do.call(s,c(list(form,train,test),list(...)))
             train <- user.pre$train
             test  <- user.pre$test
         }
@@ -403,15 +403,21 @@ standardPOST <- function(form,train,test,preds,steps,...) {
     
     for(s in steps) {
         if (s == "na2central") {
+            if (!is.vector(preds)) stop("standardPOST:: 'na2central' is only applicable to predictions that are vectors of values.")
             if (any(idx <- is.na(preds))) {
                 cval <- if (is.numeric(train[[tgtVar]])) median(train[[tgtVar]],na.rm=TRUE) else { x <- as.factor(train[[tgtVar]]) ; levels(x)[which.max(table(x))] }
                 preds[idx] <- cval
             }
         } else if (s == "onlyPos") {
+            if (!is.vector(preds)) stop("standardPOST:: 'onlyPos' is only applicable to predictions that are vectors of values.")
+            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'onlyPos' is only applicable to numeric predictions.")
             if (any(idx <- preds < 0)) preds[idx] <- 0
         } else if (s == "cast2int") {
-            if (any(idx <- preds < infLim)) preds[idx] <- infLim
-            if (any(idx <- preds > supLim)) preds[idx] <- supLim
+            if (!is.vector(preds)) stop("standardPOST:: 'cast2int' is only applicable to predictions that are vectors of values.")
+            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'cast2int' is only applicable to numeric predictions.")
+            pars <- list(...)
+            if (any(idx <- preds < pars$infLim)) preds[idx] <- pars$infLim
+            if (any(idx <- preds > pars$supLim)) preds[idx] <- pars$supLim
         } else {
             preds <- do.call(s,c(list(form,train,test,preds),...))
         }

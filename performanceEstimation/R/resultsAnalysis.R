@@ -144,6 +144,11 @@ pairedComparisons <-  function(obj,baseline,test="wilcoxon") {
 }
 
 
+# ======================================================================
+# Filtering the results of a call to pairedComparisons by a minimum p.value
+# =====================================================
+# Luis Torgo, Jan-Aug 2009, 2014
+# =====================================================
 signifDiffs <- function(ps,p.limit=0.05,metrics=dimnames(ps)[[3]],tasks=dimnames(ps)[[4]]) {
     res <- list()
     theOnes <- ps[,'p.value',,,drop=FALSE] < p.limit | is.na(ps[,'p.value',,,drop=FALSE])

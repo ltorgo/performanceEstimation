@@ -24,7 +24,10 @@ setMethod("show",
             cat('\tTarget Feature    ::',object@target,"\n")
             cat('\tFormula           :: ')
             print(object@formula)
-            cat('\tTask Data Source  ::',deparse(object@dataSource),"\n")
+            cat('\tTask Data Source  :: ')
+            if (is.data.frame(object@dataSource)) cat('internal ',paste(dim(object@dataSource),collapse="x"),"data frame.")
+            else cat(deparse(object@dataSource))
+            cat("\n")
           }
           )
 

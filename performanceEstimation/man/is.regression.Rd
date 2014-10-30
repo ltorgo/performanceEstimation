@@ -10,32 +10,31 @@
   numeric. 
 }
 \usage{
-is.regression(formula, data)
+is.regression(task)
 }
 
 \arguments{
-  \item{formula}{
-A formula describing a prediction problem
-}
-  \item{data}{
-The data frame containing the data of the prediction problem
+  \item{task}{
+An object of class \code{\linkS4class{PredTask}}
 }
 }
 \value{
 A logical value
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-\code{\link{as.formula}}
+\code{\link{is.classification}}
 }
 \examples{
+
 data(iris)
-if (!is.regression(Species ~ .,iris)) cat("This is not a regression task!\n")
+tsk <- PredTask(Species ~ .,iris)
+if (!is.regression(tsk)) cat("This is not a regression task!\n")
 }
 
 \keyword{models}

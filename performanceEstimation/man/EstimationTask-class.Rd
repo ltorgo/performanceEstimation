@@ -11,7 +11,7 @@
 }
 \section{Objects from the Class}{
 Objects can be created by calls of the form
-\code{new("EstimationTask",...)}
+\code{EstimationTask(...)}
 providing the values for the class slots. These objects contain
 information on the metrics to be estimated, as well as on the estimation
 method to use to obtain the estimates. Moreover, in case you want to use
@@ -38,7 +38,7 @@ calculate these metrics.
     task.}
     \item{\code{evaluator.pars}:}{An optional  list containing
       the parameters to be passed to the function calculating the metrics.}
-    \item{\code{method}:}{Object of class \code{EstimationSettings}
+    \item{\code{method}:}{Object of class \code{\linkS4class{EstimationMethod}}
       containing the estimation method and its settings to be used to
       obtain the estimates of the metrics (defaulting to \code{CV()}). }
   }

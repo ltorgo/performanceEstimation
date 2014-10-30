@@ -2,7 +2,7 @@
 \alias{workflowVariants}
 
 \title{
-Generate variants of a workflow
+Generate (parameter) variants of a workflow
 }
 \description{
 The main goal of this function is to facilitate the generation of
@@ -21,12 +21,13 @@ workflowVariants(wf,...,varsRootName,as.is=NULL)
 \arguments{
   \item{wf}{
 This is the string representing the name of the function of the base
-workflow from which variants should be generated.
+workflow from which variants should be generated. It can be ommited in
+the case of standard workflows (see Details section).
 }
   \item{\dots}{
 The function then accepts any number of named arguments, some of which
 may have vectors of values. These named arguments  are supposed to be the names of
-arguments of the base workflow, and the arguments with sets of values are the
+parameters of the base workflow, and the parameters containing sets of values are the
 alternatives for the respective parameter that you want to consider in the variants generation (see
 examples below).
 }
@@ -52,7 +53,7 @@ being use as they are given.
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
@@ -60,10 +61,31 @@ being use as they are given.
 }
 \examples{
 \dontrun{
-## Generating several variants of the "rpartXse" learner using different
-## values of the parameter "se", i.e. different tree pruning levels
-library(DMwR)
-workflowVariants('rpartXse',se=c(0,0.5,1))
+## Generating several variants of the "svm" learner using different
+## values of the parameter "cost", under the "umbrella" of a standard
+## workflow (i.e. it assumes wf="standardWF")
+library(e1071)
+workflowVariants(learner="svm",cost=c(1,2,5,10))
+
+## variants of a user defined workflow (assumes that function "userWF"
+## is defined and "understands" parameters par1 and par2)
+workflowVariants(wf="userWF",par1=c(0.1,0.4),par2=c(-10,10))
+
+## Variants of a standard time series workflows (it assumes that it is a
+## time series workflow because of the use of the "type" parameter,
+## otherwise you could make it explicit by adding wf="timeseriesWF").
+workflowVariants(learner="svm",type=c("slide","grow"),gamma=c(0.1,0.4))
+## or equivalently
+workflowVariants(wf="timeseriesWF",learner="svm",type=c("slide","grow"),gamma=c(0.1,0.4))
+
+## allowing that one parameter is not considered for variants generation
+workflowVariants(wf="userWF",par1=c(0.1,0.4),par2=c(-10,10),as.is="par1")
+
+## nesting is also allowed!
+workflowVariants(wf="userWF",
+                 xpto=list(par1=c(0.1,0.4),d="k",par3=c(1,3)),
+                 par2=c(-10,10),
+                 as.is="par1")
 }
 }
 \keyword{ models }

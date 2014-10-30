@@ -9,7 +9,7 @@ Obtain the target variable values of a prediction task
   target variable of a prediction problem described by a formula.
 }
 \usage{
-responseValues(formula, data)
+responseValues(formula, data, na=NULL)
 }
 
 \arguments{
@@ -19,19 +19,18 @@ A formula describing a prediction problem
   \item{data}{
 The data frame containing the data of the prediction problem
 }
-}
+  \item{na}{
+A function to handle NAs in the data
+}}
 \value{
 A vector of values
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
-\seealso{
-\code{\link{as.formula}}
-}
 \examples{
 data(iris)
 tgt <- responseValues(Species ~ ., iris)

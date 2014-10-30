@@ -1,5 +1,5 @@
-\name{getIterationsResults}
-\alias{getIterationsResults}
+\name{getIterationsScores}
+\alias{getIterationsScores}
 
 \title{
 Obtaining the metric scores on the different iterations for a workflow /
@@ -11,7 +11,7 @@ task combination
   performance estimation experiment.
 }
 \usage{
-getIterationsResults(results, workflow, task)
+getIterationsScores(results, workflow, task)
 }
 \arguments{
   \item{results}{
@@ -50,16 +50,16 @@ data(mtcars)
 ## running the estimation experiment
 res <- performanceEstimation(
   c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
+  c(workflowVariants(learner="svm",
                      learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
+    workflowVariants(learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  EstimationTask("mse")
   )
 
 ## Get the iterations scores of svm.v2 on swiss
-getIterationsResults(res,"svm.v2","swiss")
+getIterationsScores(res,"svm.v2","swiss.Infant.Mortality")
 
 }
 }

@@ -48,11 +48,14 @@ topPerformer(compRes,metric,task,max=FALSE)
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \seealso{
-\code{\link{performanceEstimation}}, \code{\link{rankWorkflows}}, \code{\link{metricsSummary}}
+  \code{\link{performanceEstimation}},
+  \code{\link{topPerformers}},
+  \code{\link{rankWorkflows}},
+  \code{\link{metricsSummary}}
 }
 \examples{
 \dontrun{
@@ -68,16 +71,15 @@ library(e1071)
 results <- performanceEstimation(
                c(PredTask(Infant.Mortality ~ ., swiss),
                  PredTask(mpg ~ ., mtcars)),
-               c(workflowVariants('standardWF',
-                                  learner='svm',
+               c(workflowVariants(learner='svm',
                                   learner.pars=list(cost=c(1,5),gamma=c(0.1,0.01))
                                  )
                ),
-               CvSettings(2,5,1234)
+               EstimationTask(metrics=c("mse","mae"),method=CV(nReps=2,nFolds=5))
                                  )
 
 ## get the top performer workflow for a metric and task
-topPerformer(results,"mse","swiss")
+topPerformer(results,"mse","swiss.Infant.Mortality")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

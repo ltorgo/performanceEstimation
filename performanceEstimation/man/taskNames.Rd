@@ -26,7 +26,10 @@ An object of class \code{\linkS4class{ComparisonResults}}
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\linkS4class{ComparisonResults}}, \code{\link{performanceEstimation}}, \code{\link{metricNames}}, \code{\link{workflowNames}}
+  \code{\linkS4class{ComparisonResults}},
+  \code{\link{performanceEstimation}},
+  \code{\link{metricNames}},
+  \code{\link{workflowNames}}
 
 }
 \examples{
@@ -42,12 +45,12 @@ data(mtcars)
 ## running the estimation experiment
 res <- performanceEstimation(
   c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
+  c(workflowVariants(learner="svm",
                      learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
+    workflowVariants(learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CvSettings(nReps=1,nFolds=10,seed=1234)
+  EstimationTask("mse")
   )
 
 ## the names of the metrics that were estimated in the above experiment

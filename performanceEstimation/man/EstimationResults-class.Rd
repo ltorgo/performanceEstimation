@@ -42,7 +42,7 @@ Objects can be created by calls of the form \code{EstimationResults(...)}
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\linkS4class{EstimationSettings}},
+  \code{\linkS4class{EstimationMethod}},
   \code{\linkS4class{EstimationTask}},
   \code{\linkS4class{PredTask}},
   \code{\linkS4class{Workflow}},

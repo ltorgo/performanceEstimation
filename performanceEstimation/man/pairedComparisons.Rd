@@ -28,11 +28,13 @@ pairedComparisons(obj,baseline,test="wilcoxon")
     When you carry out this type of analysis you have to select the
   workflow against which all paired comparisons will be carried
   out. This parameter should contain a character string with the name of
-  the workflow
+  the workflow. If you omit this name the function will default to the
+  name of the workflow resulting from a call to
+  \code{\link{topPerformer}} on the first metric and first task.
 }
 \item{test}{
   A character string with the name of the statistical test to use to
-  check the hypothesis that there is no singificant difference between
+  check the hypothesis that there is no significant difference between
   the observed averages (defaults to "wilcoxon"). See Details section.
 }
 }
@@ -83,7 +85,7 @@ of hold-out estimation experiments.
   dimension contains the predictive tasks.
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison on Predictive Models}.
+    Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
@@ -114,7 +116,7 @@ res <- performanceEstimation(
     workflowVariants("standardWF",learner="rpartXse",
                      learner.pars=list(se=c(0,0.5,1)))
   ),
-  CV(nReps=1,nFolds=10,seed=1234)
+  EstimationTask(metrics=c("mse","mae"),method=CV())
   )
 
 ## checking the top performers
@@ -123,6 +125,10 @@ topPerformers(res)
 ## now let us assume that we will choose "svm.v2" as our baseline
 ## carry out the paired comparisons
 pairedComparisons(res,"svm.v2")
+
+## or let the baseline be picked as the top performer on the first task
+## and first metric
+pairedComparisons(res)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

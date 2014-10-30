@@ -20,8 +20,19 @@
 }
 
 \section{Objects from the Class}{
-  Objects can be created by calls of the form \code{WFoutput( ...)}
-  providing the values for the class slots.  
+  Objects can be created by calls of the form \code{WFoutput(
+  ...)}. This constructor accepts in the first argument the row ids of
+  the test cases, in the second the true values of the target variable
+  of these test cases, and in the third argument the predictions of the
+  workflow for these test cases. Note that these predictions may
+  eventually be a data frame or matrix, which is the case of probabilistic
+  classifiers that obtain probabilities of each class for each test
+  case. In this situations the constructor will automatically calculate
+  (and include in the resulting object) an extra column with the label
+  of the class with highest probability. Optionally, in the fourth argument you
+  may include a list with any extra information you wish to return from
+  the workflow.  This later information is often set using the
+   function \code{\link{workflowInformation}}.
 }
 
 \section{Slots}{
@@ -69,5 +80,18 @@
 \examples{
 showClass("WFoutput")
 
+## A user-defined workflow returning a WFoutput object
+myWF <- function(form,train,test,wL=0.5,...) {
+    require(rpart,quietly=TRUE)
+    ml <- lm(form,train)
+    mr <- rpart(form,train)
+    pl <- predict(ml,test)
+    pr <- predict(mr,test)
+    ps <- wL*pl+(1-wL)*pr
+    res <- WFoutput(rownames(test),responseValues(form,test),ps)
+    workflowInformation(res) <-
+      list(models=list(lm=ml,tree=mr),indivPreds=list(lm=pl,tree=pr)))
+    res
+}
 }
 \keyword{classes}
