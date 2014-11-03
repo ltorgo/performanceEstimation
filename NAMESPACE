@@ -3,7 +3,7 @@
 ##import(xts)
 ##importFrom(zoo,as.zoo)
 import(methods)
-import(ggplot2)
+##import(ggplot2)
 
 
 exportClasses(

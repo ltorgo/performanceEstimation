@@ -1,13 +1,22 @@
 Package: performanceEstimation
 Type: Package
 Title: An  infra-structure for performance estimation of predictive models
+Description: This package provides an  infra-structure for estimating the predictive performance
+    of predictive models. In this context, it can also be used to compare and/or select among
+    different alternative ways of solving one or more predictive tasks. The main goal of the 
+    package is to provide a generic infra-structure to estimate the values of different metrics
+    of predictive performance using different estimation procedures. These estimation tasks can be
+    applied to any solutions (workflows) to the predictive tasks. The package provides easy to use
+    standard workflows that allow the usage of any available R modeling algorithm together with
+    some pre-defined data pre-processing steps and also prediction post-processing methods.
 Version: 1.0.0
-Depends: R(>= 3.0), methods, graphics,  ggplot2 (>= 0.9.3)
+Depends: R(>= 3.0), methods
+Imports:
+    ggplot2 (>= 0.9.3)
 Date: 2014-10-30
-Author: Luis Torgo
+Authors@R: person("Luis", "Torgo", email = "ltorgo@dcc.fc.up.pt", role = c("aut", "cre"))
 URL: https://github.com/ltorgo/performanceEstimation
-Maintainer: Luis Torgo <ltorgo@dcc.fc.up.pt>
-Description: This package provides an  infra-structure for performance estimation and experimental comparison and selection of predictive models
+BugReports: https://github.com/ltorgo/performanceEstimatio/issues
 License: GPL (>=2)
 LazyLoad: yes
 LazyData: yes

@@ -288,24 +288,24 @@ setMethod("plot",
                            "estimation on",x@task@taskName,sep=" "
                   )
               if (nstats == 1) {
-                  plt <- qplot(1:nrow(x@iterationsScores),
+                  plt <- ggplot2::qplot(1:nrow(x@iterationsScores),
                                x@iterationsScores[,1],
                                main=tit,
                                xlab='Estimation Iterations',
                                ylab=colnames(x@iterationsScores)[1]) +
-                         geom_smooth(method='loess',size=1) +
-                         geom_line(stat="hline",yintercept="mean",color="red") +
-                         scale_x_discrete()
+                         ggplot2::geom_smooth(method='loess',size=1) +
+                         ggplot2::geom_line(stat="hline",yintercept="mean",color="red") +
+                         ggplot2::scale_x_discrete()
                   ##print(plt)
               } else {
                   dt <- .scores2long(x@iterationsScores)
-                  plt <- ggplot(dt,aes_string(x="rep",y="score")) + 
-                      ggtitle(tit) +
-                      ylab('Metrics Scores') + xlab('Estimation Iterations')+
-                      geom_smooth(aes_string(group="stat"),method='loess',size=1) +
-                      geom_line(stat="hline",yintercept="mean",color="red") +
-                      scale_x_discrete() +theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5,hjust=0))+
-                      facet_grid( stat ~ .,scales = "free_y")
+                  plt <- ggplot2::ggplot(dt,ggplot2::aes_string(x="rep",y="score")) + 
+                      ggplot2::ggtitle(tit) +
+                      ggplot2::ylab('Metrics Scores') + ggplot2::xlab('Estimation Iterations')+
+                      ggplot2::geom_smooth(ggplot2::aes_string(group="stat"),method='loess',size=1) +
+                      ggplot2::geom_line(stat="hline",yintercept="mean",color="red") +
+                      ggplot2::scale_x_discrete() +ggplot2::theme(axis.text.x=ggplot2::element_text(angle=270,size=10,vjust=0.5,hjust=0))+
+                      ggplot2::facet_grid( stat ~ .,scales = "free_y")
                   ##print(plt)
               }
               plt
@@ -342,10 +342,10 @@ setMethod("plot",
                                   Bootstrap='Bootstrap',
                                   MonteCarlo='Monte Carlo'
                                   ),"Performance Estimation Results")
-              plt <- ggplot(allRes,aes_string(y="score",x="sys")) +
-                     geom_boxplot(aes_string(group="sys")) + ggtitle(tlt) +
-                     ylab("Distribution of Statistics Scores") + xlab("Alternative Workflows") +
-                         facet_grid(stat ~ task,scales="free_y")+theme(axis.text.x=element_text(angle=270,size=10,vjust=0.5))
+              plt <- ggplot2::ggplot(allRes,ggplot2::aes_string(y="score",x="sys")) +
+                     ggplot2::geom_boxplot(ggplot2::aes_string(group="sys")) + ggplot2::ggtitle(tlt) +
+                     ggplot2::ylab("Distribution of Statistics Scores") + ggplot2::xlab("Alternative Workflows") +
+                         ggplot2::facet_grid(stat ~ task,scales="free_y")+ggplot2::theme(axis.text.x=ggplot2::element_text(angle=270,size=10,vjust=0.5))
               #print(plt)
               plt
                       
