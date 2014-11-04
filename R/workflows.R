@@ -234,9 +234,12 @@ standardWF <- function(form,train,test,
         if (.fullOutput) .fullRes$modeling <- if (is.null(post)) m else list(model=m,initPreds=ps)
     }
 
+    ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
+    if (is.regression(task) && !dim(ps)) ps <- ps[,1]
+        
+    trues <- responseValues(form,test)
     ## Checking for learners that do not ouput as many predictions as test cases!
     ## (e.g. SVM from e1071!)
-    trues <- responseValues(form,test)
     if (NROW(ps) != length(trues)) {
         warning("standardWF:: less predictions than test cases, filling with NAs.")
         if (is.null(dim(ps))) {
