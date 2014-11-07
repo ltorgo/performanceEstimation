@@ -610,8 +610,9 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
 .scores2summary <- function(obj)
     apply(obj@iterationsScores,2,function(x)
-          c(avg=mean(x,na.rm=T),std=sd(x,na.rm=T),
-            min=min(x,na.rm=T),max=max(x,na.rm=T),
+          c(avg=mean(x,na.rm=TRUE),std=sd(x,na.rm=TRUE),
+            med=median(x,na.rm=TRUE),iqr=IQR(x,na.rm=TRUE),
+            min=min(x,na.rm=TRUE),max=max(x,na.rm=TRUE),
             invalid=sum(is.na(x)))
           )
 

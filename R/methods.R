@@ -120,8 +120,11 @@ setMethod("show",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
-                object@nReps,'x',
-                100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout\n')
+                object@nReps,'x')
+            
+            if (object@hldSz < 1) cat(100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout\n')
+            else cat(object@hldSz," cases Holdout\n")
+            
             if (!userSplit)
               cat('\t Run with seed = ',object@seed,'\n')
             else
@@ -143,7 +146,7 @@ setMethod("show","LOOCV",
               if (!userSplit)
                   cat('\t Run with seed = ',object@seed,'\n')
               else
-                  cat('\t Run with verbose = ',ifelse(object@verbose,'TRUE','FALSE'),' and user-supplied data splits\n')
+                  cat('\t Run user-supplied data splits\n')
          })
 
 

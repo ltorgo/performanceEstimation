@@ -72,6 +72,13 @@ getIterationInfo(res1,it=1)
 getIterationPreds(res1,rep=1,fold=1)
 estimationSummary(res1,workflowNames(res1)[1],taskNames(res1)[1])
 
+res1b <- performanceEstimation(ti,w.rt,EstimationTask("acc",method=Bootstrap()))
+res1b
+res1l <- performanceEstimation(ti,w.rt,EstimationTask("acc",method=Loocv()))
+res1l
+res1h <- performanceEstimation(ti,w.rt,EstimationTask("acc",method=Holdout()))
+res1h
+
 ################
 ## merging tests
 
