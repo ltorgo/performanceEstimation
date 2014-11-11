@@ -40,6 +40,7 @@ pcs <-  function(obj,baseline,test="wilcoxon") {
 
     allRkDifs <- outer(avgRksWFs$mse,avgRksWFs$mse,function(x,y) abs(x-y))
 
+
     
     if (missing(baseline))  # using the first workflow as baseline if none indicated
         baseline <- topPerformer(obj,ms[1],ts[1])@name
