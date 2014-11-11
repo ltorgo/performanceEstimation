@@ -74,7 +74,8 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
 
     ## the parameters not involved in variants generation
     ## their names:
-    allnovar <- c(allnovar,names(vars)[which(sapply(vars,length)==1)])
+    allnovar <- c(allnovar,names(vars)[which(sapply(vars,length)==1)],
+                  names(vars)[as.numeric(unlist(sapply(as.is,function(g) grep(g,names(vars)))))])
     ## their positions in vars:
     toExcl <- which(names(vars) %in% allnovar)
     ## their number:
