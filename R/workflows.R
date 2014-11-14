@@ -236,7 +236,7 @@ standardWF <- function(form,train,test,
     }
 
     ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
-    if (is.regression(task) && !dim(ps)) ps <- ps[,1]
+    if (is.numeric(train[,as.character(form[[2]])]) && !dim(ps)) ps <- ps[,1]
         
     trues <- responseValues(form,test)
     ## Checking for learners that do not ouput as many predictions as test cases!
@@ -323,6 +323,9 @@ timeseriesWF <- function(form,train,test,
             t.ts <- t.ts + as.numeric(Sys.time() - tm,units="secs")
             if (.fullOutput) models <- c(models,list(start=s,model=m,preds=ps))
         }
+        ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
+        if (is.numeric(tr[,as.character(form[[2]])]) && !dim(ps)) ps <- ps[,1]
+        
         preds <- c(preds,ps)
     }
     if (verbose) cat('\n')
