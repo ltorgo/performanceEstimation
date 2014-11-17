@@ -110,37 +110,38 @@ pairedComparisons <-  function(obj,baseline,
     for(p in 1:nms) {
         compResults[[p]] <- list()
         compResults[[p]]$setup <- list(nTasks=nts,nWorkflows=nws)
-        compResults[[p]]$scores <- t(sapply(obj,function(m) sapply(m,function(i) mean(i@iterationsScores[,p],na.rm=TRUE))))
-        compResults[[p]]$rks <- t(apply(if (maxs[p]) -compResults[[p]]$scores else compResults[[p]]$scores,1,rank))
+        compResults[[p]]$avgScores <- t(sapply(obj,function(m) sapply(m,function(i) mean(i@iterationsScores[,p],na.rm=TRUE))))
+        compResults[[p]]$medScores <- t(sapply(obj,function(m) sapply(m,function(i) median(i@iterationsScores[,p],na.rm=TRUE))))
+        compResults[[p]]$rks <- t(apply(if (maxs[p]) -compResults[[p]]$avgScores else compResults[[p]]$avgScores,1,rank))
         compResults[[p]]$avgRksWFs <- apply(compResults[[p]]$rks,2,mean)
 
         ## Wilcoxon Signed Rank and t-Student tests
         compResults[[p]]$t.test <- array(NA,dim=c(nws,3,nts),
-                 dimnames=list(c(baseline,other),c("Score","DiffAvgScores","p.value"),
+                 dimnames=list(c(baseline,other),c("AvgScore","DiffAvgScores","p.value"),
                      ts)
                          )
         compResults[[p]]$WilcoxonSignedRank.test <- array(NA,dim=c(nws,3,nts),
-                 dimnames=list(c(baseline,other),c("Score","DiffAvgScores","p.value"),
+                 dimnames=list(c(baseline,other),c("MedScore","DiffMedScores","p.value"),
                      ts)
                          )
         for(t in ts) {
             compResults[[p]]$WilcoxonSignedRank.test[baseline,,t] <- NA
-            compResults[[p]]$WilcoxonSignedRank.test[baseline,"Score",t] <- compResults[[p]]$scores[t,baseline]
+            compResults[[p]]$WilcoxonSignedRank.test[baseline,"MedScore",t] <- compResults[[p]]$medScores[t,baseline]
             compResults[[p]]$t.test[baseline,,t] <- NA
-            compResults[[p]]$t.test[baseline,"Score",t] <- compResults[[p]]$scores[t,baseline]
+            compResults[[p]]$t.test[baseline,"AvgScore",t] <- compResults[[p]]$avgScores[t,baseline]
             for(o in other) {
                 tst <- try(wilcox.test(obj[[t]][[o]]@iterationsScores[,p],
                                        obj[[t]][[baseline]]@iterationsScores[,p],
                                        paired=T))
-                compResults[[p]]$WilcoxonSignedRank.test[o,"DiffAvgScores",t] <- compResults[[p]]$scores[t,baseline] - compResults[[p]]$scores[t,o]
-                compResults[[p]]$WilcoxonSignedRank.test[o,"Score",t] <- compResults[[p]]$scores[t,o]
+                compResults[[p]]$WilcoxonSignedRank.test[o,"DiffMedScores",t] <- compResults[[p]]$medScores[t,baseline] - compResults[[p]]$medScores[t,o]
+                compResults[[p]]$WilcoxonSignedRank.test[o,"MedScore",t] <- compResults[[p]]$medScores[t,o]
                 compResults[[p]]$WilcoxonSignedRank.test[o,"p.value",t] <-
                     if (inherits(tst,"try-error"))  NA else tst$p.value
                 tst <- try(t.test(obj[[t]][[o]]@iterationsScores[,p],
                                   obj[[t]][[baseline]]@iterationsScores[,p],
                                   paired=T))
-                compResults[[p]]$t.test[o,"DiffAvgScores",t] <- compResults[[p]]$scores[t,baseline] - compResults[[p]]$scores[t,o]
-                compResults[[p]]$t.test[o,"Score",t] <- compResults[[p]]$scores[t,o]
+                compResults[[p]]$t.test[o,"DiffAvgScores",t] <- compResults[[p]]$avgScores[t,baseline] - compResults[[p]]$avgScores[t,o]
+                compResults[[p]]$t.test[o,"AvgScore",t] <- compResults[[p]]$avgScores[t,o]
                 compResults[[p]]$t.test[o,"p.value",t] <-
                     if (inherits(tst,"try-error"))  NA else tst$p.value
             }
@@ -188,7 +189,7 @@ pairedComparisons <-  function(obj,baseline,
 # =====================================================
 # Luis Torgo, Jan-Aug 2009, 2014
 # =====================================================
-signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]$scores)) {
+signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]$avgScores)) {
     res <- vector("list",length(ps))
     names(res) <- names(ps)
     for(p in names(ps)) {
