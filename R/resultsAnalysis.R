@@ -220,18 +220,19 @@ CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
 #                   line=o%%mxl + 1,
                        side=ifelse(o <= mxl,-1,1)
                        )
+    data$line <- ifelse(data$side==1,mxl+1-data$line,data$line)
     len <- length(r[[metric]]$avgRksWFs)
     cd <- r[[metric]]$Nemenyi.test$critDif
     g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
-            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line)) +
+            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line,col=sys)) +
             geom_text(data=data[data$side==-1,],
-                      aes_string(label = "sys", x = len, y = "line"),
+                      aes_string(label = "sys", x = len, y = "line",col="sys"),
                       hjust = -.5,size=4) +
             geom_text(data=data[data$side==1,],
-                      aes(label = sys, x = -Inf, y = line),
+                      aes(label = sys, x = -Inf, y = line,col=sys),
                       hjust = 1,size=4) +
-            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line)) +
-            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line)) +
+            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line,col=sys)) +
+            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line,col=sys)) +
             scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
                                labels=paste((len+1):0)) +
@@ -243,7 +244,7 @@ CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
                   legend.position="none",
                   panel.background=element_blank(),
                   panel.border=element_blank(),
-                  axis.line=element_line(size=1.2),
+                  axis.line=element_line(size=1),
                   axis.line.y=element_blank(),
                   panel.grid.major=element_blank(),
                   plot.background=element_blank(),
@@ -252,12 +253,29 @@ CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
             coord_fixed(ratio=0.5) + 
             annotate("segment",x=0,xend=cd,
                      y=mxl+1,yend=mxl+1,size=1.5) +
-            annotate("text",x=1,y=mxl+1,label="Critical Difference",vjust=-0.5,size=3)
+            annotate("text",x=0,y=mxl+1,label=paste("Critical Difference",round(cd,1),sep=" = "),vjust=-0.5,hjust=0,size=3)
 
-    ss <- cbind(row(r[[metric]]$Nemenyi.test$signifDifs)[which(!r[[metric]]$Nemenyi.test$signifDifs)],col(r[[metric]]$Nemenyi.test$signifDifs)[which(!r[[metric]]$Nemenyi.test$signifDifs)])
-    ss <- ss[which(ss[,1] < ss[,2]),,drop=FALSE]
+    wfsOrd <- names(r[[metric]]$avgRksWFs[order(r[[metric]]$avgRksWFs)])
+    ss <- r[[metric]]$Nemenyi.test$signifDifs[wfsOrd,wfsOrd]
+    mx <- ncol(ss)
+    pos <- rep(1:mxl,each=mxl) - seq(0,1,by=1/(mxl+1))[-c(1,mxl+2)]
+    frees <- rep(1,mxl)
+    from <- 1
+    currTill <- 0
     for(i in 1:nrow(ss)) {
-#        g <- g + annotate("segment",x=,xend=,y=,yend=,size=2)
+        till <- which(ss[i,i:mx])
+        till <- if (length(till)) till-1 else mx
+        if (till > currTill) {
+            theLine <- min(data[wfsOrd[i],"line"],data[wfsOrd[till],"line"])
+            ypos <- pos[(theLine-1)*mxl+frees[theLine]]
+            frees[theLine] <- frees[theLine]+1
+            g <- g + annotate("segment",
+                              x=data[wfsOrd[till],"invRk"]-.1,
+                              xend=data[wfsOrd[i],"invRk"]+.1,
+                              y=ypos, yend=ypos, size=1.2)
+            currTill <- till
+        }
+        if (till == mx) break
     }
     gt <- ggplot_gtable(ggplot_build(g))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
@@ -280,6 +298,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
                        line=o%%mxl + ifelse(o%%mxl==0,mxl,0) ,
                        side=ifelse(o <= mxl,-1,1)
                        )
+    data$line <- ifelse(data$side==1,mxl+1-data$line,data$line)
 #    data$color <- rep("black",nrow(data))
     data$face <- rep(1,nrow(data))
     data[r[[metric]]$BonferroniDunn.test$baseline,"face"] <- 2
@@ -289,19 +308,19 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
     len <- length(r[[metric]]$avgRksWFs)
     cd <- r[[metric]]$BonferroniDunn.test$critDif
     g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
-            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line)) +
+            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line,col=sys)) +
             geom_text(data=data[data$side==-1,],
-                      aes_string(label = "sys", x = len, y = "line",
+                      aes_string(label = "sys", x = len, y = "line",col="sys",
  #                                fontface="face",colour="color"),
                                  fontface="face"),
                       hjust = -.5,size=4) +
             geom_text(data=data[data$side==1,],
-                      aes(label = sys, x = -Inf, y = line,
+                      aes(label = sys, x = -Inf, y = line,col=sys,
 #                          fontface=face,colour=color),
                           fontface=face),
                       hjust = 1,size=4) +
-            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line)) +
-            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line)) +
+            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line,col=sys)) +
+            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line,col=sys)) +
             scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
                                labels=paste((len+1):0)) +
