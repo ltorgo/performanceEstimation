@@ -197,13 +197,133 @@ signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]
         res[[p]]$t.test <- vector("list",length(tasks))
         names(res[[p]]$WilcoxonSignedRank.test) <- names(res[[p]]$t.test) <- tasks
         for(t in tasks) {
-            res[[p]]$WilcoxonSignedRank.test[[t]] <- ps[[p]]$WilcoxonSignedRank.test[which(ps[[p]]$WilcoxonSignedRank.test[,"p.value",t] < p.limit | is.na(ps[[p]]$WilcoxonSignedRank.test[,"p.value",t])),,t]
-            res[[p]]$t.test[[t]] <- ps[[p]]$t.test[which(ps[[p]]$t.test[,"p.value",t] < p.limit | is.na(ps[[p]]$t.test[,"p.value",t])),,t]
+            res[[p]]$WilcoxonSignedRank.test[[t]] <- ps[[p]]$WilcoxonSignedRank.test[which(ps[[p]]$WilcoxonSignedRank.test[,"p.value",t] < p.limit | is.na(ps[[p]]$WilcoxonSignedRank.test[,"p.value",t]) & !is.nan(ps[[p]]$WilcoxonSignedRank.test[,"p.value",t])),,t]
+            res[[p]]$t.test[[t]] <- ps[[p]]$t.test[which(ps[[p]]$t.test[,"p.value",t] < p.limit | is.na(ps[[p]]$t.test[,"p.value",t]) & !is.nan(ps[[p]]$t.test[,"p.value",t])),,t]
         }
     }
     res
 }
 
 
-    
+# ======================================================================
+# A CD diagram for the Nemenyi test
+# =====================================================
+# Luis Torgo, Nov, 2014
+# =====================================================
+CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
+    o <- rank(r[[metric]]$avgRksWFs)
+    mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
+    data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
+                       invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,
+                       sys=names(r[[metric]]$avgRksWFs),
+                       line=o%%mxl + ifelse(o%%mxl==0,mxl,0) ,
+#                   line=o%%mxl + 1,
+                       side=ifelse(o <= mxl,-1,1)
+                       )
+    len <- length(r[[metric]]$avgRksWFs)
+    cd <- r[[metric]]$Nemenyi.test$critDif
+    g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
+            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line)) +
+            geom_text(data=data[data$side==-1,],
+                      aes_string(label = "sys", x = len, y = "line"),
+                      hjust = -.5,size=4) +
+            geom_text(data=data[data$side==1,],
+                      aes(label = sys, x = -Inf, y = line),
+                      hjust = 1,size=4) +
+            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line)) +
+            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line)) +
+            scale_x_continuous(limits=c(0,len),
+                               breaks=0:(len+1),
+                               labels=paste((len+1):0)) +
+            scale_y_continuous(limits=c(0,mxl+1)) +
+            xlab("Average Rank") + ylab("") +
+            theme(axis.text.y=element_blank(),
+                  axis.ticks.y=element_blank(),
+                  axis.title.y=element_blank(),
+                  legend.position="none",
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  axis.line=element_line(size=1.2),
+                  axis.line.y=element_blank(),
+                  panel.grid.major=element_blank(),
+                  plot.background=element_blank(),
+                  plot.margin = unit(c(3,6,1,5), "lines")
+                  ) +
+            coord_fixed(ratio=0.5) + 
+            annotate("segment",x=0,xend=cd,
+                     y=mxl+1,yend=mxl+1,size=1.5) +
+            annotate("text",x=1,y=mxl+1,label="Critical Difference",vjust=-0.5,size=3)
 
+    ss <- cbind(row(r[[metric]]$Nemenyi.test$signifDifs)[which(!r[[metric]]$Nemenyi.test$signifDifs)],col(r[[metric]]$Nemenyi.test$signifDifs)[which(!r[[metric]]$Nemenyi.test$signifDifs)])
+    ss <- ss[which(ss[,1] < ss[,2]),,drop=FALSE]
+    for(i in 1:nrow(ss)) {
+#        g <- g + annotate("segment",x=,xend=,y=,yend=,size=2)
+    }
+    gt <- ggplot_gtable(ggplot_build(g))
+    gt$layout$clip[gt$layout$name == "panel"] <- "off"
+    grid.draw(gt)
+}
+
+
+
+# ======================================================================
+# A CD diagram for the Boferroni-Dunn test
+# =====================================================
+# Luis Torgo, Nov, 2014
+# =====================================================
+CDdiagram.BD <- function(r,metric=names(r)[1]) {
+    o <- rank(r[[metric]]$avgRksWFs)
+    mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
+    data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
+                       invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,
+                       sys=names(r[[metric]]$avgRksWFs),
+                       line=o%%mxl + ifelse(o%%mxl==0,mxl,0) ,
+                       side=ifelse(o <= mxl,-1,1)
+                       )
+#    data$color <- rep("black",nrow(data))
+    data$face <- rep(1,nrow(data))
+    data[r[[metric]]$BonferroniDunn.test$baseline,"face"] <- 2
+    data[names(which(r[[metric]]$BonferroniDunn.test$signifDifs)),"face"] <- 3
+#    data[r[[metric]]$BonferroniDunn.test$baseline,"color"] <- "green"
+#    data[names(which(r[[metric]]$BonferroniDunn.test$signifDifs)),"color"] <- "red"
+    len <- length(r[[metric]]$avgRksWFs)
+    cd <- r[[metric]]$BonferroniDunn.test$critDif
+    g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
+            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line)) +
+            geom_text(data=data[data$side==-1,],
+                      aes_string(label = "sys", x = len, y = "line",
+ #                                fontface="face",colour="color"),
+                                 fontface="face"),
+                      hjust = -.5,size=4) +
+            geom_text(data=data[data$side==1,],
+                      aes(label = sys, x = -Inf, y = line,
+#                          fontface=face,colour=color),
+                          fontface=face),
+                      hjust = 1,size=4) +
+            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line)) +
+            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line)) +
+            scale_x_continuous(limits=c(0,len),
+                               breaks=0:(len+1),
+                               labels=paste((len+1):0)) +
+            scale_y_continuous(limits=c(0,mxl+1)) +
+            xlab("Average Rank") + ylab("") +
+            theme(axis.text.y=element_blank(),
+                  axis.ticks.y=element_blank(),
+                  axis.title.y=element_blank(),
+                  legend.position="none",
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  axis.line=element_line(size=1),
+                  axis.line.y=element_blank(),
+                  panel.grid.major=element_blank(),
+                  plot.background=element_blank(),
+                  plot.margin = unit(c(1,6,1,5), "lines")
+                  ) +
+            coord_fixed(ratio=0.5) + 
+            annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
+                     y=0,yend=0,size=2) 
+
+    gt <- ggplot_gtable(ggplot_build(g))
+    gt$layout$clip[gt$layout$name == "panel"] <- "off"
+    grid.draw(gt)
+}
