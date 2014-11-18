@@ -341,22 +341,20 @@ setClassUnion("EstimationMethod",
 ## ==============================================================
 setClass("EstimationTask",
          slots=c(metrics='character',        # the metrics to be estimated
+                 method="EstimationMethod",  # the estimation method to use
                  evaluator='character',      # function used to calculate the metrics
-                 evaluator.pars='OptList',   # pars to this function
-                 method="EstimationMethod"   # the estimation method to use
+                 evaluator.pars='OptList'    # pars to this function
          )
          )
 
 ## --------------------------------------------------------------
 ## constructor
 ##
-EstimationTask <- function(metrics,
-                           evaluator="",evaluator.pars=NULL,
-                           method=CV()) {
+EstimationTask <- function(metrics,method=CV(),
+                           evaluator="",evaluator.pars=NULL) {
     new("EstimationTask",
-        metrics=metrics,
-        evaluator=evaluator,evaluator.pars=evaluator.pars,
-        method=method)
+        metrics=metrics,method=method,
+        evaluator=evaluator,evaluator.pars=evaluator.pars)
 }
 
 

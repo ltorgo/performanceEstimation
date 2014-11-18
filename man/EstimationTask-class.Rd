@@ -31,17 +31,17 @@ calculate these metrics.
       provide the name of any other metrics, but in that case you need
       to use the slots \code{evaluator} and \code{evaluator.pars} to
       indicate the function to be use to calculate them.}
-    \item{\code{evaluator}:}{An optional object of class
-      \code{character} containing the name of a function to be used to
-    calculate the specified metrics. It will default to either
-    \code{\link{classificationMetrics}} or
-    \code{\link{regressionMetrics}} depending on the type of prediction
-    task.}
-    \item{\code{evaluator.pars}:}{An optional  list containing
-      the parameters to be passed to the function calculating the metrics.}
     \item{\code{method}:}{Object of class \code{\linkS4class{EstimationMethod}}
       containing the estimation method and its settings to be used to
       obtain the estimates of the metrics (defaulting to \code{CV()}). }
+    \item{\code{evaluator}:}{An optional object of class
+      \code{character} containing the name of a function to be used to
+      calculate the specified metrics. It will default to either
+      \code{\link{classificationMetrics}} or
+      \code{\link{regressionMetrics}} depending on the type of prediction
+      task.}
+    \item{\code{evaluator.pars}:}{An optional  list containing
+      the parameters to be passed to the function calculating the metrics.}
   }
 }
 \section{Methods}{
@@ -87,9 +87,7 @@ powErr <- function(trues,preds,pow=3,...) {
 }
 
 ## Now the estimation task (10-fold cv in this example)
-EstimationTask(metrics="pow.err",
-               evaluator="powErr",
-               evaluator.pars=list(pow=4),
-               method=CV())
+EstimationTask(metrics="pow.err",method=CV(), 
+               evaluator="powErr",evaluator.pars=list(pow=4))
 }
 \keyword{classes}
