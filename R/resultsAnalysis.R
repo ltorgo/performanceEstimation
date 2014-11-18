@@ -190,7 +190,7 @@ pairedComparisons <-  function(obj,baseline,
 # Luis Torgo, Jan-Aug 2009, 2014
 # =====================================================
 signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]$avgScores)) {
-    res <- vector("list",lenght(metrics))
+    res <- vector("list",length(metrics))
     names(res) <- metrics
     for(p in metrics) {
         res[[p]] <- list()
@@ -224,37 +224,37 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
     data$line <- ifelse(data$side==1,mxl+1-data$line,data$line)
     len <- length(r[[metric]]$avgRksWFs)
     cd <- r[[metric]]$Nemenyi.test$critDif
-    g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
-            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line,col=sys)) +
-            geom_text(data=data[data$side==-1,],
-                      aes_string(label = "sys", x = len, y = "line",col="sys"),
+    g <- ggplot2::ggplot(data,ggplot2::aes_string(x="invRk",y="line")) + #geom_point() +
+            ggplot2::geom_segment(ggplot2::aes_string(x="invRk",y=0,xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_text(data=data[data$side==-1,],
+                      ggplot2::aes_string(label = "sys", x = len, y = "line",col="sys"),
                       hjust = -.5,size=4) +
-            geom_text(data=data[data$side==1,],
-                      aes(label = sys, x = -Inf, y = line,col=sys),
+            ggplot2::geom_text(data=data[data$side==1,],
+                      ggplot2::aes_string(label = "sys", x = -Inf, y = "line",col="sys"),
                       hjust = 1,size=4) +
-            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line,col=sys)) +
-            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line,col=sys)) +
-            scale_x_continuous(limits=c(0,len),
+            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=8,y="line",xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_segment(data=data[data$side==1,],ggplot2::aes_string(x="invRk",y="line",xend=0,yend="line",col="sys")) +
+            ggplot2::scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
                                labels=paste((len+1):0)) +
-            scale_y_continuous(limits=c(0,mxl+1)) +
-            xlab("Average Rank") + ylab("") +
-            theme(axis.text.y=element_blank(),
-                  axis.ticks.y=element_blank(),
-                  axis.title.y=element_blank(),
+            ggplot2::scale_y_continuous(limits=c(0,mxl+1)) +
+            ggplot2::xlab("Average Rank") + ggplot2::ylab("") +
+            ggplot2::theme(axis.text.y=ggplot2::element_blank(),
+                  axis.ticks.y=ggplot2::element_blank(),
+                  axis.title.y=ggplot2::element_blank(),
                   legend.position="none",
-                  panel.background=element_blank(),
-                  panel.border=element_blank(),
-                  axis.line=element_line(size=1),
-                  axis.line.y=element_blank(),
-                  panel.grid.major=element_blank(),
-                  plot.background=element_blank(),
-                  plot.margin = unit(c(3,6,1,5), "lines")
+                  panel.background=ggplot2::element_blank(),
+                  panel.border=ggplot2::element_blank(),
+                  axis.line=ggplot2::element_line(size=1),
+                  axis.line.y=ggplot2::element_blank(),
+                  panel.grid.major=ggplot2::element_blank(),
+                  plot.background=ggplot2::element_blank(),
+                  plot.margin = grid::unit(c(3,6,1,5), "lines")
                   ) +
-            coord_fixed(ratio=0.5) + 
-            annotate("segment",x=0,xend=cd,
+            ggplot2::coord_fixed(ratio=0.5) + 
+            ggplot2::annotate("segment",x=0,xend=cd,
                      y=mxl+1,yend=mxl+1,size=1.5) +
-            annotate("text",x=0,y=mxl+1,label=paste("Critical Difference",round(cd,1),sep=" = "),vjust=-0.5,hjust=0,size=3)
+            ggplot2::annotate("text",x=0,y=mxl+1,label=paste("Critical Difference",round(cd,1),sep=" = "),vjust=-0.5,hjust=0,size=3)
 
     wfsOrd <- names(r[[metric]]$avgRksWFs[order(r[[metric]]$avgRksWFs)])
     ss <- r[[metric]]$Nemenyi.test$signifDifs[wfsOrd,wfsOrd]
@@ -270,7 +270,7 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
             theLine <- min(data[wfsOrd[i],"line"],data[wfsOrd[till],"line"])
             ypos <- pos[(theLine-1)*mxl+frees[theLine]]
             frees[theLine] <- frees[theLine]+1
-            g <- g + annotate("segment",
+            g <- g + ggplot2::annotate("segment",
                               x=data[wfsOrd[till],"invRk"]-.1,
                               xend=data[wfsOrd[i],"invRk"]+.1,
                               y=ypos, yend=ypos, size=1.2)
@@ -278,10 +278,10 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
         }
         if (till == mx) break
     }
-    grid.newpage()
-    gt <- ggplot_gtable(ggplot_build(g))
+    grid::grid.newpage()
+    gt <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(g))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
-    grid.draw(gt)
+    grid::grid.draw(gt)
 }
 
 
@@ -309,43 +309,43 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
 #    data[names(which(r[[metric]]$BonferroniDunn.test$signifDifs)),"color"] <- "red"
     len <- length(r[[metric]]$avgRksWFs)
     cd <- r[[metric]]$BonferroniDunn.test$critDif
-    g <- ggplot(data,aes(x=invRk,y=line)) + #geom_point() +
-            geom_segment(aes(x=invRk,y=0,xend=invRk,yend=line,col=sys)) +
-            geom_text(data=data[data$side==-1,],
-                      aes_string(label = "sys", x = len, y = "line",col="sys",
+    g <- ggplot2::ggplot(data,ggplot2::aes_string(x="invRk",y="line")) + #geom_point() +
+            ggplot2::geom_segment(ggplot2::aes_string(x="invRk",y=0,xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_text(data=data[data$side==-1,],
+                      ggplot2::aes_string(label = "sys", x = len, y = "line",col="sys",
  #                                fontface="face",colour="color"),
                                  fontface="face"),
                       hjust = -.5,size=4) +
-            geom_text(data=data[data$side==1,],
-                      aes(label = sys, x = -Inf, y = line,col=sys,
+            ggplot2::geom_text(data=data[data$side==1,],
+                      ggplot2::aes_string(label = "sys", x = -Inf, y = "line",col="sys",
 #                          fontface=face,colour=color),
-                          fontface=face),
+                          fontface="face"),
                       hjust = 1,size=4) +
-            geom_segment(data=data[data$side==-1,],aes(x=8,y=line,xend=invRk,yend=line,col=sys)) +
-            geom_segment(data=data[data$side==1,],aes(x=invRk,y=line,xend=0,yend=line,col=sys)) +
-            scale_x_continuous(limits=c(0,len),
+            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=8,y="line",xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_segment(data=data[data$side==1,],ggplot2::aes_string(x="invRk",y="line",xend=0,yend="line",col="sys")) +
+            ggplot2::scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
                                labels=paste((len+1):0)) +
-            scale_y_continuous(limits=c(0,mxl+1)) +
-            xlab("Average Rank") + ylab("") +
-            theme(axis.text.y=element_blank(),
-                  axis.ticks.y=element_blank(),
-                  axis.title.y=element_blank(),
+            ggplot2::scale_y_continuous(limits=c(0,mxl+1)) +
+            ggplot2::xlab("Average Rank") + ggplot2::ylab("") +
+            ggplot2::theme(axis.text.y=ggplot2::element_blank(),
+                  axis.ticks.y=ggplot2::element_blank(),
+                  axis.title.y=ggplot2::element_blank(),
                   legend.position="none",
-                  panel.background=element_blank(),
-                  panel.border=element_blank(),
-                  axis.line=element_line(size=1),
-                  axis.line.y=element_blank(),
-                  panel.grid.major=element_blank(),
-                  plot.background=element_blank(),
-                  plot.margin = unit(c(1,6,1,5), "lines")
+                  panel.background=ggplot2::element_blank(),
+                  panel.border=ggplot2::element_blank(),
+                  axis.line=ggplot2::element_line(size=1),
+                  axis.line.y=ggplot2::element_blank(),
+                  panel.grid.major=ggplot2::element_blank(),
+                  plot.background=ggplot2::element_blank(),
+                  plot.margin = grid::unit(c(1,6,1,5), "lines")
                   ) +
-            coord_fixed(ratio=0.5) + 
-            annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
+            ggplot2::coord_fixed(ratio=0.5) + 
+            ggplot2::annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
                      y=0,yend=0,size=2) 
 
-    grid.newpage()
-    gt <- ggplot_gtable(ggplot_build(g))
+    grid::grid.newpage()
+    gt <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(g))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
-    grid.draw(gt)
+    grid::grid.draw(gt)
 }
