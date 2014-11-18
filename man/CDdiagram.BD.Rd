@@ -45,7 +45,10 @@ CDdiagram.BD(r, metric = names(r)[1])
   this hypothesis. This means that only the alternative workflows that
   are not connect with the baseline can be considered as having an
   average rank that is different from the one of the baseline with
-  statistical significance. 
+  statistical significance. To help spotting these differences the name
+  of the baseline workflow is shown in bold, and the names of the
+  alternative workflows whose difference is significant are shown in
+  italics. 
 }
 \value{
 Nothing, the graph is draw on the current device.
