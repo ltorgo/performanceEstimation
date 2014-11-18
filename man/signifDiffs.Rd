@@ -9,11 +9,14 @@
 \description{
   This function receives as main argument the object resulting from a
   call to the \code{\link{pairedComparisons}} function and produces a
-  list with the subset of the paired comparisons that are statistically
+  list with the subset of the paired comparisons using the \emph{t} test and
+  the \emph{Wilcoxon Signed Rank} test that are statistically
   significant given a certain \emph{p} value limit.
 }
 \usage{
-signifDiffs(ps,p.limit=0.05,metrics=dimnames(ps)[[3]],tasks=dimnames(ps)[[4]])
+signifDiffs(ps, p.limit=0.05,
+            metrics=names(ps),
+            tasks=rownames(ps[[1]]$avgScores))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -38,17 +41,22 @@ signifDiffs(ps,p.limit=0.05,metrics=dimnames(ps)[[3]],tasks=dimnames(ps)[[4]])
   }
 }
 \details{
-  This function produces a list with as many components as there are
-  tasks in the paired comparison. Each of the components is another list
-  with as many components as there are metrics. Finally, each of these
-  components in the inner sub-lists is a sub-set of the rows of the
-  original object resulting from the paired comparison. This sub-set
-  includes only the lines corresponding to workflows for which the
-  paired comparison against the baseline workflow can be regarded as
-  statistically significant, given the \code{p.limit} setting.
+  This function produces a list with as many components as the selected
+  metrics (defaulting to all metrics in the paired comparison). Each of
+  the components is another list with two components: i) one with the
+  results for the \emph{t} tests; and ii) the other with the results for
+  the \emph{Wilcoxon Signed Rank} test. Each of these two components is
+  an array with 3 dimensions, with the rows representing the workflows,
+  the columns a set of statistics and the thrid dimension being the
+  task. The first row of these arrays will contain the baseline workflow
+  against which all others are being compared (by either the \emph{t}
+  test or through the \emph{Wilcoxon Signed Rank} test). The remaining
+  rows will include the workflows whose comparison against this baseline
+  is statistically significant, i.e. whose \emph{p} value of the paired
+  comparison is below the provided \emph{p} limit.
 }
 \value{
-  The result of this function is a list.
+  The result of this function is a list (see the Details section).
 }
 \references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models}.
@@ -65,26 +73,28 @@ signifDiffs(ps,p.limit=0.05,metrics=dimnames(ps)[[3]],tasks=dimnames(ps)[[4]])
 ## regression trees and SVMs, on  two data sets, using one repetition
 ## of 10-fold CV
 library(e1071)
-library(DMwR)
-data(swiss)
-data(mtcars)
+data(iris)
+data(Satellite,package="mlbench")
+data(LetterRecognition,package="mlbench")
+
 
 ## running the estimation experiment
 res <- performanceEstimation(
-  c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
-  c(workflowVariants("standardWF",learner="svm",
-                     learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))),
-    workflowVariants("standardWF",learner="rpartXse",
-                     learner.pars=list(se=c(0,0.5,1)))
-  ),
-  EstimationTask(metrics=c("mse","mae"),method=CV())
-  )
+           c(PredTask(Species ~ .,iris),
+             PredTask(classes ~ .,Satellite,"sat"),
+             PredTask(lettr ~ .,LetterRecognition,"letter")),
+           workflowVariants(learner="svm",
+                 learner.pars=list(cost=1:4,gamma=c(0.1,0.01))),
+           EstimationTask(metrics=c("err","acc"),method=CV()))
 
-## carrying out parired comparisons against the workflow "svm.v2"
-pcs <- pairedComparisons(res,"svm.v2")
+## now let us assume that we will choose "svm.v2" as our baseline
+## carry out the paired comparisons
+pres <- pairedComparisons(res,"svm.v2")
 
-## now let us check the significant differences with 95\% confidence
-signifDiffs(pcs)
+## Obtaining the subset of differences that are significant
+## with 99\% confidence 
+sds <- signifDiffs(res,p.limit=0.01)
+
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

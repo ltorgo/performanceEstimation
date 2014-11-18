@@ -88,7 +88,7 @@ metricsSummary <- function(compRes,summary='mean',...) {
 # =====================================================
 pairedComparisons <-  function(obj,baseline,
                                maxs=rep(FALSE,length(metricNames(obj))),
-                               p.val=0.05) {
+                               p.value=0.05) {
     
     if (!inherits(obj,'ComparisonResults')) stop(obj,' is not of class "ComparisonResults".\n')
 
@@ -150,7 +150,7 @@ pairedComparisons <-  function(obj,baseline,
         ## Testing the null hypothesis that all WFs are equivalent
         chi <- 12*nts/(nws*(nws+1)) * (sum(compResults[[p]]$avgRksWFs^2) - (nws*(nws+1)^2)/4)
         FF <- (nts-1)*chi / (nts*(nws-1) - chi)
-        critVal <- df(1-p.val,nws-1,(nws-1)*(nts-1))
+        critVal <- df(1-p.value,nws-1,(nws-1)*(nts-1))
         rejNull <- FF > critVal
         compResults[[p]]$F.test <- list(chi=chi,FF=FF,critVal=critVal,rejNull=rejNull)
         
@@ -158,7 +158,7 @@ pairedComparisons <-  function(obj,baseline,
         compResults[[p]]$BonferroniDunn.test <- NA
         if (rejNull) {
             ## Nemenyi critical difference
-            CD.n <- qtukey(1-p.val,nws,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
+            CD.n <- qtukey(1-p.value,nws,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
             allRkDifs <- outer(compResults[[p]]$avgRksWFs,compResults[[p]]$avgRksWFs,
                                function(x,y) abs(x-y))
             signifDifs <- allRkDifs >= CD.n
@@ -169,7 +169,7 @@ pairedComparisons <-  function(obj,baseline,
             ## Bonferroni-Dunn test against the baseline
             
             ## Bonferroni-Dunn critical difference
-            CD.bd <- qtukey(1-(p.val/(nws-1)),2,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
+            CD.bd <- qtukey(1-(p.value/(nws-1)),2,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
             diffs2baseline <- abs(compResults[[p]]$avgRksWFs[-pb]-compResults[[p]]$avgRksWFs[pb])
             signifDifs <- diffs2baseline >= CD.bd
             compResults[[p]]$BonferroniDunn.test <- list(critDif=CD.bd,
@@ -190,9 +190,9 @@ pairedComparisons <-  function(obj,baseline,
 # Luis Torgo, Jan-Aug 2009, 2014
 # =====================================================
 signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]$avgScores)) {
-    res <- vector("list",length(ps))
-    names(res) <- names(ps)
-    for(p in names(ps)) {
+    res <- vector("list",lenght(metrics))
+    names(res) <- metrics
+    for(p in metrics) {
         res[[p]] <- list()
         res[[p]]$WilcoxonSignedRank.test <- vector("list",length(tasks))
         res[[p]]$t.test <- vector("list",length(tasks))
@@ -211,7 +211,7 @@ signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]
 # =====================================================
 # Luis Torgo, Nov, 2014
 # =====================================================
-CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
+CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
     o <- rank(r[[metric]]$avgRksWFs)
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
@@ -278,6 +278,7 @@ CDdiagram.nemenyi <- function(r,metric=names(r)[1]) {
         }
         if (till == mx) break
     }
+    grid.newpage()
     gt <- ggplot_gtable(ggplot_build(g))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
     grid.draw(gt)
@@ -343,6 +344,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
             annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
                      y=0,yend=0,size=2) 
 
+    grid.newpage()
     gt <- ggplot_gtable(ggplot_build(g))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
     grid.draw(gt)
