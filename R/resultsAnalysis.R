@@ -97,6 +97,8 @@ pairedComparisons <-  function(obj,baseline,
     ws <- workflowNames(obj); nws <- length(ws)
     ms <- metricNames(obj);   nms <- length(ms)
 
+    if (nws < 2) stop("Paired comparisons only make sense with more than one workflow!")
+
     if (missing(baseline))  # using the first workflow as baseline if none indicated
         baseline <- topPerformer(obj,ms[1],ts[1])@name
     other <- setdiff(ws,baseline)
@@ -146,37 +148,42 @@ pairedComparisons <-  function(obj,baseline,
                     if (inherits(tst,"try-error"))  NA else tst$p.value
             }
         }
-        
-        ## Testing the null hypothesis that all WFs are equivalent
-        chi <- 12*nts/(nws*(nws+1)) * (sum(compResults[[p]]$avgRksWFs^2) - (nws*(nws+1)^2)/4)
-        FF <- (nts-1)*chi / (nts*(nws-1) - chi)
-        critVal <- df(1-p.value,nws-1,(nws-1)*(nts-1))
-        rejNull <- FF > critVal
-        compResults[[p]]$F.test <- list(chi=chi,FF=FF,critVal=critVal,rejNull=rejNull)
-        
-        compResults[[p]]$Nemenyi.test <- NA
-        compResults[[p]]$BonferroniDunn.test <- NA
-        if (rejNull) {
-            ## Nemenyi critical difference
-            CD.n <- qtukey(1-p.value,nws,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
-            allRkDifs <- outer(compResults[[p]]$avgRksWFs,compResults[[p]]$avgRksWFs,
-                               function(x,y) abs(x-y))
-            signifDifs <- allRkDifs >= CD.n
-            compResults[[p]]$Nemenyi.test <- list(critDif=CD.n,
-                                                  rkDifs=allRkDifs,
-                                                  signifDifs=signifDifs)
-            
-            ## Bonferroni-Dunn test against the baseline
-            
-            ## Bonferroni-Dunn critical difference
-            CD.bd <- qtukey(1-(p.value/(nws-1)),2,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
-            diffs2baseline <- abs(compResults[[p]]$avgRksWFs[-pb]-compResults[[p]]$avgRksWFs[pb])
-            signifDifs <- diffs2baseline >= CD.bd
-            compResults[[p]]$BonferroniDunn.test <- list(critDif=CD.bd,
-                                                         baseline=baseline,
-                                                         rkDifs=diffs2baseline,
-                                                         signifDifs=signifDifs)
 
+        if (nts > 1) {
+            ## Testing the null hypothesis that all WFs are equivalent
+            chi <- 12*nts/(nws*(nws+1)) * (sum(compResults[[p]]$avgRksWFs^2) - (nws*(nws+1)^2)/4)
+            FF <- (nts-1)*chi / (nts*(nws-1) - chi)
+            critVal <- df(1-p.value,nws-1,(nws-1)*(nts-1))
+            rejNull <- FF > critVal
+            compResults[[p]]$F.test <- list(chi=chi,FF=FF,critVal=critVal,rejNull=rejNull)
+            
+            compResults[[p]]$Nemenyi.test <- NA
+            compResults[[p]]$BonferroniDunn.test <- NA
+            if (rejNull) {
+                ## Nemenyi critical difference
+                CD.n <- qtukey(1-p.value,nws,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
+                allRkDifs <- outer(compResults[[p]]$avgRksWFs,compResults[[p]]$avgRksWFs,
+                                   function(x,y) abs(x-y))
+                signifDifs <- allRkDifs >= CD.n
+                compResults[[p]]$Nemenyi.test <- list(critDif=CD.n,
+                                                      rkDifs=allRkDifs,
+                                                      signifDifs=signifDifs)
+                
+                ## Bonferroni-Dunn test against the baseline
+                
+                ## Bonferroni-Dunn critical difference
+                CD.bd <- qtukey(1-(p.value/(nws-1)),2,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
+                diffs2baseline <- abs(compResults[[p]]$avgRksWFs[-pb]-compResults[[p]]$avgRksWFs[pb])
+                signifDifs <- diffs2baseline >= CD.bd
+                compResults[[p]]$BonferroniDunn.test <- list(critDif=CD.bd,
+                                                             baseline=baseline,
+                                                             rkDifs=diffs2baseline,
+                                                             signifDifs=signifDifs)
+                
+            }
+        } else {
+            compResults[[p]]$F.test <- compResults[[p]]$Nemenyi.test <- compResults[[p]]$BonferroniDunn.test <- NA
+            warning("With less 2 tasks the Friedman, Nemenyi and Bonferroni-Dunn tests are not calculated.")
         }
     }
     compResults
@@ -212,6 +219,7 @@ signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]
 # Luis Torgo, Nov, 2014
 # =====================================================
 CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
+    if (is.na(r[[metric]]$F.test) | is.na(r[[metric]]$Nemenyi.test)) stop("Results of both the F and Nemenyi tests are required for these diagrams.")
     o <- rank(r[[metric]]$avgRksWFs)
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
@@ -292,6 +300,7 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
 # Luis Torgo, Nov, 2014
 # =====================================================
 CDdiagram.BD <- function(r,metric=names(r)[1]) {
+    if (is.na(r[[metric]]$F.test) | is.na(r[[metric]]$BonferroniDunn.test)) stop("Results of both the F and Bonferroni-Dunn tests are required for these diagrams.")
     o <- rank(r[[metric]]$avgRksWFs)
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,

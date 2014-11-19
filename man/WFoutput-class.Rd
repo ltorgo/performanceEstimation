@@ -11,12 +11,9 @@
 \description{
   Objects of the class \code{WFoutput} store the result of runing a
   workflow on a predictive task. These results, in the context of our
-  performance estimation framework, are formed by at least the scores
-  of a set of evaluation metrics resulting from applying the workflow and also
-  some other optional information. Namely, they may also contain a
-  matrix with the true and predicted values for each test case, and also
-  a list with any other information the creator of the workflow deems
-  important to return (e.g. the model obtained with the training set).
+  performance estimation framework, are formed by information on the
+  predictions of the workflow and some extra information that the
+  workflow author may have decided to return.
 }
 
 \section{Objects from the Class}{
@@ -48,7 +45,7 @@
   the execution of the workflow. This is controled by the workflow
   function. The standard workflow will at least return a component named
   \code{times} with the train, test and total times of executing the
-  workflow. Setting \code{fullOutput=TRUE} when creating the workflow
+  workflow. Setting \code{.fullOutput=TRUE} when creating the workflow
   will generate several other components with information from the
   different steps of the standard workflow.}
   }

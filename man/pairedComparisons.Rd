@@ -53,34 +53,39 @@ pairedComparisons(obj,baseline,
   running this type of experiments we frequently want to check if there
   is any statistical significance between the estimated performance of
   the different workflows. The current function allows you to carry out
-  this type of checks. More specifically, the function provides: i) several
-  statistical tests that check the statistical significance of the
-  difference between the performance of a selected baseline workflow and
-  the remaining alternatives; and ii) also tests for checking the
-  statistical significance of all differences between all workflows. For
-  the first type of checks the function calculates three tests: the
-  paired t.test, the paired Wilcoxon Signed Rank test and the method
-  recommended by Demsar (2006)  consisting of a Friedman test followed
-  by a post-hoc Bonferroni-Dunn test. For the second type of checks we
-  also follow the recommendations of Demsar (2006) and provide a
-  Friedman test followed by the post-hoc Nemenyi test.
+  this type of checks.
+
+  The function will only run on experiments containing more than one
+  workflow as paired comparisons do not make sense with one single
+  alternative workflow. Having more than one workflow we can distinguish
+  two situations: i) a single predictive task; or ii) multiple
+  predictive tasks. The recommendations for checking  the statistical
+  significance of the  difference between the performance of the
+  alternative workflows varies within these two setups. Within the setup
+  of a single predictive task the function will carry out and provide
+  the results of paired \emph{t} tests and paired \emph{Wilcoxon Signed
+  Rank} tests, with the latter being recommended given the typical
+  overlap among the training sets that does not ensure independence
+  among the scores of the different iterations. For the setup of
+  multiple tasks the function also calculates the \emph{Friedman} test
+  and the post-hoc \emph{Nemenyi} and \emph{Bonferroni-Dunn} tests,
+  according to the procedures described in Demsar (2006). The
+  combination \emph{Friedman} test followed by the post-hoc
+  \emph{Nemenyi} test is recommended when you want to carry out paired
+  comparisons between all alternative workflows on the set of tasks to
+  check for which differences are significant. The combination
+  \emph{Friedman} test followed by the post-hoc \emph{Bonferroni-Dunn}
+  test is recommended when you want to compare a set of alternative
+  workflows against a baseline workflow. For both of these two paths we
+  provide an implementation of the  diagrams (CD diagrams) described in
+  Demsar (2006) through the  functions \code{\link{CDdiagram.BD}} and
+  \code{\link{CDdiagram.Nemenyi}}. 
 
   The \code{\link{performanceEstimation}} function ensures that all
   compared workflows are run on exactly the same train+test partitions
   on all repetitions and for all predictive tasks. In this context, we
   can use pairwise statistical significance tests.
 
-  Although we provide different statistical tests, we recommend you
-  follow the proposals outlined in Demsar (2006) regards this type of
-  hypothesis testing. Namely, if your goal is to compare a set of
-  alternative workflows against a baseline workflow we recommend you use
-  the information from the Friedman test followed by the post-hoc
-  Bonferroni-Dunn test. In case your goal is to find out any
-  statistically significant differences among all workflows, then we
-  recommend the same Friedman test followed by the Nemenyi post-hoc
-  test. For both of these two paths we provide an implementation of the
-  diagrams (CD diagrams) described in Demsar (2006) through the
-  functions \code{\link{CDdiagram.BD}} and \code{\link{CDdiagram.Nemenyi}}.
 }
 \value{
   The result of this function is the information from performing all
@@ -88,18 +93,6 @@ pairedComparisons(obj,baseline,
   as many components as there are estimated metrics. For each metric a
   list with several components describing the results of these tests is
   provided.
-
-  The result of this function is an array with four dimensions. The
-  first dimension contains the workflows (the first of these being the
-  selected baseline), the second dimension contains the results of the
-  test. These results are: i) the average estimate score, ii) the standard
-  error of this estimate, iii)
-  the difference between the average score of the baseline and
-  the average score of the workflow in the row, and  iv) the \emph{p}
-  value of the corresponding paired comparison that tests the validity
-  of the null hypothesis that the difference is zero. The third
-  dimension of the array are the evaluation metrics, while the fourth
-  dimension contains the predictive tasks.
 }
 \references{
   Demsar, J. (2006) \emph{Statistical Comparisons of Classifiers over
