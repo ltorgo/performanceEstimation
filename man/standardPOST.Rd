@@ -82,18 +82,37 @@ standardPOST(form, train, test, preds, steps, ...)
   to predictions that are vectors of numeric values.
 
   "cast2int" - in some numeric forecasting tasks the target variable
-  takes only values within some interval. Nevertheless, some models may insist in
-  forecasting  values outside of this interval. This function casts these values
-  into the nearest interval boundary. This function requires that you
-  supply the limits of this interval through parameters \code{infLim}
-  and \code{supLim}. Note that this is only applicable
-  to predictions that are vectors of numeric values.
+  takes only values within some interval. Nevertheless, some models may
+  insist in forecasting  values outside of this interval. This function
+  casts these values  into the nearest interval boundary. This function
+  requires that you supply the limits of this interval through
+  parameters \code{infLim} and \code{supLim}. Note that this is only
+  applicable to predictions that are vectors of numeric values.
+
+  "metacost" - apply the MetaCost (Domingos, 1999) algorithm to the predictions of a
+  classifier. This method is only applicable to classification tasks and
+  to algorithms that are able to produce as predictions a vector of
+  class probabilities for each test case, i.e. a matrix of probabilities
+  for a given test set. The method requires a cost-benefit matrix to be
+  provided through the parameter \code{cb.matrix}. For each test case,
+  and given the probabilities estimated by the classifier and the cost
+  benefit matrix, the method predicts the classifier that maximizes the
+  utility of the prediction. This approach is a slight 'evolution' of
+  the original idea that only considered the costs of errors and not the
+  benefits of the correct classifications as in the case of cost-benefit
+  matrices we are using here.
 
 }
 \value{
   An object of the same class as the input parameter \code{preds}
 }
-\references{Torgo, L. (2013) \emph{An Infra-Structure for Performance
+\references{
+
+  Domingos,P. (1999), \emph{MetaCost: a general method for making
+    classifiers cost-sensitive}. Proceedings of
+    KDD'1999. \url{http://homes.cs.washington.edu/~pedrod/papers/kdd99.pdf} 
+  
+  Torgo, L. (2013) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }

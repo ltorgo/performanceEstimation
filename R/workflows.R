@@ -390,7 +390,7 @@ standardPRE <- function(form,train,test,steps,...) {
             train <- na.omit(train)
             test <- na.omit(test)
         } else if (s == "undersample") {
-            if (is.numeric(train[,tgtVar])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.")
+            if (is.numeric(train[,tgtVar])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
             pars <- list(...)
             clDistr <- table(train[,tgtVar])
             minCl <- which.min(clDistr)
@@ -403,7 +403,7 @@ standardPRE <- function(form,train,test,steps,...) {
                              replace=TRUE)
             train <- train[c(minExs,selMaj),]
         } else if (s == "smote") {
-            if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.")
+            if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
             train <- SMOTE(form,train,...)
         } else {
             user.pre <- do.call(s,c(list(form,train,test),list(...)))
@@ -452,7 +452,7 @@ knnImputation <- function(data,k=10,scale=TRUE,distData=NULL) {
     
     xcomplete <- dm[setdiff(distInit:N,nas),]
     if (nrow(xcomplete) < k)
-        stop("Not sufficient complete cases for computing neighbors.")
+        stop("Not sufficient complete cases for computing neighbors.",call.=FALSE)
     
     for (i in tgt.nas) {
         
@@ -486,22 +486,38 @@ standardPOST <- function(form,train,test,preds,steps,...) {
     allPreds <- setdiff(colnames(train),tgtVar)
     
     for(s in steps) {
+        ## -----------
         if (s == "na2central") {
-            if (!is.vector(preds)) stop("standardPOST:: 'na2central' is only applicable to predictions that are vectors of values.")
+            if (!is.vector(preds)) stop("standardPOST:: 'na2central' is only applicable to predictions that are vectors of values.",call.=FALSE)
             if (any(idx <- is.na(preds))) {
                 cval <- if (is.numeric(train[[tgtVar]])) median(train[[tgtVar]],na.rm=TRUE) else { x <- as.factor(train[[tgtVar]]) ; levels(x)[which.max(table(x))] }
                 preds[idx] <- cval
             }
+            
+        ## -----------
         } else if (s == "onlyPos") {
-            if (!is.vector(preds)) stop("standardPOST:: 'onlyPos' is only applicable to predictions that are vectors of values.")
-            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'onlyPos' is only applicable to numeric predictions.")
+            if (!is.vector(preds)) stop("standardPOST:: 'onlyPos' is only applicable to predictions that are vectors of values.",call.=FALSE)
+            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'onlyPos' is only applicable to numeric predictions.",call.=FALSE)
             if (any(idx <- preds < 0)) preds[idx] <- 0
+
+        ## -----------
         } else if (s == "cast2int") {
-            if (!is.vector(preds)) stop("standardPOST:: 'cast2int' is only applicable to predictions that are vectors of values.")
-            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'cast2int' is only applicable to numeric predictions.")
+            if (!is.vector(preds)) stop("standardPOST:: 'cast2int' is only applicable to predictions that are vectors of values.",call.=FALSE)
+            if (! is.numeric(train[[tgtVar]])) stop("standardPOST:: 'cast2int' is only applicable to numeric predictions.",call.=FALSE)
             pars <- list(...)
             if (any(idx <- preds < pars$infLim)) preds[idx] <- pars$infLim
             if (any(idx <- preds > pars$supLim)) preds[idx] <- pars$supLim
+
+        ## -----------    
+        } else if (s == "metacost") {
+            if (is.numeric(train[,tgtVar])) stop("MetaCost is only available for classification tasks.",call.=FALSE)
+            if (!("cb.matrix" %in% names(pars))) stop("MetaCost requires that you specify a cost-benefit matrix.",call.=FALSE)
+            if (is.null(dim(preds))) stop("MetaCost requires that the classifier outputs a matrix of probabilities as predictions.",call.=FALSE)
+            if (ncol(preds) != ncol(pars$cb.matrix)) stop("Error in MetaCost: predictions do not contain as many class probabilities as there are classes in the cost-benefit matrix.",call.=FALSE)
+            ps <- apply(preds,1,function(ps) which.max(apply(pars$cb.matrix,2,function(cs) sum(ps*cs))))
+            preds <- levels(train[,tgtVar])[ps]
+            
+        ## -----------    
         } else {
             preds <- do.call(s,c(list(form,train,test,preds),...))
         }
