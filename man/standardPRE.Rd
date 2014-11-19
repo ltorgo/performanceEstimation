@@ -73,11 +73,30 @@ standardPRE(form, train, test, steps, ...)
   "na.omit" - that uses the R function \code{\link{na.omit}} to remove
   any rows containing \code{NA}'s  from both the training and test sets.
 
+  "undersampl" - this undersamples the training data cases that do not
+  belong to the minority class (this pre-processing step is only
+  available for classification tasks!). It takes the parameter
+  \code{perc.under} that controls the level of undersampling
+  (defaulting to 1, which means that there would be as many cases from
+  the minority as from the other(s) class(es)).
+
+  "smote" - this operation uses the SMOTE (Chawla et. al. 2002)
+  resampling algorithm to  generate a new training sample with a more
+  "balanced" distributions of the target class (this pre-processing step
+  is only available for classification tasks!). It takes the parameters
+  \code{perc.under},  \code{perc.over} and \code{k} to control the
+  algorithm. Read the  documentation of function \code{\link{SMOTE}} to
+  know more details. 
 }
 \value{
   A list with components "train" and "test" with both containing a data frame.
 }
-\references{Torgo, L. (2013) \emph{An Infra-Structure for Performance
+\references{
+  Chawla, N. V., Bowyer, K. W., Hall, L. O., and Kegelmeyer, W. P. (2002).
+  \emph{Smote: Synthetic minority over-sampling technique}. Journal of Artificial
+  Intelligence Research, 16:321-357.
+  
+  Torgo, L. (2013) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models}.
   \url{https://github.com/ltorgo/performanceEstimation}  
 }

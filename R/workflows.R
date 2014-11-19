@@ -381,9 +381,30 @@ standardPRE <- function(form,train,test,steps,...) {
                 if (any(idx <- is.na(train[[i]]))) train[[i]][idx] <- cval
                 if (any(idx <- is.na(test[[i]]))) test[[i]][idx] <- cval
             }
+        } else if (s == "knnImp") {
+            pars <- list(...)
+            if (!("k" %in% names(pars))) pars$k <- 10 # default nr. neigh.
+            train <- knnImputation(train,k=pars$k)
+            test <- knnImputation(train,k=pars$k,distData=train[,-tgtVar])
         } else if (s == "na.omit") {
             train <- na.omit(train)
             test <- na.omit(test)
+        } else if (s == "undersample") {
+            if (is.numeric(train[,tgtVar])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.")
+            pars <- list(...)
+            clDistr <- table(train[,tgtVar])
+            minCl <- which.min(clDistr)
+            minClName <- names(minCl)
+            nMin <- min(clDistr)
+            minExs <- which(train[,tgtVar] == minClName)
+            if (!("perc.under" %in% names(pars))) pars$perc.under <- 1 # default under %
+            selMaj <- sample((1:NROW(train))[-minExs],
+                             as.integer(pars$perc.under*nMin),
+                             replace=TRUE)
+            train <- train[c(minExs,selMaj),]
+        } else if (s == "smote") {
+            if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.")
+            train <- SMOTE(form,train,...)
         } else {
             user.pre <- do.call(s,c(list(form,train,test),list(...)))
             train <- user.pre$train
@@ -393,9 +414,65 @@ standardPRE <- function(form,train,test,steps,...) {
 
     list(train=train,test=test)
 }
- 
 
 
+
+# =====================================================
+# Luis Torgo, Mar 2009, Nov 2011
+# =====================================================
+knnImputation <- function(data,k=10,scale=TRUE,distData=NULL) {
+    
+    n <- nrow(data)  
+    if (!is.null(distData)) {
+        distInit <- n+1
+        data <- rbind(data,distData)
+    } else distInit <- 1
+    N <- nrow(data)
+    
+    ncol <- ncol(data)
+    nomAttrs <- rep(F,ncol)
+    for(i in seq(ncol)) nomAttrs[i] <- is.factor(data[,i])
+    nomAttrs <- which(nomAttrs)
+    hasNom <- length(nomAttrs)
+    contAttrs <- setdiff(seq(ncol),nomAttrs)
+    
+    dm <- data
+    if (scale) dm[,contAttrs] <- scale(dm[,contAttrs])
+    if (hasNom)
+        for(i in nomAttrs) dm[,i] <- as.integer(dm[,i])
+    
+    dm <- as.matrix(dm)
+    
+    nas <- which(!complete.cases(dm))
+    if (!is.null(distData)) tgt.nas <- nas[nas <= n]
+    else tgt.nas <- nas
+    
+    if (length(tgt.nas) == 0)
+        warning("No case has missing values. Stopping as there is nothing to do.")
+    
+    xcomplete <- dm[setdiff(distInit:N,nas),]
+    if (nrow(xcomplete) < k)
+        stop("Not sufficient complete cases for computing neighbors.")
+    
+    for (i in tgt.nas) {
+        
+        tgtAs <- which(is.na(dm[i,]))
+        
+        dist <- scale(xcomplete,dm[i,],FALSE)
+        
+        xnom <- setdiff(nomAttrs,tgtAs)
+        if (length(xnom)) dist[,xnom] <-ifelse(dist[,xnom]>0,1,dist[,xnom])
+        
+        dist <- dist[,-tgtAs]
+        dist <- sqrt(drop(dist^2 %*% rep(1,ncol(dist))))
+        ks <- order(dist)[seq(k)]
+        for(j in tgtAs) {
+            vals <- data[setdiff(distInit:N,nas),j][ks]
+            data[i,j] <- if (is.numeric(vals)) median(vals,na.rm=TRUE) else { x <- as.factor(vals) ; levels(x)[which.max(table(x))] }
+        }
+    }
+    data[1:n,]
+}
 
 
 ## =====================================================================
