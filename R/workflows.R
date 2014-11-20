@@ -236,7 +236,7 @@ standardWF <- function(form,train,test,
     }
 
     ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
-    if (is.numeric(train[,as.character(form[[2]])]) && !dim(ps)) ps <- ps[,1]
+    if (is.numeric(train[,as.character(form[[2]])]) && !is.null(dim(ps))) ps <- ps[,1]
         
     trues <- responseValues(form,test)
     ## Checking for learners that do not ouput as many predictions as test cases!
@@ -324,7 +324,7 @@ timeseriesWF <- function(form,train,test,
             if (.fullOutput) models <- c(models,list(start=s,model=m,preds=ps))
         }
         ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
-        if (is.numeric(tr[,as.character(form[[2]])]) && !dim(ps)) ps <- ps[,1]
+        if (is.numeric(tr[,as.character(form[[2]])]) && !is.null(dim(ps))) ps <- ps[,1]
         
         preds <- c(preds,ps)
     }
@@ -510,6 +510,7 @@ standardPOST <- function(form,train,test,preds,steps,...) {
 
         ## -----------    
         } else if (s == "metacost") {
+            pars <- list(...)
             if (is.numeric(train[,tgtVar])) stop("MetaCost is only available for classification tasks.",call.=FALSE)
             if (!("cb.matrix" %in% names(pars))) stop("MetaCost requires that you specify a cost-benefit matrix.",call.=FALSE)
             if (is.null(dim(preds))) stop("MetaCost requires that the classifier outputs a matrix of probabilities as predictions.",call.=FALSE)

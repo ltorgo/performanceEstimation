@@ -100,7 +100,14 @@ standardPOST(form, train, test, preds, steps, ...)
   utility of the prediction. This approach is a slight 'evolution' of
   the original idea that only considered the costs of errors and not the
   benefits of the correct classifications as in the case of cost-benefit
-  matrices we are using here.
+  matrices we are using here. The parameter \code{cb.matrix} must
+  contain a (square) matrix of dimension NClasses x NClasses where entry
+  X_i,j corresponds to the cost/benefit of predicting a test case as
+  belonging to class j when it is of class i. The diagonal of this
+  matrix (correct predicitons) should contain positive numbers
+  (benefits), whilst numbers outside of the matrix should contain
+  negative numbers (costs of misclassifications). See the Examples
+  section for an illustration.
 
 }
 \value{
@@ -162,6 +169,50 @@ resN <- performanceEstimation(
   EstimationTask(metrics="mse")
   )
 summary(getIterationPreds(resN,1,1,it=1))
+
+######################
+## An example with meta-cost for cost-sensitive learning for the
+## BreastCancer data set on package mlbench
+##
+data(BreastCancer,package="mlbench")
+
+## First lets create the cost-benefit matrix
+cb <- matrix(c(1,-10,-100,100),byrow=TRUE,ncol=2)
+colnames(cb) <- paste("p",levels(BreastCancer$Class),sep=".")
+rownames(cb) <- paste("t",levels(BreastCancer$Class),sep=".")
+
+## This leads to the following cost-benefit matrix
+##             p.benign p.malignant
+## t.benign           1         -10
+## t.malignant     -100         100
+
+## Now the performance estimation. We are estimating error rate (wrong
+## for cost sensitive tasks!) and total utility of the model predictions
+## (the right thing to do here!)
+library(rpart)
+
+r <- performanceEstimation(
+        PredTask(Class ~ .,BreastCancer[,-1],"breastCancer"),
+        c(Workflow(wfID="rpart.cost",
+                   learner="rpart",
+                   post="metacost",
+                   post.pars=list(cb.matrix=cb)
+                  ),
+          Workflow(wfID="rpart",
+                   learner="rpart",
+                   predictor.pars=list(type="class")
+                  )
+          ),
+         EstimationTask(
+              metrics=c("err","totU"),
+              evaluator.pars=list(benMtrx=cb,posClass="malignant"),
+              method=CV(strat=TRUE)))
+
+## Analysing the results
+rankWorkflows(r,maxs=c(FALSE,TRUE))
+
+## Visualizing them
+plot(r)
 
 }
 
