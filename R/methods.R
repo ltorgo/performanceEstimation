@@ -346,9 +346,13 @@ setMethod("plot",
                                   MonteCarlo='Monte Carlo'
                                   ),"Performance Estimation Results")
               plt <- ggplot2::ggplot(allRes,ggplot2::aes_string(y="score",x="sys")) +
-                     ggplot2::geom_boxplot(ggplot2::aes_string(group="sys")) + ggplot2::ggtitle(tlt) +
-                     ggplot2::ylab("Distribution of Statistics Scores") + ggplot2::xlab("Alternative Workflows") +
-                         ggplot2::facet_grid(stat ~ task,scales="free_y")+ggplot2::theme(axis.text.x=ggplot2::element_text(angle=270,size=10,vjust=0.5))
+                     ggplot2::geom_boxplot(ggplot2::aes_string(group="sys")) +
+                     ggplot2::geom_jitter(position = ggplot2::position_jitter(width = .1),color="red",alpha=0.5) + 
+                     ggplot2::ggtitle(tlt) +
+                     ggplot2::ylab("Distribution of Statistics Scores") +
+                     ggplot2::xlab("Alternative Workflows") +
+                     ggplot2::facet_grid(stat ~ task,scales="free_y") +
+                     ggplot2::theme(axis.text.x=ggplot2::element_text(angle=270,size=10,vjust=0.5))
               #print(plt)
               plt
                       
