@@ -453,7 +453,7 @@ setMethod("subset",
               }
               if (is.character(metrics)) 
                   metrics <- unlist(lapply(metrics,function(m) do.call(mf,list(m,colnames(x[[1]][[1]]@iterationsScores)))))
-              rr <- lapply(rr,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn}))
+              rr <- lapply(rr,function(t) lapply(t,function(s) {sn <- s; sn@iterationsScores <- s@iterationsScores[,metrics,drop=F] ; sn@estTask@metrics <- metricNames(rr)[metrics] ; sn}))
               
               ComparisonResults(rr)
           }
