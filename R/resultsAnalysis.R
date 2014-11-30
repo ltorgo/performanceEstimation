@@ -164,8 +164,8 @@ pairedComparisons <-  function(obj,baseline,
             rejNull <- FF > critVal
             compResults[[p]]$F.test <- list(chi=chi,FF=FF,critVal=critVal,rejNull=rejNull)
             
-            compResults[[p]]$Nemenyi.test <- NA
-            compResults[[p]]$BonferroniDunn.test <- NA
+            compResults[[p]]$Nemenyi.test <- NULL
+            compResults[[p]]$BonferroniDunn.test <- NULL
             if (rejNull) {
                 ## Nemenyi critical difference
                 CD.n <- qtukey(1-p.value,nws,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
@@ -189,7 +189,7 @@ pairedComparisons <-  function(obj,baseline,
                 
             }
         } else {
-            compResults[[p]]$F.test <- compResults[[p]]$Nemenyi.test <- compResults[[p]]$BonferroniDunn.test <- NA
+            compResults[[p]]$F.test <- compResults[[p]]$Nemenyi.test <- compResults[[p]]$BonferroniDunn.test <- NULL
             warning("With less 2 tasks the Friedman, Nemenyi and Bonferroni-Dunn tests are not calculated.")
         }
     }
@@ -226,8 +226,8 @@ signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]
 # Luis Torgo, Nov, 2014
 # =====================================================
 CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
-    if (is.na(r[[metric]]$F.test) | is.na(r[[metric]]$Nemenyi.test)) stop("Results of both the F and Nemenyi tests are required for these diagrams.")
-    o <- rank(r[[metric]]$avgRksWFs)
+    if (is.null(r[[metric]]$F.test) | is.null(r[[metric]]$Nemenyi.test)) stop("Results of both the F and Nemenyi tests are required for these diagrams.")
+    o <- rank(r[[metric]]$avgRksWFs,ties="first")
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
                        invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,
@@ -247,7 +247,7 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
             ggplot2::geom_text(data=data[data$side==1,],
                       ggplot2::aes_string(label = "sys", x = -Inf, y = "line",col="sys"),
                       hjust = 1,size=4) +
-            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=8,y="line",xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=max(o),y="line",xend="invRk",yend="line",col="sys")) +
             ggplot2::geom_segment(data=data[data$side==1,],ggplot2::aes_string(x="invRk",y="line",xend=0,yend="line",col="sys")) +
             ggplot2::scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
@@ -307,8 +307,8 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
 # Luis Torgo, Nov, 2014
 # =====================================================
 CDdiagram.BD <- function(r,metric=names(r)[1]) {
-    if (is.na(r[[metric]]$F.test) | is.na(r[[metric]]$BonferroniDunn.test)) stop("Results of both the F and Bonferroni-Dunn tests are required for these diagrams.")
-    o <- rank(r[[metric]]$avgRksWFs)
+    if (is.null(r[[metric]]$F.test) | is.null(r[[metric]]$BonferroniDunn.test)) stop("Results of both the F and Bonferroni-Dunn tests are required for these diagrams.")
+    o <- rank(r[[metric]]$avgRksWFs,ties="first")
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
                        invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,
@@ -337,7 +337,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
 #                          fontface=face,colour=color),
                           fontface="face"),
                       hjust = 1,size=4) +
-            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=8,y="line",xend="invRk",yend="line",col="sys")) +
+            ggplot2::geom_segment(data=data[data$side==-1,],ggplot2::aes_string(x=max(o),y="line",xend="invRk",yend="line",col="sys")) +
             ggplot2::geom_segment(data=data[data$side==1,],ggplot2::aes_string(x="invRk",y="line",xend=0,yend="line",col="sys")) +
             ggplot2::scale_x_continuous(limits=c(0,len),
                                breaks=0:(len+1),
