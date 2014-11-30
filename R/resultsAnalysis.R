@@ -99,10 +99,10 @@ pairedComparisons <-  function(obj,baseline,
 
     if (nws < 2) stop("Paired comparisons only make sense with more than one workflow!")
 
-    if (missing(baseline))  # using the first workflow as baseline if none indicated
-        baseline <- topPerformer(obj,ms[1],ts[1])@name
-    other <- setdiff(ws,baseline)
-    pb <- which(ws==baseline)
+    if (!missing(baseline)) {
+        other <- setdiff(ws,baseline)
+        pb <- which(ws==baseline)
+    }
 
     ## this list will hold the results of the comparisons, one for each metric
     compResults <- vector("list",nms)
@@ -116,33 +116,40 @@ pairedComparisons <-  function(obj,baseline,
         compResults[[p]]$medScores <- t(sapply(obj,function(m) sapply(m,function(i) median(i@iterationsScores[,p],na.rm=TRUE))))
         compResults[[p]]$rks <- t(apply(if (maxs[p]) -compResults[[p]]$avgScores else compResults[[p]]$avgScores,1,rank))
         compResults[[p]]$avgRksWFs <- apply(compResults[[p]]$rks,2,mean)
+        
 
+        if (missing(baseline)) { # using the first workflow as baseline if none indicated
+            base <- compResults[[p]]$baseline <- names(which.min(compResults[[p]]$avgRksWFs))
+            other <- setdiff(ws,base)
+            pb <- which(ws==base)
+        } else compResults[[p]]$baseline <- baseline
+        
         ## Wilcoxon Signed Rank and t-Student tests
         compResults[[p]]$t.test <- array(NA,dim=c(nws,3,nts),
-                 dimnames=list(c(baseline,other),c("AvgScore","DiffAvgScores","p.value"),
+                 dimnames=list(c(base,other),c("AvgScore","DiffAvgScores","p.value"),
                      ts)
                          )
         compResults[[p]]$WilcoxonSignedRank.test <- array(NA,dim=c(nws,3,nts),
-                 dimnames=list(c(baseline,other),c("MedScore","DiffMedScores","p.value"),
+                 dimnames=list(c(base,other),c("MedScore","DiffMedScores","p.value"),
                      ts)
                          )
         for(t in ts) {
-            compResults[[p]]$WilcoxonSignedRank.test[baseline,,t] <- NA
-            compResults[[p]]$WilcoxonSignedRank.test[baseline,"MedScore",t] <- compResults[[p]]$medScores[t,baseline]
-            compResults[[p]]$t.test[baseline,,t] <- NA
-            compResults[[p]]$t.test[baseline,"AvgScore",t] <- compResults[[p]]$avgScores[t,baseline]
+            compResults[[p]]$WilcoxonSignedRank.test[base,,t] <- NA
+            compResults[[p]]$WilcoxonSignedRank.test[base,"MedScore",t] <- compResults[[p]]$medScores[t,base]
+            compResults[[p]]$t.test[base,,t] <- NA
+            compResults[[p]]$t.test[base,"AvgScore",t] <- compResults[[p]]$avgScores[t,base]
             for(o in other) {
                 tst <- try(wilcox.test(obj[[t]][[o]]@iterationsScores[,p],
-                                       obj[[t]][[baseline]]@iterationsScores[,p],
+                                       obj[[t]][[base]]@iterationsScores[,p],
                                        paired=T))
-                compResults[[p]]$WilcoxonSignedRank.test[o,"DiffMedScores",t] <- compResults[[p]]$medScores[t,baseline] - compResults[[p]]$medScores[t,o]
+                compResults[[p]]$WilcoxonSignedRank.test[o,"DiffMedScores",t] <- compResults[[p]]$medScores[t,base] - compResults[[p]]$medScores[t,o]
                 compResults[[p]]$WilcoxonSignedRank.test[o,"MedScore",t] <- compResults[[p]]$medScores[t,o]
                 compResults[[p]]$WilcoxonSignedRank.test[o,"p.value",t] <-
                     if (inherits(tst,"try-error"))  NA else tst$p.value
                 tst <- try(t.test(obj[[t]][[o]]@iterationsScores[,p],
-                                  obj[[t]][[baseline]]@iterationsScores[,p],
+                                  obj[[t]][[base]]@iterationsScores[,p],
                                   paired=T))
-                compResults[[p]]$t.test[o,"DiffAvgScores",t] <- compResults[[p]]$avgScores[t,baseline] - compResults[[p]]$avgScores[t,o]
+                compResults[[p]]$t.test[o,"DiffAvgScores",t] <- compResults[[p]]$avgScores[t,base] - compResults[[p]]$avgScores[t,o]
                 compResults[[p]]$t.test[o,"AvgScore",t] <- compResults[[p]]$avgScores[t,o]
                 compResults[[p]]$t.test[o,"p.value",t] <-
                     if (inherits(tst,"try-error"))  NA else tst$p.value
@@ -169,15 +176,15 @@ pairedComparisons <-  function(obj,baseline,
                                                       rkDifs=allRkDifs,
                                                       signifDifs=signifDifs)
                 
-                ## Bonferroni-Dunn test against the baseline
+                ## Bonferroni-Dunn test against the base
                 
                 ## Bonferroni-Dunn critical difference
                 CD.bd <- qtukey(1-(p.value/(nws-1)),2,1e06)/sqrt(2)*sqrt(nws*(nws+1)/(6*nts))
-                diffs2baseline <- abs(compResults[[p]]$avgRksWFs[-pb]-compResults[[p]]$avgRksWFs[pb])
-                signifDifs <- diffs2baseline >= CD.bd
+                diffs2base <- abs(compResults[[p]]$avgRksWFs[-pb]-compResults[[p]]$avgRksWFs[pb])
+                signifDifs <- diffs2base >= CD.bd
                 compResults[[p]]$BonferroniDunn.test <- list(critDif=CD.bd,
-                                                             baseline=baseline,
-                                                             rkDifs=diffs2baseline,
+                                                             baseline=base,
+                                                             rkDifs=diffs2base,
                                                              signifDifs=signifDifs)
                 
             }

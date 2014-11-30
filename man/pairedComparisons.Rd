@@ -10,10 +10,10 @@
   comparisons between the estimated performance scores of a set of
   workflows.  When you run the \code{performanceEstimation()} function to
   compare a set of workflows over a set of problems you obtain estimates
-  of their performances across these problems. This function allows you
-  to test the hypothesis that the difference between the estimated score
-  of a baseline workflow and the remaining alternatives is statistically
-  significant. 
+  of their performances across these problems. This function implements
+  several statistical tests that can be used to test several hypothesis
+  concerning the observed differences in performance between the
+  workflows on the tasks. 
 }
 \usage{
 pairedComparisons(obj,baseline,
@@ -27,12 +27,12 @@ pairedComparisons(obj,baseline,
     that contains the results of a performance estimation experiment. 
   }
   \item{baseline}{
-    When you carry out this type of analysis you have to select the
-  workflow against which all paired comparisons will be carried
-  out. This parameter should contain a character string with the name of
-  the workflow. If you omit this name the function will default to the
-  name of the workflow resulting from a call to
-  \code{\link{topPerformer}} on the first metric and first task.
+    Several tests involve the hypothesis that a certain workflow is
+  significantly different from a set of other alternatives. This
+  argument allows you to specify the name of this baseline workflow. If
+  you omit this name the function will default to the 
+  name of the workflow that has the lower average rank position across
+  all tasks, for each estimation metric.
 }
   \item{maxs}{
     A vector of booleans with as many elements are there are metrics estimated in
@@ -43,7 +43,7 @@ pairedComparisons(obj,baseline,
   }
   \item{p.value}{
     A \emph{p} value to be used in the calculations that involve using
-  values from statistical tables.
+  values from statistical tables (defaults to 0.05).
   }
 }
 \details{
@@ -58,16 +58,20 @@ pairedComparisons(obj,baseline,
   The function will only run on experiments containing more than one
   workflow as paired comparisons do not make sense with one single
   alternative workflow. Having more than one workflow we can distinguish
-  two situations: i) a single predictive task; or ii) multiple
-  predictive tasks. The recommendations for checking  the statistical
+  two situations: i) comparing the performance of two workflows; or
+  ii) comparisons among multiple workflows. The recommendations for checking  the statistical
   significance of the  difference between the performance of the
-  alternative workflows varies within these two setups. Within the setup
-  of a single predictive task the function will carry out and provide
+  alternative workflows varies within these two setups (see Demsar
+  (2006) for recommendations).
+
+  The current function implements several statistical tests that can be
+  used for different hypothesis tests. Namely, it obtains 
   the results of paired \emph{t} tests and paired \emph{Wilcoxon Signed
-  Rank} tests, with the latter being recommended given the typical
+  Rank} tests for situations where you are comparing the performance of
+  two workflows, with the latter being recommended given the typical
   overlap among the training sets that does not ensure independence
   among the scores of the different iterations. For the setup of
-  multiple tasks the function also calculates the \emph{Friedman} test
+  multiple workflows on multiple tasks the function also calculates the \emph{Friedman} test
   and the post-hoc \emph{Nemenyi} and \emph{Bonferroni-Dunn} tests,
   according to the procedures described in Demsar (2006). The
   combination \emph{Friedman} test followed by the post-hoc

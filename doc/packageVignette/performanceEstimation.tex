@@ -66,12 +66,10 @@
 \newcommand{\PE}{package \texttt{performanceEstimation}\ }
 
 \author{Luis Torgo\\FCUP - LIAAD/INESC Tec\\University of Porto\\
-  \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inescporto.pt}}
+  \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inesctec.pt}}
 \title{An Infra-Structure for Performance Estimation\\ and Experimental Comparison of Predictive Models}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-
 \begin{document}
-
 
 
 
@@ -111,58 +109,59 @@ performance - the user just needs to provide a workflow function
 (following some interface rules) that implements the approach for
 which the predictive performance is to be estimated. The package
 includes some standard workflow functions that implement the standard
-learn+test+evaluate approach that most users will be interested
+learn+test approach that most users will be interested
 in. This means that if you just want to estimate the performance of
 some variants of a method already implemented in R (e.g. an SVM), on
 some particular tasks, you will be able to use these standard workflow
-functions and thus your input will be limited to the minimum. The
+functions and thus your required input will be limited to the minimum. The
 package also provides a series of predictive performance metrics for
 different tasks. Still, you are not limited to these metrics and can
 use any metric as long as it exists in R or you provide a function
-calculating it.
+calculating it. Finally, the most recent versions of the package also
+include several standard data pre-processing and predictions
+post-processing steps that again can be incorporated into the
+workflows being evaluated.  
 
 This infra-structure implements different methods for estimating the
 predictive performance. Namely, you can select among: (i) cross
-validation, (ii) holdout and random subsampling, (iii) leave one out
-cross validation, (iv) ($\epsilon_0$ and .631) bootstrap and also (v)
+validation, (ii) holdout and random sub-sampling, (iii) leave one out
+cross validation, (iv)  bootstrap ($\epsilon_0$ and .631) and also (v)
 Monte-Carlo experiments for time series forecasting tasks. For each of
 these tasks different options are implemented (e.g. use of stratified
 sampling).
 
 Most of the times experimental methodologies for performance estimation are iterative
-processes that repeat the modelling task several times using different
-data samples with the goal of improving the accuracy of the
+processes that repeat the modeling task several times using different
+train+test samples with the goal of improving the accuracy of the
 estimates. The estimates are the result of aggregating the scores
 obtained on each of the repetitions. For each of these
 repetitions different training and testing samples are generated and
 the process being evaluated is "asked" to: (i) obtain the predictive
 model using the training data, and then (ii) use this model to obtain
-predictions for the respective test sample, which in turn (iii) can be
+predictions for the respective test sample. These predictions can then be
 used to calculate the scores of the performance metrics being
 estimated. This means that there is a workflow that starts with a
 predictive task for which training and testing samples are given, and
-that it should produce as result the scores of the performance metrics
-being estimated. There are far too many possible approaches and
+that it should produce as result the predictions of the workflow for
+the given test sample. There are far too many possible approaches and
 sub-steps for the implementation of this workflow.  To ensure full
-generality of the infra-structure, we ask the user to provide a
+generality of the infra-structure, we allow the user to provide a
 function that implements this workflow for each of the predictive
-approaches he/she wishes to compare and/or evaluate. This function can
-be parametrizable in the sense that there may be variants of the
+approaches she/he wishes to compare and/or evaluate. This function can
+be parameterizable in the sense that there may be variants of the
 workflow that the user wishes to evaluate and/or compare. Still, the
-goal of this workflow implementation functions is very clear: (i)
+goal of this workflow  functions is very clear: (i)
 receive as input a predictive task for which training  and  test
 samples are given, as well as any eventual workflow specific parameters; and
-(ii) produce as result a set of scores for the evaluation metrics
-being estimated. These scores should be obtained by applying some
-modelling technique to the training sample and then use the resulting
-to model to obtain predictions for the test sample. These predictions
-should then be used to obtain the scores of the predictive metrics for which the
+(ii) produce as result a set of predictions for the given test
+set.  These predictions
+will then be used to obtain the scores of the predictive metrics for which the
 user is interested in obtaining reliable estimates.
 
 The infra-structure we describe here provides means for the user to
 indicate: (i) a set of predictive tasks with the respective data sets;
-(ii) a set of workflows and respective variants; and (iii) an
-experimental methodology. The infra-structure then takes care of all
+(ii) a set of workflows and respective variants; and (iii) the
+information on the estimation task. The infra-structure then takes care of all
 the process of experimentally estimating the predictive performance of the different approaches on
 the tasks, producing as result an object that can be
 explored in different ways to obtain the results of the estimation process.
@@ -174,7 +173,7 @@ statistical significance tests based on the outcome of the
 experiments. 
 
 Finally, the infra-structure provides utility functions
-implementing frequently used workflows for common modelling techniques, as
+implementing frequently used workflows for common modelling techniques, several data pre-processing steps and prediction post-processing operations, as
 well as functions that facilitate the automatic generation of variants
 of workflows by specifying sets of parameters that the user wishes to
 consider in the comparisons.
@@ -199,89 +198,94 @@ estimates could be obtained with our proposed infra-structure.
 
 \hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
          \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris),}
-         \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-                          \hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
-                          \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{10}\hlstd{),}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{0.001}\hlstd{))}
-                         \hlstd{),}
-         \hlkwd{CvSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{10}\hlstd{))}
+         \hlkwd{Workflow}\hlstd{(}\hlstr{"standardWF"}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"err"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
+         \hlstd{)}
 \end{alltt}
+\begin{verbatim}
+## 
+## 
+## ##### PERFORMANCE ESTIMATION USING  CROSS VALIDATION  #####
+## 
+## ** PREDICTIVE TASK :: iris.Species
+## 
+## ++ MODEL/WORKFLOW :: standardWF 
+## Task for estimating  err  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## Repetition  1 
+## Fold:  1  2  3  4  5  6  7  8  9  10
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
-
 
 This simple example illustrates several key concepts of our
 infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
 the estimation process. It has 3 arguments: (i) a vector of
-predictive tasks (in the example a single one); (ii) a vector of workflows; and (iii) the
-estimation settings. 
+predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
+specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
-Predictive tasks are S4 objects of class
-\textbf{PredTask}. This class, also defined in our package,
-describes a predictive task by: (i) a formula; (ii) the source data
-set (an R data frame); and (iii) an optional name of the task (a
-string). 
+\textbf{PredTask} objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
 
-Workflows are S4 objects of class \textbf{Workflow}, which are also
-defined within the package. These objects include two pieces
-of information: (i) the name of the function (a string) implementing the
-workflow; and (ii) the list of parameters to this function. The
-function will be called from within 
-\texttt{performanceEstimation()}  with a formula in the first
-argument, a training sample (a data frame) on the second argument, a
-test sample (another data frame) on the third, and then all the parameters
-the user specifies in the list of parameters used when creating the
-\textbf{Workflow} object. This means that the object\\
-\texttt{Workflow('svmTrial',pars=list(cost=10,gamma=0.5))},\\ if used in a
-call to \texttt{performanceEstimation}, will 
- generate calls of the type
-\texttt{svmTrial(\textit{someFormula}, \textit{someTrainingSample}, \textit{someTestSample}, cost=10,
-  gamma=0.5)}. In the illustrative example above we are using the function \\ \texttt{workflowVariants()} from our package to automatically
-generate a vector of \textbf{Workflow} objects. This function can be used
-to generate different variants of a workflow function using all
-combinations of some parameters of the workflow. In the code
-above the workflow function is \texttt{standardWF} which is another
-auxiliar function we provide. This function implements a typical
-workflow for different modelling techniques that are indicated through
-its parameter \texttt{learner}. Above we are using it to generate
-variants of calls to the \texttt{svm()} function, which is an implementation of an SVM available in package \texttt{e1071}~\cite{e1071}.  Later we will provide
-more details on the \texttt{standardWF} function. For now we can think of the call
-to the \texttt{workflowVariants()} function as generating the following vector:\linebreak
+\textbf{Workflow} objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets.
 
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{c}(\hlkwd{Workflow}(\hlstr{'standardWF'},
-          pars=\hlkwd{list}(learner=\hlstr{'svm'},
-                    learner.pars=\hlkwd{list}(cost=1,gamma=0.1))
-         ), 
-  \hlkwd{Workflow}(\hlstr{'standardWF'},
-          pars=\hlkwd{list}(learner=\hlstr{'svm'},
-                    learner.pars=\hlkwd{list}(cost=5,gamma=0.1))
-         ),
-...
-...
- ) 
-\end{alltt}
-\end{kframe}
-\end{knitrout}
+\textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined with the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
 
+In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using the function \texttt{standardWF} with the parameter \textbf{learner} set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
+
+
+
+%% Predictive tasks are S4 objects of class
+%% \textbf{PredTask}. This class, also defined in our package,
+%% describes a predictive task by: (i) a formula; (ii) the source data
+%% set (an R data frame); and (iii) an optional name of the task (a
+%% string). 
+
+%% Workflows are S4 objects of class \textbf{Workflow}, which are also
+%% defined within the package. These objects include two pieces
+%% of information: (i) the name of the function (a string) implementing the
+%% workflow; and (ii) the list of parameters to this function. The
+%% function will be called from within 
+%% \texttt{performanceEstimation()}  with a formula in the first
+%% argument, a training sample (a data frame) on the second argument, a
+%% test sample (another data frame) on the third, and then all the parameters
+%% the user specifies in the list of parameters used when creating the
+%% \textbf{Workflow} object. This means that the object\\
+%% \texttt{Workflow('svmTrial',pars=list(cost=10,gamma=0.5))},\\ if used in a
+%% call to \texttt{performanceEstimation}, will 
+%%  generate calls of the type
+%% \texttt{svmTrial(\textit{someFormula}, \textit{someTrainingSample}, \textit{someTestSample}, cost=10,
+%%   gamma=0.5)}. In the illustrative example above we are using the function \\ \texttt{workflowVariants()} from our package to automatically
+%% generate a vector of \textbf{Workflow} objects. This function can be used
+%% to generate different variants of a workflow function using all
+%% combinations of some parameters of the workflow. In the code
+%% above the workflow function is \texttt{standardWF} which is another
+%% auxiliar function we provide. This function implements a typical
+%% workflow for different modelling techniques that are indicated through
+%% its parameter \texttt{learner}. Above we are using it to generate
+%% variants of calls to the \texttt{svm()} function, which is an implementation of an SVM available in package \texttt{e1071}~\cite{e1071}.  Later we will provide
+%% more details on the \texttt{standardWF} function. For now we can think of the call
+%% to the \texttt{workflowVariants()} function as generating the following vector:\linebreak
+
+%% <<eval=FALSE,size="small">>=
+%% c(Workflow('standardWF',
+%%            pars=list(learner='svm',
+%%                      learner.pars=list(cost=1,gamma=0.1))
+%%          ), 
+%%   Workflow('standardWF',
+%%            pars=list(learner='svm',
+%%                      learner.pars=list(cost=5,gamma=0.1))
+%%          ),
+%% ...
+%% ...
+%%  ) 
+%% @ 
  
-The workflow implemented through function \texttt{standardWF()} by
-default calculates the error rate of the used modelling techniques if
-handling classification tasks, though we will see later that we can
-specify other metrics.
 
-Finally, the third parameter of the function
-\texttt{performanceEstimation()} specifies the estimation settings
-to use in the process. It is an S4 object of class
-\textbf{EstimationSettings} that in effect is an union that includes among
-others the S4 class \textbf{CvSettings}. Objects of this latter class
-include information on the number of repetitions of the cross
-validation process (in our example 1 single repetition, which is the
-default), the number of folds (10 above, which is also the default),
-the random number generator seed and a logical indicating whether stratified
-samples should be used (defaulting to \texttt{FALSE}, i.e. no stratification).
+%% Finally, the third parameter of the function
+%% \texttt{performanceEstimation()} specifies the estimation task to carry out. It is an S4 object of class
+%% \textbf{EstimationTask}. These objects include information on the vector of metrics to be estimated (a large of them are already known by the infra-structure, but you may include your own metrics provided you tell R how to calculate them), and also the estimation method to use. For this latter issue several standard estimation methodologies are implemented by our package. For instance, in the simple example above we are using cross validation experiments with 10-folds.
 
 The result of the call to \texttt{performanceEstimation()} is an S4
 object of the class \textbf{ComparisonResults}. These objects tipically are not
@@ -289,11 +293,12 @@ object of the class \textbf{ComparisonResults}. These objects tipically are not
 details here\footnote{Interested readers may have a look at the corresponding
   help page - \texttt{class?ComparisonResults} .}. There are several utility
 functions that allow the users to explore the results of the
-experimental comparisons. Here are a few illustrative examples:
+experimental comparisons, as shown by the next few illustrative examples.
 
 
-
-
+%% <<include=FALSE>>=
+%% load('ex1Iris.Rdata')
+%% @ 
 
 
 \begin{knitrout}\footnotesize
@@ -304,98 +309,47 @@ experimental comparisons. Here are a few illustrative examples:
 \begin{verbatim}
 ## 
 ## == Summary of a  Cross Validation Performance Estimation Experiment ==
-##  1 x 10 - Fold Cross Validation run with seed =  1234 
 ## 
-## * Predictive Tasks ::  iris
-## * Workflows  ::  svm.v1, svm.v2, svm.v3, svm.v4, svm.v5, svm.v6
+## Task for estimating  err  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
 ## 
-## * Summary of Experiment Results:
+## * Predictive Tasks ::  iris.Species
+## * Workflows  ::  standardWF 
 ## 
-## -> Datataset:  iris 
-## 
-## 	*Workflow: svm.v1 
+## -> Task:  iris.Species
+##   *Workflow: standardWF 
 ##             err
-## avg     0.04667
-## std     0.05488
+## avg     0.03333
+## std     0.04714
+## med     0.00000
+## iqr     0.06667
 ## min     0.00000
 ## max     0.13333
-## invalid 0.00000
-## 
-## 	*Workflow: svm.v2 
-##             err
-## avg     0.04000
-## std     0.04661
-## min     0.00000
-## max     0.13333
-## invalid 0.00000
-## 
-## 	*Workflow: svm.v3 
-##             err
-## avg     0.04000
-## std     0.04661
-## min     0.00000
-## max     0.13333
-## invalid 0.00000
-## 
-## 	*Workflow: svm.v4 
-##            err
-## avg     0.6867
-## std     0.2014
-## min     0.3333
-## max     0.9333
-## invalid 0.0000
-## 
-## 	*Workflow: svm.v5 
-##             err
-## avg     0.15333
-## std     0.11780
-## min     0.06667
-## max     0.46667
-## invalid 0.00000
-## 
-## 	*Workflow: svm.v6 
-##             err
-## avg     0.10667
-## std     0.06441
-## min     0.00000
-## max     0.20000
 ## invalid 0.00000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
-
 
 The generic function \texttt{summary} allows us to obtain the
 estimated scores for each compared approach on each predictive
 task. For each performance metric (in this case only the error rate),
-the function shows the estimated average performance, the standard
-error of this estimate as well as minimum and maximum scores on the
-different iterations of the experimental comparison. Moreover,
+the function shows several descriptive statistics of the performance of the workflow in the different iterations of the estimation process. Moreover,
 information is also given on eventual failures on some of the
 iterations.
 
-The best scores for each predictive task and metric can be obtained as follows:
+%% The best scores for each predictive task and metric can be obtained as follows:
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{topPerformers}\hlstd{(res)}
-\end{alltt}
-\begin{verbatim}
-## $iris
-##     Workflow Estimate
-## err   svm.v2     0.04
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
-
+%% <<>>=
+%% topPerformers(res)
+%% @ 
 
 The generic function \texttt{plot} can be used to obtain a graphical
 display of the distribution of performance metrics across the
 different iterations of the estimation process using box-plots, as
 show in Figure~\ref{fig:ex1Iris}. 
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{plot}\hlstd{(res)}
@@ -403,36 +357,25 @@ show in Figure~\ref{fig:ex1Iris}.
 \end{kframe}\begin{figure}[]
 
 
-{\centering \includegraphics[width=0.7\textwidth]{figures/perfEst-ex1Iris} 
+{\centering \includegraphics[width=0.8\textwidth]{figures/perfEst-ex1Iris} 
 
 }
 
-\caption[The distribution of the error rate on the 10 folds]{The distribution of the error rate on the 10 folds.\label{fig:ex1Iris}}
+\caption[The distribution of the error rate on the 10 folds]{The distribution of the error rate on the 10 folds. Red dots show the performance on each individual iteration of the estimation process.\label{fig:ex1Iris}}
 \end{figure}
 
 
 \end{knitrout}
 
+%% You might have observed that the infra-structure uses some IDs to
+%% describe each workflow variant (e.g. \texttt{svm.v1}). The user can check
+%% the parameter configuration corresponding to some ID as follows:
 
-You might have observed that the infra-structure uses some IDs to
-describe each workflow variant (e.g. \texttt{svm.v1}). The user can check
-the parameter configuration corresponding to some ID as follows:
+%% <<>>=
+%% getWorkflow('svm.v1',res)
+%% @ 
 
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{getWorkflow}\hlstd{(}\hlstr{'svm.v1'}\hlstd{,res)}
-\end{alltt}
-\begin{verbatim}
-## Workflow Object:
-## 	Workflow ID       ::  svm.v1 
-## 	Workflow Function ::  standardWF
-## 		Parameter values:
-## 		 learner.pars  ->  cost=1 gamma=0.1 
-## 		 learner  ->  svm
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
+The above  example is just a simple illustration of the key concepts of the \PE. Most of the times you will use the package for more complex experiments, usually involving several tasks, several workflows or workflow variants, and eventually estimating several performance metrics. Before, we provide illustrations for these more complex setups we describe in more detail the key concepts of the \PE.
 
 
 \section{Predictive Tasks}
@@ -458,25 +401,21 @@ function \texttt{PredTask()}, as seen in the following example:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(iris)}
-\hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris,}\hlstr{'irisClassificationTask'}\hlstd{)}
+\hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris)}
 \end{alltt}
 \begin{verbatim}
 ## Prediction Task Object:
-## 	Task Name ::  irisClassificationTask
-## 	Formula   :: Species ~ .
-## 	Task Data ::
-## 'data.frame':	150 obs. of  5 variables:
-##  $ Species     : Factor w/ 3 levels "setosa","versicolor",..: 1 1 1 1 1 1 1 1 1 1 ...
-##  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
-##  $ Sepal.Width : num  3.5 3 3.2 3.1 3.6 3.9 3.4 3.4 2.9 3.1 ...
-##  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
-##  $ Petal.Width : num  0.2 0.2 0.2 0.2 0.2 0.4 0.3 0.2 0.2 0.1 ...
+## 	Task Name         :: iris.Species 
+## 	Task Type         :: classification 
+## 	Target Feature    :: Species 
+## 	Formula           :: Species ~ .
+## 	Task Data Source  :: iris
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
-
-We should remark that the objects of this class only store the data
+We should remark that, by default and for memory economy particularly if you are using large data sets, the objects of this class do not copy internally the data of the provided data frame. This  means that they assume that the data frame provided in the second argument will still exist when the estimation experiments will be executed. If you want the data to be copied into the \textbf{PredTask} object then you should call the constructor as follows:
+only store the data
 required for the specified task, as it should be clear from this other
 simple example:
 
@@ -484,29 +423,23 @@ simple example:
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(iris)}
-\hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{Petal.Length} \hlopt{+} \hlstd{Sepal.Length,iris,}\hlstr{'ShortIrisTask'}\hlstd{)}
+\hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris,}\hlkwc{copy}\hlstd{=}\hlnum{TRUE}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
 ## Prediction Task Object:
-## 	Task Name ::  ShortIrisTask
-## 	Formula   :: Species ~ Petal.Length + Sepal.Length
-## 	Task Data ::
-## 'data.frame':	150 obs. of  3 variables:
-##  $ Species     : Factor w/ 3 levels "setosa","versicolor",..: 1 1 1 1 1 1 1 1 1 1 ...
-##  $ Petal.Length: num  1.4 1.4 1.3 1.5 1.4 1.7 1.4 1.5 1.4 1.5 ...
-##  $ Sepal.Length: num  5.1 4.9 4.7 4.6 5 5.4 4.6 5 4.4 4.9 ...
+## 	Task Name         :: iris.Species 
+## 	Task Type         :: classification 
+## 	Target Feature    :: Species 
+## 	Formula           :: Species ~ .
+## 	Task Data Source  :: internal  150x5 data frame.
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
-
-So, although we have supplied the full data frame to the constructor
-function, as the task only uses 3 of the columns, the resulting
-\textbf{PredTask} object only includes the information on the columns
-required for this task.
+Note the difference on the task data source information to indicate that the data set is stored internally (i.e. a copy was made from the provided object). 
 
 % ====================================================================
-\section{Workflows}
+\section{Workflows and Workflow Variants}
 
 Estimation methodologies work most of the times by re-sampling the
 available data set $D$ in order to create different train and test
@@ -519,205 +452,104 @@ set. This process can include several steps, e.g. specific data
 pre-processing steps, and may use any modelling approach, eventually
 developed  by the user. 
 
-\subsection{User-defined Workflows}
+We distinguish two types of workflows: (i) generic, and (ii) user-defined. The first are probably the most common setups where the user simply wants to apply methods that already exist in R to some task. The second covers situations where the user has developed her/his own specific approach to solve a task and wants to apply it to some concrete problems. The package covers both situations as we will see.
 
-With the goal of ensuring that the
-proposed infra-structure is able to cope with all these possible usage
-scenarios, we ask the user to take care of the writing of a function
-implementing each workflow being compared/evaluated. These
-user-defined workflow functions should be written assuming that the
-first three parameters are: (i) the formula defining the predictive
-task; (ii) the provided training sample; and (iii) the test sample
-where to evaluate the obtained model. The functions may eventually
-accept other arguments with specific parameters of the workflow. The
-following is a general sketch of a user-defined workflow function:
+Independently of the workflows being generic or user-defined, they will typically have parameters that we can tune to try to improve the results. Frequently, we want to estimate and compare the performance of these parameter variants over some set of tasks. Our package also facilitates these setups by providing a function to easily specify these alternatives.
 
-\begin{knitrout}\small
+\subsection{Workflow Variants}\label{sec:variants}
+
+The function \texttt{workflowVariants}  provides  means to easily create a vector of \textbf{Workflow} objects, each resulting from a variation of some parameter values of a certain workflow. For instance, suppose you want to evaluate the performance of SVMs on a certain task and you wish to consider a certain range of values for the parameters \textbf{cost} and \textbf{gamma} of the function \texttt{svm} from package \textbf{e1071}. You could obviously create a vector of \textbf{Workflow} objects, one for each combination of \textbf{cost} and \textbf{gamma} you wish to consider in your experiment. This could become very easily an annoying task if you want to consider a large number of combinations. Instead you can use the \texttt{workflowVariants} function.
+
+The following example illustrates its use by considering 15 variants of SVMs applied to the Boston Housing data:
+
+
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{myWorkFlow} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{form}\hlstd{,}\hlkwc{train}\hlstd{,}\hlkwc{test}\hlstd{,}\hlkwc{...}\hlstd{,}
-                       \hlkwc{.outPreds}\hlstd{=}\hlnum{TRUE}\hlstd{,} \hlkwc{.outModel}\hlstd{=}\hlnum{TRUE}\hlstd{) \{}
-  \hlkwd{require}\hlstd{(mySpecialPackage,}\hlkwc{quietly}\hlstd{=T)}
-  \hlcom{## cary out some data pre-processing}
-  \hlstd{myTrain} \hlkwb{<-} \hlkwd{mySpecificPreProcessingSteps}\hlstd{(train)}
-  \hlcom{## now obtain the model}
-  \hlstd{myModel} \hlkwb{<-} \hlkwd{myModelingTechnique}\hlstd{(form,myTrain,...)}
-  \hlcom{## obtain the predictions}
-  \hlstd{preds} \hlkwb{<-} \hlkwd{predict}\hlstd{(myModel,test)}
-  \hlcom{## obtain the evaluation metric scores}
-  \hlstd{scores} \hlkwb{<-} \hlkwd{mySpecialEvaluationMetrics}\hlstd{(}\hlkwd{responseValues}\hlstd{(form,test),preds)}
-  \hlcom{## finally produce the worflow output object}
-  \hlstd{res} \hlkwb{<-} \hlkwd{WFoutput}\hlstd{(scores)}
-  \hlkwa{if} \hlstd{(.outPreds)}
-      \hlkwd{workflowPredictions}\hlstd{(res)} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwd{responseValues}\hlstd{(form,test),}
-                                       \hlstd{preds,}
-                                       \hlkwd{rownames}\hlstd{(test))}
-  \hlkwa{if} \hlstd{(.outModel)} \hlkwd{workflowInformation}\hlstd{(res)} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{model}\hlstd{=myModel)}
-  \hlstd{res}
-\hlstd{\}}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{library}\hlstd{(e1071)}
+\hlkwd{data}\hlstd{(Boston,}\hlkwc{package}\hlstd{=}\hlstr{"MASS"}\hlstd{)}
+
+\hlstd{exp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+         \hlkwd{PredTask}\hlstd{(medv} \hlopt{~} \hlstd{.,Boston),}
+         \hlkwd{workflowVariants}\hlstd{(}\hlkwc{wf}\hlstd{=}\hlstr{"standardWF"}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{,}
+                          \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{0.05}\hlstd{,}\hlnum{0.01}\hlstd{))),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mae"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
+         \hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
+The function accepts any workflow function in parameter
+\textbf{wf}. All remaining parameters are taken as parameters of that
+workflow function. If you include  any of these parameters with a vector of values
+(as it is the case of \textbf{cost} and \textbf{gamma} in the above
+example), the values in these vectors will be used to generate
+variants of the workflow. The variants are essentially all possible
+combinations of the values in each vector. In the above example we
+provide 5 values for \textbf{cost} and 3 for \textbf{gamma} and thus
+we will have 15 \textbf{Workflow} objects. It may happen that some of
+the parameters of the workflow, actually take as valid values a
+vector. In those situations you do not want the function to use the
+values to generate variants. You can achived this effect by including
+the name of that parameter in the parameter \textbf{as.is} of the
+function \texttt{workflowVariants}.
 
-
-Not all workflows will require all these steps, though some may even
-require more. This is clearly something that is up to the user. The
-only strict requirements for these functions are: (i) the first 3 parameters
-of the workflow function should be the formula, train and test data
-frames; and (ii) the result of the function should be an object of the S4 class \textbf{WFoutput}.
-
-Objects of class \textbf{WFoutput} contain the result of applying the workflow to a train+test partition. They are created using the constructor function \textbf{WFoutput()} that takes as argument a named vector with the scores of the metrics being estimated. These objects may optionally contain information on the true and predicted values for the target variable in the provided test set, as well as any other information the creator of the workflow function deems important to return. These two optional pieces of information are typically "attached" to the object using the replacement functions \textbf{workflowPredictions()}  and \textbf{workflowInformation()}, respectively. The \textbf{workflowPredictions()} function takes as value a list with at least two components. The first component is a vector with the true values of the target variable in the test set. The second component are the corresponding predictions made by the workflow. Finally, you may optionally provide a vector with the names of the rows in the test set. Regarding the \textbf{workflowInformation()} function it accepts as value also a list but whose content is completely free and left to the creator of the workflow function. Both these two functions can also be used to obtain the respective content from \textbf{WFoutput} objects, as we will see later in some of the illustrative examples.
-
-The sketch shown above also illustrates the use of the function
-\texttt{responseValues()} that can be used to obtain the values of the target
-variable given a formula and a data frame.
-
-Users should write one such workflow function for each process they
-want to evaluate/compare. As mentioned before these functions may
-accept further parameters on top of the 3 mandatory parameters. These
-extra parameters will typically be parameters of the modelling
-technique being used within the workflow but it is up to the user to
-control this. As we have seen in Section~\ref{sec:simpleEx} we provide
-the function \texttt{workflowVariants()} to facilitate the specification of
-different variants of any workflow function by trying all combinations
-of several of its specific parameters. For instance, if the modelling
-function in the above example workflow (function
-\texttt{myModelingTechnique()}) had an integer parameter \texttt{x}
-and a Boolean parameter \texttt{y}, we could generate several
-\textbf{Workflow} objects to be evaluated/compared using the
-\texttt{performanceEstimation()} function, as follows:
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{workflowVariants}\hlstd{(}\hlstr{'myWorkFlow'}\hlstd{,}\hlkwc{x}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{7}\hlstd{),}\hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(T,F))}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-
-This would generate 8 variants of the same workflow with all
-combinations of the specified values for the 2 parameters.  This means
-that any parameter of the \texttt{workflowVariants()} function that has more
-than one element is assumed to be a source for generation of
-variants. There may be situations where this is not intended, because
-a particular argument of the workflow function is supposed to be a
-vector. In these cases the user needs to ``tell'' the
-\texttt{workflowVariants()} function that it should not generate variants from
-the values of that parameter. Suppose that on the above example the
-parameter \texttt{x} takes as values a vector, and thus your meaning
-in the above statement is that you only have two variants of the
-workflow (the different values of the parameter \texttt{y}). You could get
-that effect by calling the \texttt{workflowVariants()} function as follows:
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{workflowVariants}\hlstd{(}\hlstr{'myWorkFlow'}\hlstd{,}\hlkwc{x}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{7}\hlstd{),}\hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(T,F),}\hlkwc{as.is}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'x'}\hlstd{))}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-
-While the previous call would generate 8 variants, this one only generates 2.
-
-Let us see a concrete example of a user supplied workflow
-function. Imagine we want to evaluate a kind of ensemble model formed
-by a regression tree and a multiple linear regression model on an
-algae blooms data set~\cite{Tor10}. Moreover, let us suppose we are
-interested in using the correlation between the predictions and true
-values as evaluation metric. We could start by writing the following
-workflow function that implements our modelling approach:
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{RLensemble} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{f}\hlstd{,}\hlkwc{tr}\hlstd{,}\hlkwc{ts}\hlstd{,}\hlkwc{weightRT}\hlstd{=}\hlnum{0.5}\hlstd{,}\hlkwc{step}\hlstd{=}\hlnum{FALSE}\hlstd{,}\hlkwc{...}\hlstd{) \{}
-  \hlkwd{require}\hlstd{(DMwR,}\hlkwc{quietly}\hlstd{=}\hlnum{TRUE}\hlstd{)}
-  \hlstd{noNAsTR} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(tr)}
-  \hlstd{noNAsTS} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(ts)}
-  \hlstd{r} \hlkwb{<-} \hlkwd{rpartXse}\hlstd{(f,tr,...)}
-  \hlstd{l} \hlkwb{<-} \hlkwd{lm}\hlstd{(f,noNAsTR)}
-  \hlkwa{if} \hlstd{(step) l} \hlkwb{<-} \hlkwd{step}\hlstd{(l,}\hlkwc{trace}\hlstd{=}\hlnum{0}\hlstd{)}
-  \hlstd{pr} \hlkwb{<-} \hlkwd{predict}\hlstd{(r,ts)}
-  \hlstd{pl} \hlkwb{<-} \hlkwd{predict}\hlstd{(l,noNAsTS)}
-  \hlstd{ps} \hlkwb{<-} \hlstd{weightRT}\hlopt{*}\hlstd{pr}\hlopt{+}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{weightRT)}\hlopt{*}\hlstd{pl}
-  \hlkwd{WFoutput}\hlstd{(}\hlkwd{c}\hlstd{(}\hlkwc{correlation}\hlstd{=}\hlkwd{cor}\hlstd{(}\hlkwd{responseValues}\hlstd{(f,ts),ps)))}
-\hlstd{\}}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-
-This workflow starts by building two modified samples of the training
-and testing sets, with the \texttt{NA} values being filled in using a
-nearest neighbour strategy (see the help page of the function
-\texttt{knnImputation()} of package \textbf{DMwR}~\cite{Tor10} for more
-details). These versions are to be used by the \texttt{lm()} function
-that is unable to cope with cases with missing values. After obtaining
-the two models and their predictions the function calculates a
-weighted average of both predictions before obtaining and returning
-the respective correlation score.
-
-To evaluate different variants of this workflow we could run the
-following experiment:
-
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{data}\hlstd{(algae,}\hlkwc{package}\hlstd{=}\hlstr{'DMwR'}\hlstd{)}
-\hlstd{expRes} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(a1} \hlopt{~} \hlstd{.,algae[,}\hlnum{1}\hlopt{:}\hlnum{12}\hlstd{],}\hlstr{'alga1'}\hlstd{),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'RLensemble'}\hlstd{,}
-                  \hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{),}\hlkwc{step}\hlstd{=}\hlkwd{c}\hlstd{(T,F),}\hlkwc{weightRT}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.4}\hlstd{,}\hlnum{0.5}\hlstd{,}\hlnum{0.6}\hlstd{)),}
-  \hlkwd{BootSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{type}\hlstd{=}\hlstr{'e0'}\hlstd{))}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-
-In this experimental comparison we have used 100 repetitions of a $\epsilon_0$ 
-bootstrap estimation procedure as estimation methodology (further
-details on this and other methodologies will be given later), to
-compare 12 variants of our workflow. 
 
 \subsection{Generic Workflows}
 
-Writing workflow functions may be tedious on large comparisons,
-particularly when few details change among them. Moreover, the most
-frequent use of our infra-structure will probably be to compare
-existing modelling techniques (or variants of them) on one or more problems. This means that
+Most of the times users want to evaluate standard workflows on some tasks. This means that they want to use existing out-of-the-box tools within R and apply them to some data sets.  As such, 
 the most frequently used workflows will essentially build a model
-using some existing algorithm, obtain its predictions and then
-calculate some standard prediction error metrics. To facilitate this type of tasks, we
-also provide generic workflow functions that carry out this type
-of process for any modelling technique. The idea is to save the user
-from having to write these functions provided his/her workflow fits
+using some existing algorithm and obtain its predictions for the test set. To facilitate this type of approaches, \PE includes generic workflow functions. The idea is to save the user
+from having to write her/his own workflow functions provided her/his workflow fits
 this generic schema.
 
-\subsubsection{Classification and Regression Tasks}
+\subsubsection{Classification and Regression Tasks}\label{sec:standardWF}
 
 Function \texttt{standardWF()} implements a typical workflow for both
-classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following parameters that help the user to specify is intended workflow:
+classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following main parameters that help the user to specify the intended approach:
 
 \begin{description}
-\item[learner] - the name of a R function that obtains a model from the training data. This function will be called with a formula in the first argument and the training set data frame in the second.
+\item[learner] - the name of an R function that obtains a model from the training data. This function will be called with a formula in the first argument and the training set data frame in the second. This will typically be the name of some existing learning algorithm in R.
 \item[learner.pars] - a list specifying any extra parameter settings that should be added to the formula and training set, at the time the learner function is called (defaults to \texttt{NULL}).
-\item[predictor] - the name of a R function that is able to obtain the predictions of the model obtained with \texttt{learner}. This function will be called with the object resulting from the \texttt{learner} call on the first argument and the test set data frame in the second (it defaults to function \texttt{predict()}).
-\item[predictor.pars] - a list specifying any extra parameter settings that should be added to the model and test set, at the time the predictor function is called (defaults to \texttt{NULL}).
-\item[evaluator] - the name of a R function that is able to calculate the evaluation metrics you want to estimate based on the predictions of the model and the true values of the target variable on the given test set (it will default to \texttt{classificationMetrics()} function if it is a classification task, and to \texttt{regressionMetrics()} if a regression task - check the respective help pages to see what are the default metrics that are calculated for each). This function will be called with the values of the target variable in the test set on the first argument and with the result of the call to the predictor function on the second.
-\item[evaluator.pars] -  a list specifying any extra parameter settings that should be added to the true values and predictions, at the time the evaluator function is called (defaults to \texttt{NULL}). A typical usage here would be to use the parameter \texttt{stats} of functions \texttt{classificationMetrics()} and \texttt{regressionMetrics()} to specify the metrics you want to calculate, provided you are using these functions as evaluators.
+\item[predictor] - the name of an R function that is able to obtain the predictions of the model obtained with \texttt{learner}. This function will be called with the object resulting from the \texttt{learner} call on the first argument and the test set data frame in the second (it defaults to function \texttt{predict}). Most of the times you will not change this default because most modeling techniques in R have a predict method that can be applied to the models.
+\item[predictor.pars] - a list specifying any extra parameter settings that should be added to the model and test set, at the time the predictor function is called (defaults to \texttt{NULL}). This is sometimes handy has some predict methods of some algorithms allow for instance to either return class labels or probabilities, and the option is made through some extra parameter when calling the predict function.
 \end{description}
 
+Below you find another simple example that illustrates the use of some of these parameters, this time to estimate the accuracy of 3 variants of a classification tree using 2$\times$5-CV.
 
-Below you find an example of one of the most frequent type of
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{library}\hlstd{(DMwR)}
+\hlkwd{data}\hlstd{(iris)}
+
+\hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+         \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris),}
+         \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"rpartXse"}\hlstd{,}
+                          \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{0.5}\hlstd{,}\hlnum{1}\hlstd{)),}
+                          \hlkwc{predictor.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{type}\hlstd{=}\hlstr{"class"}\hlstd{)),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"acc"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{2}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{5}\hlstd{))}
+         \hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Notice how we have omitted the specification of the workflow name in the call to \texttt{workflowVariants}. If you do not specify it through parameter \textbf{wf} the function will assume that you want to use the workflow defined by the function \texttt{standardWF}, unless there is a parameter \textbf{type} in the call which will lead to assume a time series generic workflow provided by function \texttt{timeseriesWF} that will be described in Section~\ref{sec:timeseriesWF}. In effect, you can also use the same speedup trick when calling directly the \textbf{Workflow} constructor, i.e. \\
+\texttt{Workflow("standardWF",learner="svm")} \\
+is equivalent to \\
+\texttt{Workflow(learner="svm")}.
+
+We now present an example of one of the most frequent type of
 comparisons users carry out - checking which is the ``best'' model for
 a given predictive task. Let us restrict the search to a small set of
 models for illustrative purposes and let us play with the well-known
 Boston housing regression task:
 
-\begin{knitrout}
+
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(Boston,}\hlkwc{package}\hlstd{=}\hlstr{'MASS'}\hlstd{)}
@@ -726,25 +558,23 @@ Boston housing regression task:
 \hlkwd{library}\hlstd{(randomForest)}
 \hlstd{bostonRes} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
   \hlkwd{PredTask}\hlstd{(medv} \hlopt{~} \hlstd{.,Boston),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-                   \hlkwc{learner}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'rpartXse'}\hlstd{,}\hlstr{'svm'}\hlstd{,}\hlstr{'randomForest'}\hlstd{)),}
-  \hlkwd{CvSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{10}\hlstd{)}
+  \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'rpartXse'}\hlstd{,}\hlstr{'svm'}\hlstd{,}\hlstr{'randomForest'}\hlstd{)),}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
   \hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-
-Notice that on this simple example we have used all modelling tools
+Notice that on this simple example we have used all modeling tools
 with their default parameter settings which is not necessarily a good
 idea when we are looking for the best performance. Still, the goal of
 this illustration is to show you how simple this type of experiments
 can be if you are using a standard workflow setting. In case you want
 to use the modelling tools with other parameter settings then you
-should separate them in different \texttt{workflowVariants()} calls, as shown
+should separate them in different \texttt{workflowVariants} calls because each learner will most probably use different parameters, as shown
 in the following example:
 
-\begin{knitrout}\small
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(Boston,}\hlkwc{package}\hlstd{=}\hlstr{'MASS'}\hlstd{)}
@@ -753,24 +583,237 @@ in the following example:
 \hlkwd{library}\hlstd{(randomForest)}
 \hlstd{bostonRes} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
   \hlkwd{PredTask}\hlstd{(medv} \hlopt{~} \hlstd{.,Boston),}
-  \hlkwd{c}\hlstd{(}\hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{'rpartXse'}\hlstd{,}
+  \hlkwd{c}\hlstd{(}\hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'rpartXse'}\hlstd{,}
                      \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{))),}
-    \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
+    \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
                      \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{))),}
-    \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
+    \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
                      \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{500}\hlstd{,}\hlnum{1000}\hlstd{)))),}
-  \hlkwd{CvSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{10}\hlstd{)}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
   \hlstd{)}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-
 Notice that this code involves estimating the mean squared error on the Boston Housing task for 8 different models through
-10-fold cross validation. 
+10-fold cross validation (the \texttt{CV} function assumes \texttt{nFolds=10} by default).
+
+On top of using out-of-the-box existing algorithms users also frequently apply standard data pre-processing steps before the models are obtained. Our \texttt{standardWF} function also implements a few examples of these steps that you can include in your comparisons. The following is a list of the parameters of this function that control these steps:
+
+\begin{description}
+\item[pre] - A vector of function names that will be applied in sequence to the train
+  and test data frames, generating new versions, i.e. a sequence of data
+  pre-processing functions.
+\item[pre.pars] - A named list of parameter values to be passed to the pre-processing functions.
+\end{description}
+
+We have implemented a few of these functions. Namely, in the \textbf{pre} argument you may use the following strings:
+
+\begin{description}
+\item[scale] - that scales (subtracts the mean and divides by the standard
+  deviation) any numeric features on both the training and testing
+  sets. Note that the mean and standard deviation are calculated using
+  only the training sample.
+
+\item[centralImp] - that fills in any \texttt{NA} values in both sets using
+  the median value for numeric predictors and the mode for nominal
+  predictors. Once again these centrality statistics are calculated
+  using only the training set although they are applied to both train
+  and test sets.
+
+\item[na.omit] - that uses the R function \texttt{na.omit} to remove
+  any rows containing \texttt{NA}'s  from both the training and test sets.
+
+\item[undersampl] - this undersamples the training data cases that do not
+  belong to the minority class (this pre-processing step is only
+  available for classification tasks!). It takes the parameter
+  \textbf{perc.under} that controls the level of undersampling
+  (defaulting to 1, which means that there would be as many cases from
+  the minority as from the other(s) class(es)).
+
+\item[smote] - this operation uses the SMOTE~\cite{CBOK02}
+  resampling algorithm to  generate a new training sample with a more
+  ``balanced'' distributions of the target class (this pre-processing step
+  is only available for classification tasks!). It takes the parameters
+  \textbf{perc.under},  \textbf{perc.over} and \textbf{k} to control the
+  algorithm. Read the  documentation of function \texttt{SMOTE} to
+  know more details. 
+\end{description}
+
+Note that you can also write your own data pre-processing functions
+provided you follow some protocol, and then use the name of your
+functions in the \textbf{pre} argument. Check the help page of
+function \texttt{standardPRE} to know the details on this simple
+protocol to write your own pre-processing functions.
+
+The following is a simple example of using data pre-processing steps within our provided generic workflows:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{data}\hlstd{(algae,}\hlkwc{package}\hlstd{=}\hlstr{"DMwR"}\hlstd{)}
+
+\hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+         \hlkwd{PredTask}\hlstd{(a1} \hlopt{~} \hlstd{.,algae[,}\hlnum{1}\hlopt{:}\hlnum{12}\hlstd{],}\hlstr{"AlgaA1"}\hlstd{),}
+         \hlkwd{Workflow}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"lm"}\hlstd{,}\hlkwc{pre}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"centralImp"}\hlstd{,}\hlstr{"scale"}\hlstd{)),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mae"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
+         \hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 
+## ##### PERFORMANCE ESTIMATION USING  CROSS VALIDATION  #####
+## 
+## ** PREDICTIVE TASK :: AlgaA1
+## 
+## ++ MODEL/WORKFLOW :: lm 
+## Task for estimating  mae  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## Repetition  1 
+## Fold:  1  2  3  4  5  6  7  8  9  10
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Finally, standard workflows may also include some post-processing steps to be applied to the predictions of the model. These may include for instance some re-scaling of these predictions or even minimizing the risk of predictions through some cost-based approach. Function \texttt{standardWF} also accepts some parameters that control these post-processing steps. The following is a list of the parameters of this function that control these steps:
+
+\begin{description}
+\item[post] - A vector of function names that will be applied in sequence to the
+  predictions of the model, generating a new version, i.e. a sequence of data
+  post-processing functions.
+
+\item[post.pars] - A named list of parameter values to be passed to the post-processing functions.
+\end{description}
+
+As with pre-processing steps you may also write your own prediction post-processing functions (check the help page of \texttt{standardPOST} for details). Still, we currently provide the following alternatives:
+
+\begin{description}
+\item[na2central] - this function fills in any \texttt{NA} predictions into
+  either the median (numeric targets) or mode (nominal targets) of the
+  target variable on the training set. Note that this is only applicable
+  to predictions that are vectors of values.
+
+\item[onlyPos] - in some numeric forecasting tasks the target variable
+  takes only positive values. Nevertheless, some models may insist in
+  forecasting negative values. This function casts these negative values
+  to zero. Note that this is only applicable
+  to predictions that are vectors of numeric values.
+
+\item[cast2int] - in some numeric forecasting tasks the target variable
+  takes only values within some interval. Nevertheless, some models may
+  insist in forecasting  values outside of this interval. This function
+  casts these values  into the nearest interval boundary. This function
+  requires that you supply the limits of this interval through
+  parameters \textbf{infLim} and \textbf{supLim}. Note that this is only
+  applicable to predictions that are vectors of numeric values.
+
+\item[metacost] - apply the MetaCost~\cite{Dom99} algorithm to the predictions of a
+  classifier. This method is only applicable to classification tasks and
+  to algorithms that are able to produce as predictions a vector of
+  class probabilities for each test case, i.e. a matrix of probabilities
+  for a given test set. The method requires a cost-benefit matrix to be
+  provided through the parameter \textbf{cb.matrix}. For each test case,
+  and given the probabilities estimated by the classifier and the cost
+  benefit matrix, the method predicts the classifier that maximizes the
+  utility of the prediction. This approach is a slight 'evolution' of
+  the original idea that only considered the costs of errors and not the
+  benefits of the correct classifications as in the case of cost-benefit
+  matrices we are using here. The parameter \textbf{cb.matrix} must
+  contain a (square) matrix of dimension $NClasses\times NClasses$ where entry
+  $X_{i,j}$ corresponds to the cost/benefit of predicting a test case as
+  belonging to class $j$ when it is of class $i$. The diagonal of this
+  matrix (correct predicitons) should contain positive numbers
+  (benefits), whilst numbers outside of the matrix should contain
+  negative numbers (costs of misclassifications). See the Examples
+  section of the help page of the function \texttt{standardPOST} for an illustration. 
+\end{description}
+
+In the next example we illustrate the use of the post-processing routines by ``correcting'' the predictions of a linear regression model regards the frequency of occurrence of an alga, which can not be below zero:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{data}\hlstd{(algae,}\hlkwc{package}\hlstd{=}\hlstr{"DMwR"}\hlstd{)}
+
+\hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+         \hlkwd{PredTask}\hlstd{(a1} \hlopt{~} \hlstd{.,algae[,}\hlnum{1}\hlopt{:}\hlnum{12}\hlstd{],}\hlstr{"AlgaA1"}\hlstd{),}
+         \hlkwd{c}\hlstd{(}\hlkwd{Workflow}\hlstd{(}\hlkwc{wfID}\hlstd{=}\hlstr{"lm"}\hlstd{,}
+                    \hlkwc{learner}\hlstd{=}\hlstr{"lm"}\hlstd{,}
+                    \hlkwc{pre}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"centralImp"}\hlstd{,}\hlstr{"scale"}\hlstd{)),}
+           \hlkwd{Workflow}\hlstd{(}\hlkwc{wfID}\hlstd{=}\hlstr{"lmOnlyPos"}\hlstd{,}
+                    \hlkwc{learner}\hlstd{=}\hlstr{"lm"}\hlstd{,}
+                    \hlkwc{pre}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"centralImp"}\hlstd{,}\hlstr{"scale"}\hlstd{),}
+                    \hlkwc{post}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"onlyPos"}\hlstd{))),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mae"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
+         \hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 
+## ##### PERFORMANCE ESTIMATION USING  CROSS VALIDATION  #####
+## 
+## ** PREDICTIVE TASK :: AlgaA1
+## 
+## ++ MODEL/WORKFLOW :: lm 
+## Task for estimating  mae  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## Repetition  1 
+## Fold:  1  2  3  4  5  6  7  8  9  10
+## 
+## 
+## ++ MODEL/WORKFLOW :: lmOnlyPos 
+## Task for estimating  mae  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## Repetition  1 
+## Fold:  1  2  3  4  5  6  7  8  9  10
+\end{verbatim}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(res)}
+\end{alltt}
+\begin{verbatim}
+## 
+## == Summary of a  Cross Validation Performance Estimation Experiment ==
+## 
+## Task for estimating  mae  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## 
+## * Predictive Tasks ::  AlgaA1
+## * Workflows  ::  lm, lmOnlyPos 
+## 
+## -> Task:  AlgaA1
+##   *Workflow: lm 
+##            mae
+## avg     14.309
+## std      1.858
+## med     14.340
+## iqr      2.448
+## min     11.652
+## max     17.452
+## invalid  0.000
+## 
+##   *Workflow: lmOnlyPos 
+##            mae
+## avg     13.116
+## std      1.690
+## med     13.173
+## iqr      2.273
+## min      9.956
+## max     15.303
+## invalid  0.000
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+As you see this simple post-processing step improved the performance of the model considerably.
 
 
-\subsubsection{Time Series Tasks}
+\subsubsection{Time Series Tasks}\label{sec:timeseriesWF}
 
 Our infra-structure also includes another generic workflow function
 that is specific for predictive tasks with time-dependent data
@@ -789,8 +832,8 @@ Predictive tasks for time-dependent data are different from standard
 classification and regression tasks because they require that the test
 samples have time stamps that are more recent then training
 samples. In this context, experimental methodologies handling these
-tasks typically do not shuffle the observations to maintain the time ordering
-in the original data. The most common setup is that we have a $L$  time steps
+tasks should not shuffle the observations to maintain the time ordering
+of the original data. The most common setup is that we have a $L$  time steps
 training window containing observations in the period $[t_1,t_L]$ and a $F$
 time steps test window typically containing the observations in the
 time window $[t_{L+1},t_{L+F}]$. 
@@ -812,12 +855,12 @@ both time series with a numeric target variable and a nominal target
 variable. This function has a parameter (\texttt{type}) that if set to
 ``slide'' will use a sliding window approach. As with the
 \texttt{standardWF()} function, this \texttt{timeseriesWF()} function
-also accepts parameters specifying the learner, predictor, evaluator
-and their respective parameters. Moreover, this function also includes
+also accepts parameters specifying the learner, predictor, 
+and their respective parameters, as well as the previously defined pre- and post-processing steps, all with exactly the same names and possible values (c.f. Section ~\ref{sec:standardWF}). Moreover, this function also includes
 an extra parameter, named \texttt{relearn.step}, which allows the user
 to establish the frequency of model updating. By default this is every
 new test sample, i.e. $1$, but the user may set a less frequent
-model-updating policy by using higher values of this parameter.  
+model-updating policy by using higher values of this parameter to avoid high computation costs. 
 
 The
 idea of the growing window approach is very similar. The only difference
@@ -828,9 +871,190 @@ data points, i.e. the models are obtained with increasingly larger
 training samples. By setting the parameter \texttt{type} to ``grow''
 you get the \texttt{timseriesWF()} function to use this method.
 
+The following code illustrates these two approaches by comparing them to the standard approach of using a single model to forecast all testing period:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{library}\hlstd{(quantmod)}
+\hlkwd{library}\hlstd{(randomForest)}
+\hlkwd{getSymbols}\hlstd{(}\hlstr{'^GSPC'}\hlstd{,}\hlkwc{from}\hlstd{=}\hlstr{'2008-01-01'}\hlstd{,}\hlkwc{to}\hlstd{=}\hlstr{'2012-12-31'}\hlstd{)}
+\hlstd{data.model} \hlkwb{<-} \hlkwd{specifyModel}\hlstd{(}
+  \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{)}\hlopt{+}\hlkwd{Delt}\hlstd{(}\hlkwd{Vo}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{))}
+\hlstd{data} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}\hlkwd{modelData}\hlstd{(data.model))}
+\hlkwd{colnames}\hlstd{(data)[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlstr{'PercVarClose'}
+\hlstd{spExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+  \hlkwd{PredTask}\hlstd{(PercVarClose} \hlopt{~} \hlstd{.,data,}\hlstr{'SP500_2012'}\hlstd{),}
+  \hlkwd{c}\hlstd{(}\hlkwd{Workflow}\hlstd{(}\hlkwc{wf}\hlstd{=}\hlstr{'standardWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"standRF"}\hlstd{,}
+             \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
+             \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{)),}
+    \hlkwd{Workflow}\hlstd{(}\hlkwc{wf}\hlstd{=}\hlstr{'timeseriesWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"slideRF"}\hlstd{,}
+             \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
+             \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{),}
+             \hlkwc{type}\hlstd{=}\hlstr{"slide"}\hlstd{,}
+             \hlkwc{relearn.step}\hlstd{=}\hlnum{30}\hlstd{),}
+    \hlkwd{Workflow}\hlstd{(}\hlkwc{wf}\hlstd{=}\hlstr{'timeseriesWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"growRF"}\hlstd{,}
+             \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
+             \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{),}
+             \hlkwc{type}\hlstd{=}\hlstr{"grow"}\hlstd{,}
+             \hlkwc{relearn.step}\hlstd{=}\hlnum{30}\hlstd{)}
+   \hlstd{),}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"mse"}\hlstd{,}\hlstr{"theil"}\hlstd{),}
+                 \hlkwc{method}\hlstd{=}\hlkwd{MonteCarlo}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{5}\hlstd{,}\hlkwc{szTrain}\hlstd{=}\hlnum{0.5}\hlstd{,}\hlkwc{szTest}\hlstd{=}\hlnum{0.25}\hlstd{))}
+  \hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The above example applies 3 different workflows to the task of trying to forecast the percentage daily variation of the prices of S\&P 500, using some information of the previous prices as predictors. Namely, all workflows use a random forest with 500 trees but the predictions for each test set of the 5 repetitions Monte Carlo estimation methodology (c.f. Section~\ref{sec:MC}), are obtained differently. The first workflow, named ``standRF'', obtains a single random forest with the training set and uses it to obtain predictions for the full test set. The other two approaches, instead of using this standard workflow, take advantage of the workflow provided by \texttt{timeseriesWF} and use either  sliding  or growing windows to obtain these predictions. For both these two latter approaches a new random forest is obtained after each 30 new test cases (set by parameter \texttt{relearn.step}).
+
+
+\subsection{User-defined Workflows}
+
+With the goal of ensuring that the
+proposed infra-structure is able to cope with all  possible usage
+scenarios, we also allow the user to write and provide her/his own workflow functions to be used in the estimation tasks, provided they follow some protocol. Namely, these
+user-defined workflow functions should be written such that the
+first three parameters are: (i) the formula defining the predictive
+task; (ii) the provided training sample; and (iii) the test sample
+for which predictions are to be obtained. The functions may eventually
+accept other arguments with specific parameters of the user-defined workflow. The
+following is a general sketch of a user-defined workflow function:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{myWorkFlow} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{form}\hlstd{,}\hlkwc{train}\hlstd{,}\hlkwc{test}\hlstd{,}\hlkwc{...}\hlstd{) \{}
+  \hlkwd{require}\hlstd{(mySpecialPackage,}\hlkwc{quietly}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+  \hlcom{## cary out some data pre-processing}
+  \hlstd{myTrain} \hlkwb{<-} \hlkwd{mySpecificPreProcessingSteps}\hlstd{(train)}
+  \hlcom{## now obtain the model}
+  \hlstd{myModel} \hlkwb{<-} \hlkwd{myModelingTechnique}\hlstd{(form,myTrain,...)}
+  \hlcom{## obtain the predictions}
+  \hlstd{preds} \hlkwb{<-} \hlkwd{predict}\hlstd{(myModel,test)}
+  \hlcom{## cary out some predictions post-processing}
+  \hlstd{newPreds} \hlkwb{<-} \hlkwd{mySpecificPostProcessingSteps}\hlstd{(form,train,test,preds)}
+  \hlcom{## finally produce the worflow output object with the predictions}
+  \hlstd{trues} \hlkwb{<-} \hlkwd{responseValues}\hlstd{(form,test)}
+  \hlstd{res} \hlkwb{<-} \hlkwd{WFoutput}\hlstd{(}\hlkwd{rownames}\hlstd{(test),trues,newPreds)}
+  \hlkwd{return}\hlstd{(res)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+Not all workflows will require all these steps, though some may even
+require more. This is clearly something that is up to the user. The
+only strict requirements for these functions are: (i) the first 3
+parameters of the workflow function should be the formula, train and
+test data frames; and (ii) the result of the function should be an
+object of the S4 class \textbf{WFoutput}.
+
+Objects of class \textbf{WFoutput} contain the result of applying the
+workflow to a train+test partition. They are created using the
+constructor function \textbf{WFoutput()} that takes as first argument the row ids of the test set, as second the true values of the target variable in the test set and as third the predictions of the workflow for these test cases. These
+objects may optionally contain any other information the creator of the workflow function deems
+important to return. This optional information is "attached" to the object using the replacement function \textbf{workflowInformation()}. This function accepts as value  a
+list  whose content is completely free and left to the creator of
+the workflow function. As example of the usage of this function will be given later in this section. 
+
+The sketch shown above also illustrates the use of the function
+\texttt{responseValues()} that can be used to obtain the values of the target
+variable given a formula and a data frame.
+
+On top of the 3 mandatory parameters (formula, training and test sets), user-defined workflow functions may also accept any other arguments. As we have seen in Section~\ref{sec:variants} we provide
+the function \texttt{workflowVariants()} to facilitate the specification of
+different variants of any workflow function by trying all combinations
+of several of its specific parameters. For instance, if the modelling
+function in the above example workflow (function
+\texttt{myModelingTechnique()}) had an integer parameter \texttt{x}
+and a Boolean parameter \texttt{y}, we could generate several
+\textbf{Workflow} objects to be evaluated/compared using the
+\texttt{performanceEstimation()} function, as follows:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{workflowVariants}\hlstd{(}\hlstr{'myWorkFlow'}\hlstd{,}\hlkwc{x}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{7}\hlstd{),}\hlkwc{y}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{TRUE}\hlstd{,}\hlnum{FALSE}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+This would generate 8 variants of the same workflow with all
+combinations of the specified values for the 2 parameters.  
+
+Let us see a concrete example of a user supplied workflow
+function. Imagine we want to evaluate a kind of ensemble model formed
+by a regression tree and a multiple linear regression model on an
+algae blooms data set~\cite{Tor10}.  We write a workflow function that implements our intended workflow:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{RLensemble} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{f}\hlstd{,} \hlkwc{tr}\hlstd{,} \hlkwc{ts}\hlstd{,} \hlkwc{weightRT}\hlstd{=}\hlnum{0.5}\hlstd{,} \hlkwc{step}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{...}\hlstd{,} \hlkwc{.models}\hlstd{=}\hlnum{FALSE}\hlstd{) \{}
+  \hlkwd{require}\hlstd{(DMwR,}\hlkwc{quietly}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+  \hlcom{## Getting the column id of the target variable}
+  \hlstd{tgtCol} \hlkwb{<-} \hlkwd{which}\hlstd{(}\hlkwd{colnames}\hlstd{(tr)} \hlopt{==} \hlkwd{as.character}\hlstd{(f[[}\hlnum{2}\hlstd{]]))}
+  \hlcom{## filling in NAs using knnImputation}
+  \hlstd{noNAsTR} \hlkwb{<-} \hlstd{tr}
+  \hlstd{noNAsTS} \hlkwb{<-} \hlstd{ts}
+  \hlstd{noNAsTR[,}\hlopt{-}\hlstd{tgtCol]} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(tr[,}\hlopt{-}\hlstd{tgtCol])}
+  \hlstd{noNAsTS[,}\hlopt{-}\hlstd{tgtCol]} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(ts[,}\hlopt{-}\hlstd{tgtCol],}\hlkwc{distData}\hlstd{=tr[,}\hlopt{-}\hlstd{tgtCol])}
+  \hlstd{r} \hlkwb{<-} \hlkwd{rpartXse}\hlstd{(f,tr,...)}
+  \hlstd{l} \hlkwb{<-} \hlkwd{lm}\hlstd{(f,noNAsTR)}
+  \hlkwa{if} \hlstd{(step) l} \hlkwb{<-} \hlkwd{step}\hlstd{(l,}\hlkwc{trace}\hlstd{=}\hlnum{0}\hlstd{)}
+  \hlstd{pr} \hlkwb{<-} \hlkwd{predict}\hlstd{(r,ts)}
+  \hlstd{pl} \hlkwb{<-} \hlkwd{predict}\hlstd{(l,noNAsTS)}
+  \hlstd{ps} \hlkwb{<-} \hlstd{weightRT}\hlopt{*}\hlstd{pr}\hlopt{+}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{weightRT)}\hlopt{*}\hlstd{pl}
+  \hlstd{res} \hlkwb{<-} \hlkwd{WFoutput}\hlstd{(}\hlkwd{rownames}\hlstd{(ts),}\hlkwd{responseValues}\hlstd{(f,ts),ps)}
+  \hlkwa{if} \hlstd{(.models)} \hlkwd{workflowInformation}\hlstd{(res)} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{linearModel}\hlstd{=l,}\hlkwc{tree}\hlstd{=r)}
+  \hlstd{res}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+This workflow starts by building two modified samples of the training
+and testing sets, with the \texttt{NA} values being filled in using a
+nearest neighbour strategy (see the help page of the function
+\texttt{knnImputation()} for more
+details). These versions are to be used by the \texttt{lm()} function
+that is unable to cope with cases with missing values. After obtaining
+the two models and their predictions the function calculates a
+weighted average of both predictions. Note how we have used the function \texttt{workflowInformation} to attach a list with the two models to the \textbf{WFoutput} results object, in case the user calls the function with \texttt{.models=TRUE}.
+
+To evaluate different variants of this workflow we could run the
+following experiment:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(algae,}\hlkwc{package}\hlstd{=}\hlstr{'DMwR'}\hlstd{)}
+\hlstd{expRes} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+    \hlkwd{PredTask}\hlstd{(a1} \hlopt{~} \hlstd{.,algae[,}\hlnum{1}\hlopt{:}\hlnum{12}\hlstd{],}\hlstr{'alga1'}\hlstd{),}
+    \hlkwd{workflowVariants}\hlstd{(}\hlstr{'RLensemble'}\hlstd{,}
+                     \hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{),}\hlkwc{step}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{TRUE}\hlstd{,}\hlnum{FALSE}\hlstd{),}\hlkwc{weightRT}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.4}\hlstd{,}\hlnum{0.5}\hlstd{,}\hlnum{0.6}\hlstd{)),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{()))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
 
 % ====================================================================
-\section{Estimation Methodologies}\label{sec:expMeth}
+\section{Estimation Tasks}
+
+The third argument of the main function \texttt{performanceEstimation} defines the estimation task we want to carry out. Its value is an S4 object of class \textbf{EstimationTask} that can be created through the constructor function with the same name. The main arguments of this constructor are \textbf{metrics} and \textbf{method}. The first is a vector with names of metrics for which we want reliable estimates, while the second is the method to be used to obtain these estimates.
+
+\subsection{Performance Metrics}
+
+The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of this metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
+
+In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
+
+
+\subsection{Estimation Methodologies}\label{sec:expMeth}
 
 There are different ways of providing reliable estimates of the
 predictive performance of a workflow. Our infra-structure implements some
@@ -838,27 +1062,27 @@ of the most common estimation methods. In this section we
 briefly describe them and provide short illustrative examples of their
 use.
 
-\subsection{Cross Validation}
+The parameter \textbf{method} of the \textbf{EstimationTask} constructor allows the user to specify the estimation methodology that will be used. The next sections explain the options available.
+
+\subsubsection{Cross Validation}
 
 $k$-Fold cross validation (CV) is one of the most common 
 methods to estimate the predictive performance of a model. By
-including an S4 object of class \textbf{CvSettings} in the third
-argument of function \texttt{performanceEstimation()} we can carry
+including an S4 object of class \textbf{CV} in the parameter \textbf{method} we can carry
 out experiments of this type.
 
-The function \texttt{CvSettings()} can be used as a constructor of objects
-of class \textbf{CvSettings}. It accepts the following parameters:
+The constructor function \texttt{CV()} can be used to obtain objects
+of class \textbf{CV}. It accepts the following parameters:
 
 \begin{description}
 \item[nReps] - the number of repetitions of the $k$-fold CV experiment (default is $1$)
 \item[nFolds] - the number of $k$ folds to use (default is $10$)
 \item[seed] - the random number generator seed to use (default is $1234$)
-\item[strat] - whether to use stratified samples (default is \texttt{FALSE})
-\item[dataSplits] - a list containing user-supplied data splits
-  for each of the folds and repetitions (check the help page of the
-  class for further details). This parameter defaults to
-  \texttt{NULL}, i.e. no user-supplied splits, they are decided
-  internally by the infra-structure.
+\item[strat] - whether to use stratified samples on the different iterations (default is \texttt{FALSE})
+\item[dataSplits] - a list containing the data splits to
+          use on each repetition of a k-folds CV experiment (defaulting
+          to ‘NULL’). Check the help page of the
+  class \textbf{CV} for further details. 
 \end{description}
 
 Bellow you can find a small illustration using the Breast Cancer data
@@ -867,50 +1091,38 @@ some variants of an SVM using a $3\times 10-$fold cross validation
 process with stratified sampling because one of the two classes has a
 considerably lower frequency.
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(BreastCancer,}\hlkwc{package}\hlstd{=}\hlstr{'mlbench'}\hlstd{)}
 \hlkwd{library}\hlstd{(e1071)}
-\hlkwd{library}\hlstd{(DMwR)}
-\hlstd{bc} \hlkwb{<-} \hlkwd{knnImputation}\hlstd{(BreastCancer[,}\hlopt{-}\hlnum{1}\hlstd{])}
 \hlstd{bcExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(Class} \hlopt{~} \hlstd{.,bc,}\hlstr{'BreastCancer'}\hlstd{),}
+  \hlkwd{PredTask}\hlstd{(Class} \hlopt{~} \hlstd{.,BreastCancer[,}\hlopt{-}\hlnum{1}\hlstd{],}\hlstr{'BreastCancer'}\hlstd{),}
   \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
            \hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
-           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{)),}
-           \hlkwc{evaluator.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{stats}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"F"}\hlstd{,}\hlstr{"prec"}\hlstd{,}\hlstr{"rec"}\hlstd{),}
-                               \hlkwc{posClass}\hlstd{=}\hlstr{"malignant"}\hlstd{)}
+           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{))}
           \hlstd{),}
-  \hlkwd{CvSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{10}\hlstd{,}\hlkwc{strat}\hlstd{=}\hlnum{TRUE}\hlstd{))}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"F"}\hlstd{,}\hlstr{"prec"}\hlstd{,}\hlstr{"rec"}\hlstd{),}
+                 \hlkwc{evaluator.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{posClass}\hlstd{=}\hlstr{"malignant"}\hlstd{),}
+                 \hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{,}\hlkwc{nFolds}\hlstd{=}\hlnum{10}\hlstd{,}\hlkwc{strat}\hlstd{=}\hlnum{TRUE}\hlstd{)))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-
 Please note the use of the \texttt{evaluator.pars} parameter of the
-\texttt{standardWF()} function. We have used it to indicate several
-settings to be used in the call to the evaluation function, which by
-default is \texttt{classificationMetrics} in the case of
-classification problems when using our standard workflow. In this case
-we are specifying some of the available classification metrics and
-indicating which of the two classes of the problem is to be considered
-the positive class\footnote{The F-measure, Recall and Precision
-  metrics are calculated for two-class problems with respect to one of
-  the classes, usually named the ``positive'' class.}.
+\texttt{EstimationTask} constructor function. We have used it to indicate which of the class labels of this problem should be considered the ``positive'' class, which is required to compute the values of the F, recall and precision metrics we are estimation through $3\times 10-$fold cross validation. This parameter setting is passed to the \texttt{classificationMetrics} function that is the default for classification tasks like Breast Cancer.
 
-\subsection{Bootstrapping}
+\subsubsection{Bootstrapping}
 
 Bootstrapping or bootstrap resampling is another well-known
 experimental methodology that is implemented in our
-infra-structure. Namely, we implement two of the most common methods of obtaining bootstrap estimates: $\epsilon_0$ and $.632$ bootstrap.
+package. Namely, we implement two of the most common methods of obtaining bootstrap estimates: $\epsilon_0$ and $.632$ bootstrap.
 By including an S4 object of class
-\textbf{BootSettings} in the third argument of function
-\texttt{performanceEstimation()} we can carry out experiments of this
+\textbf{Bootstrap} in the \textbf{method} argument we can carry out experiments of this
 type.
 
-Function \texttt{BootSettings()} can be used as a constructor of
-objects of class \textbf{BootSettings}. It accepts the following
+Function \texttt{Bootstrap()} can be used as a constructor of
+objects of class \textbf{Bootstrap}. It accepts the following
 arguments:
 
 \begin{description}
@@ -926,34 +1138,32 @@ arguments:
 
 Bellow you can find a small illustration using the Servo data set available in package \textbf{mlbench}. On this example we compare some variants of an artificial neural network using 100 repetitions of a bootstrap experiment. 
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(Servo,}\hlkwc{package}\hlstd{=}\hlstr{'mlbench'}\hlstd{)}
 \hlkwd{library}\hlstd{(nnet)}
 \hlstd{nnExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
   \hlkwd{PredTask}\hlstd{(Class} \hlopt{~} \hlstd{.,Servo),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-           \hlkwc{learner}\hlstd{=}\hlstr{'nnet'}\hlstd{,}
-           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{trace}\hlstd{=F,}\hlkwc{linout}\hlstd{=T,}
-               \hlkwc{size}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{decay}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{))}
+  \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'nnet'}\hlstd{,}
+                   \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{trace}\hlstd{=F,}\hlkwc{linout}\hlstd{=T,}
+                       \hlkwc{size}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{decay}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{))}
           \hlstd{),}
-  \hlkwd{BootSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{100}\hlstd{))}
+  \hlkwd{EstimationTask}\hlstd{(}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{Bootstrap}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{100}\hlstd{)))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-
-\subsection{Holdout and Random Subsampling}
+\subsubsection{Holdout and Random Sub-sampling}
 
 The Holdout is another frequently used experimental methodology,
 particularly for large data sets. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
-class \textbf{HldSettings} in the third argument of function
+class \textbf{Holdout} in the third argument of function
 \texttt{performanceEstimation()}.
 
-Function \texttt{HldSettings()} can be used as a constructor of
-objects of class \textbf{HldSettings}. It accepts the following
+Function \texttt{Holdout()} can be used as a constructor of
+objects of class \textbf{Holdout}. It accepts the following
 arguments:
 
 \begin{description}
@@ -974,22 +1184,20 @@ The following is a small illustrative example of the use of the
 random subsampling with the LetterRecognition classification task from package
 \textbf{mlbench}.
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(LetterRecognition,}\hlkwc{package}\hlstd{=}\hlstr{'mlbench'}\hlstd{)}
 \hlstd{ltrExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(lettr} \hlopt{~} \hlstd{.,LetterRecognition),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-           \hlkwc{learner}\hlstd{=}\hlstr{'rpartXse'}\hlstd{,}
-           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{)),}
-           \hlkwc{predictor.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{type}\hlstd{=}\hlstr{'class'}\hlstd{)}
-           \hlstd{),}
-  \hlkwd{HldSettings}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{,}\hlkwc{hldSz}\hlstd{=}\hlnum{0.3}\hlstd{))}
+    \hlkwd{PredTask}\hlstd{(lettr} \hlopt{~} \hlstd{.,LetterRecognition),}
+    \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'rpartXse'}\hlstd{,}
+                     \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{)),}
+                     \hlkwc{predictor.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{type}\hlstd{=}\hlstr{'class'}\hlstd{)}
+                     \hlstd{),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"err"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{Holdout}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{,}\hlkwc{hldSz}\hlstd{=}\hlnum{0.3}\hlstd{)))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
-
 
 Please note the use of the \texttt{predictor.pars} parameter of our
 \texttt{standardWF()} function to be able to cope with the fact that
@@ -997,76 +1205,84 @@ the \texttt{predict} method for classification trees requires the use
 of \texttt{type="class"} to get actual predicted class labels instead
 of class probabilities.
 
-\subsection{Leave One Out Cross Validation}
+\subsubsection{Leave One Out Cross Validation}
 
 Leave one out cross validation is a type of cross validation method
 that is mostly used for small data sets. You can think of leave one
 out cross validation as a $k$-fold cross validation with $k$ equal to
 the size of the available data set. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
-class \textbf{LoocvSettings} in the third argument of function
+class \textbf{LOCV} in the third argument of function
 \texttt{performanceEstimation()}.
 
-Function \texttt{LoocvSettings()} can be used as a constructor of
-objects of class \textbf{LoocvSettings}. It accepts the following
+Function \texttt{LOOCV()} can be used as a constructor of
+objects of class \textbf{LOOCV}. It accepts the following
 arguments:
 
 \begin{description}
 \item[seed] - the random number generator seed to use (default is $1234$)
-\item[verbose] - whether the execution of the experiments should provide a verbose form of output (default is \texttt{FALSE})
+\item[dataSplits] - a list containing user-supplied data splits
+  for each of the repetitions (check the help page of the
+  class for further details). This parameter defaults to
+  \texttt{NULL}, i.e. no user-supplied splits, they are decided
+  internally by the infra-structure.
 \end{description}
 
 
 The following is a small illustrative example of the use of the
-Holdout with the LetterRecognition classification task from package
-\textbf{mlbench}.
+LOOCV with the Iris classification task.
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{data}\hlstd{(iris)}
 \hlkwd{library}\hlstd{(e1071)}
 \hlstd{irisExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-           \hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
-           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{10}\hlstd{))}
-           \hlstd{),}
-  \hlkwd{LoocvSettings}\hlstd{())}
+    \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris),}
+    \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{'svm'}\hlstd{,}
+                     \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{10}\hlstd{))}
+                     \hlstd{),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"acc"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{LOOCV}\hlstd{()))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
 
+\subsubsection{Monte Carlo Experiments}\label{sec:MC}
 
-\subsection{Monte Carlo Experiments}
-
-Monte Carlo experiments are similar to random subsampling (or repeated
+Monte Carlo experiments are similar to random sub-sampling (or repeated
 Holdout) in the sense that they consist of repeating a learning +
-testing cycle several times using different data samples. The main
-different lies on the way the samples are obtained. In Monte Carlo
+testing cycle several times using different and eventually overlapping data samples. The main
+difference lies on the way the samples are obtained. In Monte Carlo
 experiments the original order of the observations is respected and
 train and test splits are obtained such that the testing samples
 appear ``after'' the training samples, thus being the methodology of
 choice when you are comparing time series forecasting models. The idea
 of Monte Carlo experiments is the following: (i) given a data set
 spanning from time $t_1$ till time $t_N$, (ii) given a training set
-time interval size $L$ and a test set time interval size $F$, such
-that $T+F < N$, (iii) Monte Carlo experiments generate $R$ random time
-points from the interval $[t_{1+T},t_{N-F}]$, and then (iv) for each
-of these $R$ time points they generate a training set with data in the
-interval $[t_{R-T+1},t_{R}]$ and a test set with data in the interval
-$[t_{R+1},t_{R+F}]$. Using this process $R$ train+test cycles are
+time interval size $w_{train}$ and a test set time interval size $w_{test}$, such
+that $w_{train}+w_{test} < N$, (iii) Monte Carlo experiments generate $r$ random time
+points from the interval $[t_{1+w_{train}},t_{N-w_{test}}]$, and then (iv) for each
+of these $r$ time points they generate a training set with data in the
+interval $[t_{r-w_{train}+1},t_{r}]$ and a test set with data in the interval
+$[t_{r+1},t_{r+w_{test}}]$. Using this process $r$ train+test cycles are
 carried out using the user-supplied workflow function, and the
-experiment estimates result from the average of the $R$ scores as
-usual.
+experiment estimates result from the average of the $r$ scores as
+usual. The overall process is depicted in Figure~\ref{fig:MC}.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.6\textwidth]{MCestimates.png}
+  \caption{The Monte Carlo estimation methodology.}
+  \label{fig:MC}
+\end{figure}
 
 To carry out this type of experiments in our infra-structure we can
-include an S4 object of class \textbf{McSettings} in the third
+include an S4 object of class \textbf{MonteCarlo} in the third
 argument of function \texttt{performanceEstimation()}.
 
-The function \texttt{McSettings()} can be used as a constructor of
-objects of class \textbf{McSettings}. It accepts the following
+The function \texttt{MonteCarlo()} can be used as a constructor of
+objects of class \textbf{MonteCarlo}. It accepts the following
 arguments:
 
 \begin{description}
@@ -1104,13 +1320,13 @@ data for training and 25\% for testing.
              \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}\hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{)),}
     \hlkwd{Workflow}\hlstd{(}\hlstr{'timeseriesWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"slideRF"}\hlstd{,}
              \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
-             \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{,}\hlkwc{relearn.step}\hlstd{=}\hlnum{5}\hlstd{))}
+             \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{,}\hlkwc{relearn.step}\hlstd{=}\hlnum{30}\hlstd{))}
    \hlstd{),}
-  \hlkwd{McSettings}\hlstd{(}\hlnum{10}\hlstd{,}\hlnum{0.5}\hlstd{,}\hlnum{0.25}\hlstd{))}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"theil"}\hlstd{,}
+                 \hlkwc{method}\hlstd{=}\hlkwd{MonteCarlo}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{10}\hlstd{,}\hlkwc{szTrain}\hlstd{=}\hlnum{0.5}\hlstd{,}\hlkwc{szTest}\hlstd{=}\hlnum{0.25}\hlstd{)))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
-
 
 Note that in the above example we have not tried any variants of the two workflows that are applied to the task. This means that we have used directly the \texttt{Workflow} constructor to create our workflow. Note also the use of the \texttt{wfID} parameter of this constructor to allow you to give a particular workflow ID to some approach.
 
@@ -1145,8 +1361,7 @@ concrete example:
 
 
 
-
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{library}\hlstd{(DMwR)}
@@ -1163,42 +1378,31 @@ concrete example:
 \end{kframe}
 \end{knitrout}
 
-
 Using the \texttt{topPerformers()} function we can find out the best
 scoring variant of this comparison of rpartXse-based workflows,
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{topPerformers}\hlstd{(ltrExp)}
 \end{alltt}
-\begin{verbatim}
-## $LetterRecognition
-##        Workflow Estimate
-## err rpartXse.v1    0.143
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 Now we can proceed to check whether the advantage of this variant over
 the others is statistically significant,
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{pairedComparisons}\hlstd{(ltrExp,}\hlstr{'rpartXse.v1'}\hlstd{)}
 \end{alltt}
-\begin{verbatim}
-## , , err, LetterRecognition
-## 
-##             AvgScore  SdScore      Diff p.value
-## rpartXse.v1   0.1434 0.005453        NA      NA
-## rpartXse.v2   0.1486 0.011612 -0.005222    0.25
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 The function \texttt{pairedComparisons()} receives as first argument the
 object resulting from the comparative experiments. The second argument
@@ -1282,7 +1486,6 @@ example.
 \end{kframe}
 \end{knitrout}
 
-
 The above code compares 12 SVM variants with 6 random forest variants, on 7 algae blooms regression tasks, using
 $3\times 10-$fold cross validation. Although this is not a very large
 experimental comparison it still includes applying 18 different
@@ -1325,7 +1528,6 @@ into R and moreover, join them into a single object, as shown below:
 \end{kframe}
 \end{knitrout}
 
-
 The \texttt{mergeEstimationRes()}  function when applied to objects of class
 \textbf{ComparisonResults} allows merging of these objects across different
 dimensions. Namely, such objects have the individual scores of all
@@ -1344,45 +1546,31 @@ be obvious:
 
 
 
-
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{res}
 \end{alltt}
-\begin{verbatim}
-## 
-## ==  Cross Validation Performance Estimation Experiment ==
-## 
-##  3 x 10 - Fold Cross Validation run with seed =  1234 
-## 18  workflows
-## tested on  7  predictive tasks
-\end{verbatim}
-\begin{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\begin{alltt}
 \hlkwd{taskNames}\hlstd{(res)}
 \end{alltt}
 \begin{verbatim}
-## [1] "a1" "a2" "a3" "a4" "a5" "a6" "a7"
+## NULL
 \end{verbatim}
 \begin{alltt}
 \hlkwd{workflowNames}\hlstd{(res)}
 \end{alltt}
-\begin{verbatim}
-##  [1] "svm.v1"          "svm.v2"          "svm.v3"          "svm.v4"         
-##  [5] "svm.v5"          "svm.v6"          "svm.v7"          "svm.v8"         
-##  [9] "svm.v9"          "svm.v10"         "svm.v11"         "svm.v12"        
-## [13] "randomForest.v1" "randomForest.v2" "randomForest.v3" "randomForest.v4"
-## [17] "randomForest.v5" "randomForest.v6"
-\end{verbatim}
-\begin{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\begin{alltt}
 \hlkwd{metricNames}\hlstd{(res)}
 \end{alltt}
-\begin{verbatim}
-## [1] "mse" "mae"
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 With such large objects the most we can do is obtaining the best
 scores or rankings of the workflows:
@@ -1392,180 +1580,20 @@ scores or rankings of the workflows:
 \begin{alltt}
 \hlkwd{topPerformers}\hlstd{(res)}
 \end{alltt}
-\begin{verbatim}
-## $a1
-##            Workflow Estimate
-## mse randomForest.v5  233.379
-## mae randomForest.v1    10.29
-## 
-## $a2
-##            Workflow Estimate
-## mse randomForest.v5  102.505
-## mae          svm.v1    6.088
-## 
-## $a3
-##            Workflow Estimate
-## mse randomForest.v5   48.309
-## mae          svm.v4    4.135
-## 
-## $a4
-##            Workflow Estimate
-## mse randomForest.v1   13.701
-## mae         svm.v10    1.724
-## 
-## $a5
-##            Workflow Estimate
-## mse randomForest.v5   46.665
-## mae         svm.v10    4.223
-## 
-## $a6
-##     Workflow Estimate
-## mse  svm.v12  114.123
-## mae  svm.v12    5.859
-## 
-## $a7
-##     Workflow Estimate
-## mse   svm.v2   27.723
-## mae   svm.v4    2.501
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{rankWorkflows}\hlstd{(res)}
 \end{alltt}
-\begin{verbatim}
-## $a1
-## $a1$mse
-##          Workflow Estimate
-## 1 randomForest.v5    233.4
-## 2 randomForest.v1    233.7
-## 3 randomForest.v3    235.0
-## 4 randomForest.v2    236.4
-## 5 randomForest.v4    238.1
-## 
-## $a1$mae
-##          Workflow Estimate
-## 1 randomForest.v1    10.29
-## 2 randomForest.v5    10.31
-## 3 randomForest.v2    10.34
-## 4 randomForest.v3    10.34
-## 5 randomForest.v6    10.37
-## 
-## 
-## $a2
-## $a2$mse
-##          Workflow Estimate
-## 1 randomForest.v5    102.5
-## 2 randomForest.v1    103.5
-## 3 randomForest.v3    103.8
-## 4 randomForest.v6    104.2
-## 5 randomForest.v2    104.8
-## 
-## $a2$mae
-##   Workflow Estimate
-## 1   svm.v1    6.088
-## 2   svm.v7    6.155
-## 3  svm.v10    6.204
-## 4   svm.v4    6.226
-## 5   svm.v5    6.248
-## 
-## 
-## $a3
-## $a3$mse
-##          Workflow Estimate
-## 1 randomForest.v5    48.31
-## 2 randomForest.v3    48.37
-## 3 randomForest.v1    48.40
-## 4 randomForest.v2    49.06
-## 5 randomForest.v6    49.17
-## 
-## $a3$mae
-##   Workflow Estimate
-## 1   svm.v4    4.135
-## 2  svm.v10    4.155
-## 3   svm.v7    4.224
-## 4   svm.v1    4.248
-## 5   svm.v5    4.269
-## 
-## 
-## $a4
-## $a4$mse
-##          Workflow Estimate
-## 1 randomForest.v1    13.70
-## 2 randomForest.v3    13.85
-## 3 randomForest.v5    13.87
-## 4 randomForest.v4    13.99
-## 5 randomForest.v6    14.05
-## 
-## $a4$mae
-##          Workflow Estimate
-## 1         svm.v10    1.724
-## 2          svm.v4    1.726
-## 3          svm.v7    1.769
-## 4 randomForest.v3    1.783
-## 5 randomForest.v1    1.788
-## 
-## 
-## $a5
-## $a5$mse
-##          Workflow Estimate
-## 1 randomForest.v5    46.66
-## 2 randomForest.v3    46.72
-## 3 randomForest.v1    46.89
-## 4 randomForest.v6    47.79
-## 5 randomForest.v4    47.89
-## 
-## $a5$mae
-##   Workflow Estimate
-## 1  svm.v10    4.223
-## 2   svm.v4    4.252
-## 3   svm.v1    4.292
-## 4   svm.v7    4.305
-## 5  svm.v11    4.335
-## 
-## 
-## $a6
-## $a6$mse
-##          Workflow Estimate
-## 1         svm.v12    114.1
-## 2          svm.v6    115.9
-## 3          svm.v5    122.5
-## 4         svm.v11    122.9
-## 5 randomForest.v3    131.7
-## 
-## $a6$mae
-##   Workflow Estimate
-## 1  svm.v12    5.859
-## 2   svm.v6    5.913
-## 3   svm.v1    5.950
-## 4   svm.v7    5.959
-## 5  svm.v11    5.978
-## 
-## 
-## $a7
-## $a7$mse
-##          Workflow Estimate
-## 1          svm.v2    27.72
-## 2          svm.v8    27.86
-## 3 randomForest.v3    28.26
-## 4 randomForest.v5    28.36
-## 5          svm.v1    28.50
-## 
-## $a7$mae
-##   Workflow Estimate
-## 1   svm.v4    2.501
-## 2  svm.v10    2.506
-## 3   svm.v1    2.513
-## 4   svm.v7    2.515
-## 5  svm.v11    2.530
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 Notice that both \texttt{topPerformers()} and \texttt{rankWorkflows()}
 assume that the evaluation metrics are to be minimized, i.e. they
@@ -1589,24 +1617,15 @@ predictive task ``a1'', in terms of ``MSE'', which is show in
 Figure~\ref{fig:maeA1}.
 
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{statistics}\hlstd{=}\hlstr{'mae'}\hlstd{))}
 \end{alltt}
-\end{kframe}\begin{figure}[]
 
 
-{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-maeA1} 
-
-}
-
-\caption[The MAE results for the task ``a1'']{The MAE results for the task ``a1''.\label{fig:maeA1}}
-\end{figure}
-
-
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'x' in selecting a method for function 'plot': Error in .local(x, ...) : unused argument (statistics = "{}mae"{})\\\#\# Calls: subset -> subset -> .local}}\end{kframe}
 \end{knitrout}
-
  
 As before we are using the generic function \texttt{plot()} but this
 time applied to a subset of the original object with all results. This
@@ -1626,24 +1645,15 @@ whose name ends in ``4'' (absurd example of course!), you could use
 the following:
 
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{workflows}\hlstd{=}\hlstr{'4$'}\hlstd{))}
 \end{alltt}
-\end{kframe}\begin{figure}[]
 
 
-{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-mseA1b} 
-
-}
-
-\caption[Illustration of the use of regular expressions in sub-setting the results objects]{Illustration of the use of regular expressions in sub-setting the results objects.\label{fig:mseA1b}}
-\end{figure}
-
-
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'x' in selecting a method for function 'plot': Error in x[[1]] : this S4 class is not subsettable\\\#\# Calls: subset -> subset -> .local -> identical}}\end{kframe}
 \end{knitrout}
-
 
 
 If you are more familiar with the syntax of "wildcards" you may use
@@ -1655,117 +1665,10 @@ as show in the following example:
 \begin{alltt}
 \hlkwd{summary}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),}\hlkwc{statistics}\hlstd{=}\hlstr{'mse'}\hlstd{))}
 \end{alltt}
-\begin{verbatim}
-## 
-## == Summary of a  Cross Validation Performance Estimation Experiment ==
-##  3 x 10 - Fold Cross Validation run with seed =  1234 
-## 
-## * Predictive Tasks ::  a1
-## * Workflows  ::  svm.v1, svm.v2, svm.v3, svm.v4, svm.v5, svm.v6, svm.v7, svm.v8, svm.v9, svm.v10, svm.v11, svm.v12
-## 
-## * Summary of Experiment Results:
-## 
-## -> Datataset:  a1 
-## 
-## 	*Workflow: svm.v1 
-##           mse
-## avg     278.6
-## std     106.5
-## min     121.2
-## max     503.3
-## invalid   0.0
-## 
-## 	*Workflow: svm.v2 
-##           mse
-## avg     278.7
-## std     107.3
-## min     126.0
-## max     603.8
-## invalid   0.0
-## 
-## 	*Workflow: svm.v3 
-##           mse
-## avg     309.6
-## std     114.8
-## min     145.1
-## max     659.3
-## invalid   0.0
-## 
-## 	*Workflow: svm.v4 
-##           mse
-## avg     340.0
-## std     138.7
-## min     104.7
-## max     558.5
-## invalid   0.0
-## 
-## 	*Workflow: svm.v5 
-##             mse
-## avg      348.08
-## std      213.27
-## min       97.36
-## max     1001.13
-## invalid    0.00
-## 
-## 	*Workflow: svm.v6 
-##            mse
-## avg      362.3
-## std      256.9
-## min      106.5
-## max     1268.0
-## invalid    0.0
-## 
-## 	*Workflow: svm.v7 
-##           mse
-## avg     277.5
-## std     104.7
-## min     124.2
-## max     496.0
-## invalid   0.0
-## 
-## 	*Workflow: svm.v8 
-##           mse
-## avg     279.2
-## std     106.9
-## min     129.5
-## max     609.4
-## invalid   0.0
-## 
-## 	*Workflow: svm.v9 
-##           mse
-## avg     305.7
-## std     114.0
-## min     145.9
-## max     651.8
-## invalid   0.0
-## 
-## 	*Workflow: svm.v10 
-##            mse
-## avg     340.31
-## std     139.09
-## min      97.38
-## max     562.07
-## invalid   0.00
-## 
-## 	*Workflow: svm.v11 
-##            mse
-## avg      351.0
-## std      211.0
-## min      105.8
-## max     1082.0
-## invalid    0.0
-## 
-## 	*Workflow: svm.v12 
-##            mse
-## avg      350.5
-## std      223.2
-## min      115.5
-## max     1129.8
-## invalid    0.0
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'object' in selecting a method for function 'summary': Error in .local(x, ...) : unused argument (statistics = "{}mse"{})\\\#\# Calls: subset -> subset -> .local}}\end{kframe}
+\end{knitrout}
 
 
 The following are some illustrations of the use of other available
@@ -1774,66 +1677,27 @@ utility functions.
 Obtaining the scores on all iterations and metrics of a workflow on a
 particular task:
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{getIterationsResults}\hlstd{(res,}\hlstr{'svm.v6'}\hlstd{,}\hlstr{'a3'}\hlstd{)}
 \end{alltt}
-\begin{verbatim}
-##           mse   mae
-##  [1,]  35.167 3.738
-##  [2,]  85.866 5.720
-##  [3,]  24.207 3.062
-##  [4,]  58.519 4.421
-##  [5,] 161.427 6.916
-##  [6,]  43.422 3.818
-##  [7,]  77.363 5.972
-##  [8,]  13.756 2.989
-##  [9,]  31.301 3.522
-## [10,]  31.060 4.421
-## [11,]  98.894 7.058
-## [12,]  34.912 3.984
-## [13,]  28.457 3.358
-## [14,]  51.942 4.479
-## [15,] 120.784 5.356
-## [16,]  18.346 3.115
-## [17,]  67.551 5.057
-## [18,]  78.109 4.645
-## [19,]  37.893 3.866
-## [20,]  23.811 3.021
-## [21,]  12.475 2.573
-## [22,]  32.153 3.327
-## [23,]   8.395 2.284
-## [24,]  72.897 5.643
-## [25,]  35.598 3.699
-## [26,]  73.571 5.157
-## [27,] 116.683 5.329
-## [28,]  68.635 4.154
-## [29,]  49.770 4.765
-## [30,]  57.290 4.611
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: could not find function "{}getIterationsResults"{}}}\end{kframe}
+\end{knitrout}
 
 Getting the summary of the results of a particular workflow on a  predictive task :
 
-\begin{knitrout}
+\begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{estimationSummary}\hlstd{(res,}\hlstr{'svm.v3'}\hlstd{,}\hlstr{'a7'}\hlstd{)}
 \end{alltt}
-\begin{verbatim}
-##             mse   mae
-## avg      28.632 3.060
-## std      25.950 1.062
-## min       4.234 1.462
-## max     110.198 6.196
-## invalid   0.000 0.000
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 
 Finally, the \texttt{metricsSummary()} function allows you to apply any
 summary function (defaulting to \texttt{mean()}) to the iterations estimates. The following
@@ -1845,18 +1709,10 @@ calculates the median of the results of the SVMs on the task ``a1'',
 \hlkwd{metricsSummary}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{),}
                \hlkwc{summary}\hlstd{=}\hlstr{'median'}\hlstd{)}
 \end{alltt}
-\begin{verbatim}
-## $a1
-##     svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
-## mse 261.78 253.78 293.82  339.9 285.49 286.73 267.68 255.11 282.80   342.4   287.8
-## mae  11.34  11.97  12.99   12.3  11.66  11.76  11.34  11.92  12.89    12.3    11.9
-##     svm.v12
-## mse  285.40
-## mae   11.82
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{knitrout}
 %\section{Conclusions}
 
 \bibliographystyle{alpha}
