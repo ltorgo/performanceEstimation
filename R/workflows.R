@@ -385,8 +385,8 @@ standardPRE <- function(form,train,test,steps,...) {
         } else if (s == "knnImp") {
             pars <- list(...)
             if (!("k" %in% names(pars))) pars$k <- 10 # default nr. neigh.
-            train <- knnImp(train,k=pars$k)
-            test <- knnImp(train,k=pars$k,distData=train[,-tgtCol])
+            train[,-tgtCol] <- knnImp(train[,-tgtCol],k=pars$k)
+            test[,-tgtCol] <- knnImp(test[,-tgtCol],k=pars$k,distData=train[,-tgtCol])
         } else if (s == "na.omit") {
             train <- na.omit(train)
             test <- na.omit(test)
