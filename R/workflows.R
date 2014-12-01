@@ -365,6 +365,7 @@ timeseriesWF <- function(form,train,test,
 standardPRE <- function(form,train,test,steps,...) {
 
     tgtVar <- deparse(form[[2]])
+    tgtCol <- which(colnames(train)==tgtVar)
     allPreds <- setdiff(colnames(train),tgtVar)
     
     for(s in steps) {
@@ -385,7 +386,7 @@ standardPRE <- function(form,train,test,steps,...) {
             pars <- list(...)
             if (!("k" %in% names(pars))) pars$k <- 10 # default nr. neigh.
             train <- knnImp(train,k=pars$k)
-            test <- knnImp(train,k=pars$k,distData=train[,-tgtVar])
+            test <- knnImp(train,k=pars$k,distData=train[,-tgtCol])
         } else if (s == "na.omit") {
             train <- na.omit(train)
             test <- na.omit(test)
