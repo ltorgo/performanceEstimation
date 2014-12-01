@@ -6,6 +6,11 @@ N.~V. Chawla, K.~W. Bowyer, L.~O. Hall, and W.~P. Kegelmeyer.
 \newblock Smote: Synthetic minority over-sampling technique.
 \newblock {\em JAIR}, 16:321--357, 2002.
 
+\bibitem[Dem06]{Dem06}
+J.~Demsar.
+\newblock Statistical comparisons of classifiers over multiple data sets.
+\newblock {\em Journal of Machine Learning Research}, 7:1--30, 2006.
+
 \bibitem[Dom99]{Dom99}
 P.~Domingos.
 \newblock Metacost: A general method for making classifiers cost-sensitive.

@@ -1272,7 +1272,7 @@ usual. The overall process is depicted in Figure~\ref{fig:MC}.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.6\textwidth]{MCestimates.png}
+  \includegraphics[width=0.65\textwidth]{MCestimates.png}
   \caption{The Monte Carlo estimation methodology.}
   \label{fig:MC}
 \end{figure}
@@ -1334,7 +1334,7 @@ Note that in the above example we have not tried any variants of the two workflo
 \section{Statistical Significance of Differences}
 
 The estimation methodologies that we have presented in the previous
-section allow the user to obtain estimates of the mean predictive
+sections allow the user to obtain estimates of the mean predictive
 performance of different workflows or variants of these workflows, on
 different predictive tasks. We have seen that by applying the
 \texttt{summary} method to the objects resulting from the estimation experiments
@@ -1346,70 +1346,186 @@ in performance between the workflows are statistically
 significant. More formally, we want to know that confidence level of rejecting the null hypothesis that the difference between the estimated averages is zero.
 
 That is the goal of the function
-\texttt{pairedComparisons()}. This function carries out a series of pairwise
-comparisons between a selected baseline workflow and a set of alternatives. The goal of each of these paired comparisons is to check the confidence we have in rejecting the null hypothesis that the difference between the mean performance of the baseline workflow and that of the alternatives is zero. These paired comparisons are carried out for all predictive tasks included in the estimation process.
+\texttt{pairedComparisons()}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons()} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
 
-Our experimental infra-structure ensures that all compared workflows
-are run on exactly the same train+test partitions on all repetitions and
-for all predictive tasks. In this context, we can focus on pairwise
-statistical significance tests. Given that we cannot ensure that the
-different iterations are statistically independent (for instance there
-may be some overlap between the training samples)\footnote{That independence can only be ensured  for a single repetition of Holdout.}, we use the Wilcoxon
-signed rank test to assess the statistical significance of the
-differences between every pair of compared workflows. Let us see a
-concrete example:
+Function \texttt{pairedComparisons()} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
 
+\begin{itemize}
+\item \textbf{setup} - with generic information on the estimation task
+  \item \textbf{avgScores} - a matrix with the average scores on the metric of each workflow on each task
+  \item \textbf{medScores} - another matrix with information like the previous one, but instead of the average we get the median scores
+  \item \textbf{rks} - a matrix with the rank positions corresponding to the average scores
+  \item \textbf{avgRksWfs} - a vector with the average of the above ranks across all tasks
+  \item \textbf{t.test} - a list containing information concerning paired \textit{t} tests
+  \item \textbf{WilcoxonSignedRank.test} - a list containing information concerning paired \textit{Wilcoxon Signed Rank} tests
+  \item \textbf{F.test} - a list containing information concerning the \textit{F} test
+  \item \textbf{Nemenyi.test} - a list containing information concerning the post-hoc \textit{Nemenyi} test
+  \item \textbf{BonferroniDunn.test} - a list containing information concerning the post-hoc \textit{Bonferroni-Dunn} test
+\end{itemize}
 
+For both the \textit{t} and \textit{Wilcoxon Signed Rank} tests the components contain and array with 3 dimensions, the third dimension being the task, which means that for each task you get a matrix of results of paired comparisons. Namely, paired comparisons between each workflow and the baseline workflow. Each row of the matrix contains the average (or median in the case of Wilcoxon) score of the respective workflow, the difference between this score and the score of the baseline workflow, and the \textit{p} value associated with the hypothesis that this difference is distributed around mean (median in Wilcoxon). Please note that although our function calculates the results of the \textit{t} test, this is not recommended for most settings given the lack of independence of the values on each iteration (for instance on \textit{k}-fold cross validation each of the \textit{k} scores is obtained with training sets that have a string overlap).
 
-\begin{knitrout}\footnotesize
+The other 3 tests can be used in the following two settings: (i) test if there are significant differences among any pair of workflows; and (ii) test the significance of the differences between all workflows against a baseline. In both of these two settings we should start by checking the results of the  \textit{F} test to check if we can reject the null hypothesis that the average ranks of all workflows are equivalent. In case this hypothesis is rejected (component \texttt{rejNull} of the list \texttt{F.test}) we can move to the post-hoc tests. In the setup (i) we should use the \textit{Nemenyi} test to find the critical difference among ranks above which we can say that the respective difference is statistically significant. The \textit{Nemenyi.test} component is a list with components containing this information (critical difference value, ranking differences among all pairs of workflows, and whether these differences are or not significant). Under the setup (ii) the post-hoc test that should be used is the \textit{Bonferroni-Dunn} test. In this case we just want to check if the difference between the average rank of each workflow and that of the baseline is or not significant (thus much less paired comparisons). The result is again given as a list where we have information on the critical difference, the baseline workflow name, the vector of average differences and whether these differences are different or not.
+
+Let us see a concrete example of using this statistical tests. Suppose we want to apply several variants of an SVM to three classification tasks and we want to check if there are significant differences among them. The following test carries out the performance estimation task:
+
+\begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{library}\hlstd{(DMwR)}
-\hlkwd{data}\hlstd{(LetterRecognition,}\hlkwc{package}\hlstd{=}\hlstr{'mlbench'}\hlstd{)}
-\hlstd{ltrExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(lettr} \hlopt{~} \hlstd{.,LetterRecognition),}
-  \hlkwd{workflowVariants}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-           \hlkwc{learner}\hlstd{=}\hlstr{'rpartXse'}\hlstd{,}
-           \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{se}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{)),}
-           \hlkwc{predictor.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{type}\hlstd{=}\hlstr{'class'}\hlstd{)}
-           \hlstd{),}
-  \hlkwd{HldSettings}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{0.3}\hlstd{))}
+\hlkwd{library}\hlstd{(e1071)}
+\hlkwd{data}\hlstd{(PimaIndiansDiabetes,}\hlkwc{package}\hlstd{=}\hlstr{'mlbench'}\hlstd{)}
+\hlkwd{data}\hlstd{(iris)}
+\hlkwd{data}\hlstd{(Glass,}\hlkwc{package}\hlstd{=}\hlstr{"mlbench"}\hlstd{)}
+\hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+    \hlkwd{c}\hlstd{(}\hlkwd{PredTask}\hlstd{(diabetes} \hlopt{~} \hlstd{.,PimaIndiansDiabetes,}\hlstr{"Pima"}\hlstd{),}
+      \hlkwd{PredTask}\hlstd{(Type} \hlopt{~} \hlstd{., Glass),}
+      \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris)),}
+    \hlkwd{workflowVariants}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{,}
+                     \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{0.01}\hlstd{,}\hlnum{0.001}\hlstd{))),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"err"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{()))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
 
-Using the \texttt{topPerformers()} function we can find out the best
-scoring variant of this comparison of rpartXse-based workflows,
+The object \texttt{res} can be passed to \texttt{pairedComparisons()} to calculate the tests described before:
+
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{topPerformers}\hlstd{(ltrExp)}
+\hlstd{pres} \hlkwb{<-} \hlkwd{pairedComparisons}\hlstd{(res)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\end{kframe}
 \end{knitrout}
 
-Now we can proceed to check whether the advantage of this variant over
-the others is statistically significant,
+As we have several workflows being compared on different tasks we will start by checking the results of the Friedman \textit{F} test:
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{pairedComparisons}\hlstd{(ltrExp,}\hlstr{'rpartXse.v1'}\hlstd{)}
+\hlstd{pres}\hlopt{$}\hlstd{err}\hlopt{$}\hlstd{F.test}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+## $chi
+## [1] 18.57
+## 
+## $FF
+## [1] 1.586
+## 
+## $critVal
+## [1] 0.8892
+## 
+## $rejNull
+## [1] TRUE
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
-The function \texttt{pairedComparisons()} receives as first argument the
-object resulting from the comparative experiments. The second argument
-is the baseline workflow against which you want to compare the others
-to. The output of this function is array with four dimensions. The first dimension contains the different workflows involved on each paired comparison, with the baseline in the first row (and with the columns ``Diff'' and ``p.value'' set to \texttt{NA}). The second dimension includes the information provided for each workflow, namely: i) the average estimated score for the metric; ii) the respective standard error of this estimate; iii) the difference between the score of the baseline and the score of each alternative; and iv) the confidence level (p-value) for rejecting the null hypothesis that the difference is zero.  The third dimension of the array are the metrics involved in the estimation experiment (in the above example it is a single one - the error rate), whilst the fourth dimension is the predictive tasks (again the above example only includes a single task).
+We can see that the null hypothesis that the average ranks of the workflows are equivalent can be rejected and thus we can proceed to the post-hoc test. In case we wish the check the hypothesis that there are statistically significant differences among the workflows we should proceed with a Nemenyi post-hoc test. The results of this test can be inspected as follows:
 
-In the above example the p-value for the single paired comparison that is carried out by the function is too high (0.25) and thus we can not reject the hypothesis that the difference between the error rate of two alternative workflows is zero in this particular predictive task.
+
+\begin{knitrout}\tiny
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{pres}\hlopt{$}\hlstd{err}\hlopt{$}\hlstd{Nemenyi.test}
+\end{alltt}
+\begin{verbatim}
+## $critDif
+## [1] 12.38
+## 
+## $rkDifs
+##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
+## svm.v1  0.0000 1.5000 1.0000 1.8333 1.5000 0.6667 0.8333 0.1667 1.3333   2.833   7.667
+## svm.v2  1.5000 0.0000 0.5000 0.3333 0.0000 2.1667 2.3333 1.3333 0.1667   1.333   9.167
+## svm.v3  1.0000 0.5000 0.0000 0.8333 0.5000 1.6667 1.8333 0.8333 0.3333   1.833   8.667
+## svm.v4  1.8333 0.3333 0.8333 0.0000 0.3333 2.5000 2.6667 1.6667 0.5000   1.000   9.500
+## svm.v5  1.5000 0.0000 0.5000 0.3333 0.0000 2.1667 2.3333 1.3333 0.1667   1.333   9.167
+## svm.v6  0.6667 2.1667 1.6667 2.5000 2.1667 0.0000 0.1667 0.8333 2.0000   3.500   7.000
+## svm.v7  0.8333 2.3333 1.8333 2.6667 2.3333 0.1667 0.0000 1.0000 2.1667   3.667   6.833
+## svm.v8  0.1667 1.3333 0.8333 1.6667 1.3333 0.8333 1.0000 0.0000 1.1667   2.667   7.833
+## svm.v9  1.3333 0.1667 0.3333 0.5000 0.1667 2.0000 2.1667 1.1667 0.0000   1.500   9.000
+## svm.v10 2.8333 1.3333 1.8333 1.0000 1.3333 3.5000 3.6667 2.6667 1.5000   0.000  10.500
+## svm.v11 7.6667 9.1667 8.6667 9.5000 9.1667 7.0000 6.8333 7.8333 9.0000  10.500   0.000
+## svm.v12 6.6667 8.1667 7.6667 8.5000 8.1667 6.0000 5.8333 6.8333 8.0000   9.500   1.000
+## svm.v13 2.3333 3.8333 3.3333 4.1667 3.8333 1.6667 1.5000 2.5000 3.6667   5.167   5.333
+## svm.v14 1.0000 2.5000 2.0000 2.8333 2.5000 0.3333 0.1667 1.1667 2.3333   3.833   6.667
+## svm.v15 1.0000 2.5000 2.0000 2.8333 2.5000 0.3333 0.1667 1.1667 2.3333   3.833   6.667
+##         svm.v12 svm.v13 svm.v14 svm.v15
+## svm.v1    6.667   2.333  1.0000  1.0000
+## svm.v2    8.167   3.833  2.5000  2.5000
+## svm.v3    7.667   3.333  2.0000  2.0000
+## svm.v4    8.500   4.167  2.8333  2.8333
+## svm.v5    8.167   3.833  2.5000  2.5000
+## svm.v6    6.000   1.667  0.3333  0.3333
+## svm.v7    5.833   1.500  0.1667  0.1667
+## svm.v8    6.833   2.500  1.1667  1.1667
+## svm.v9    8.000   3.667  2.3333  2.3333
+## svm.v10   9.500   5.167  3.8333  3.8333
+## svm.v11   1.000   5.333  6.6667  6.6667
+## svm.v12   0.000   4.333  5.6667  5.6667
+## svm.v13   4.333   0.000  1.3333  1.3333
+## svm.v14   5.667   1.333  0.0000  0.0000
+## svm.v15   5.667   1.333  0.0000  0.0000
+## 
+## $signifDifs
+##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
+## svm.v1   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v2   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v3   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v4   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v5   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v6   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v7   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v8   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v9   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v10  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v11  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v12  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v13  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v14  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+## svm.v15  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
+##         svm.v12 svm.v13 svm.v14 svm.v15
+## svm.v1    FALSE   FALSE   FALSE   FALSE
+## svm.v2    FALSE   FALSE   FALSE   FALSE
+## svm.v3    FALSE   FALSE   FALSE   FALSE
+## svm.v4    FALSE   FALSE   FALSE   FALSE
+## svm.v5    FALSE   FALSE   FALSE   FALSE
+## svm.v6    FALSE   FALSE   FALSE   FALSE
+## svm.v7    FALSE   FALSE   FALSE   FALSE
+## svm.v8    FALSE   FALSE   FALSE   FALSE
+## svm.v9    FALSE   FALSE   FALSE   FALSE
+## svm.v10   FALSE   FALSE   FALSE   FALSE
+## svm.v11   FALSE   FALSE   FALSE   FALSE
+## svm.v12   FALSE   FALSE   FALSE   FALSE
+## svm.v13   FALSE   FALSE   FALSE   FALSE
+## svm.v14   FALSE   FALSE   FALSE   FALSE
+## svm.v15   FALSE   FALSE   FALSE   FALSE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+This is obviously a too extensive set of information though the conclusions are centered in the \texttt{signifDifs} component. An even better alternative can be obtained through CD diagrams, which we have implemented in function \texttt{CDdiagram.Nemenyi} whose result is shown in Figure~\ref{fig:cdn}.
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{CDdiagram.Nemenyi}\hlstd{(pres)}
+\end{alltt}
+\end{kframe}\begin{figure}[]
+
+
+{\centering \includegraphics[width=0.9\textwidth]{figures/perfEst-cdn} 
+
+}
+
+\caption[The CD diagram of the Nemenyi post-hoc test]{The CD diagram of the Nemenyi post-hoc test.\label{fig:cdn}}
+\end{figure}
+
+
+\end{knitrout}
+
+At the top left of the diagram you can see a horizontal line with the critical difference for the differences between average ranks to be considered statistically significant. Then each workflow is represented by a line with origin in its respective average rank (in the X axis). If the lines of any pair of workflows are connected by a horizontal black line, it means that the difference between them is not statistically significant. In the diagram of Figure~\ref{fig:cdn} we can observe that all lines are connected meaning that none of the paired differences between all workflows can be seen as statistically significant.
 
 
 
@@ -1418,7 +1534,7 @@ In the above example the p-value for the single paired comparison that is carrie
 
 The main advantage of the infra-structure we are proposing is to
 automate large scale performance estimation experiments. It is on these very
-large setups that the use of the infra-structure spares more time to
+large setups that the use of the infra-structure saves more time to
 the user. However, in these contexts the objects resulting from the
 estimation process are very large and some of the tools we have shown before
 for exploring the results may produce over-cluttered output. In
@@ -1437,7 +1553,7 @@ wrong in the middle you may loose lots of work/time. Using the random
 number generation seeds that are available in all experimental
 settings objects we can split the experiments in several calls and
 still ensure that the same data folds are used in all
-estimation experiments. Moreover, we will see that when all experiments are
+estimation experiments. If the seeding process is not enough due to the usage of different hardware for instance, then you may still resort to the user supplied data splits to make sure all methods are compared on the same data. We will see that when all experiments are
 finished we will be able to merge the objects of each call into a
 single object as if we had issued a single call. Let us see an
 example.
@@ -1445,7 +1561,7 @@ example.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{library}\hlstd{(DMwR)}
+\hlkwd{library}\hlstd{(performanceEstimation)}
 \hlkwd{library}\hlstd{(e1071)}
 \hlkwd{library}\hlstd{(randomForest)}
 
@@ -1453,15 +1569,18 @@ example.
 \hlstd{DSs} \hlkwb{<-} \hlkwd{sapply}\hlstd{(}\hlkwd{names}\hlstd{(algae)[}\hlnum{12}\hlopt{:}\hlnum{18}\hlstd{],}
          \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,}\hlkwc{names.attrs}\hlstd{) \{}
            \hlstd{f} \hlkwb{<-} \hlkwd{as.formula}\hlstd{(}\hlkwd{paste}\hlstd{(x,}\hlstr{"~ ."}\hlstd{))}
-           \hlkwd{PredTask}\hlstd{(f,algae[,}\hlkwd{c}\hlstd{(names.attrs,x)],x)}
+           \hlkwd{PredTask}\hlstd{(f,algae[,}\hlkwd{c}\hlstd{(names.attrs,x)],x,}\hlkwc{copy}\hlstd{=}\hlnum{TRUE}\hlstd{)}
          \hlstd{\},}
          \hlkwd{names}\hlstd{(algae)[}\hlnum{1}\hlopt{:}\hlnum{11}\hlstd{])}
 
 \hlstd{WFs} \hlkwb{<-} \hlkwd{list}\hlstd{()}
 \hlstd{WFs}\hlopt{$}\hlstd{svm} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{10}\hlstd{,}\hlnum{150}\hlstd{,}\hlnum{300}\hlstd{),}
-                    \hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.001}\hlstd{),}\hlkwc{epsilon}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{0.05}\hlstd{)))}
+                                  \hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.001}\hlstd{),}
+                                  \hlkwc{epsilon}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{0.05}\hlstd{)),}
+                \hlkwc{pre}\hlstd{=}\hlstr{"centralImp"}\hlstd{,}\hlkwc{post}\hlstd{=}\hlstr{"na2central"}\hlstd{)}
 \hlstd{WFs}\hlopt{$}\hlstd{randomForest} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{mtry}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{5}\hlstd{,}\hlnum{7}\hlstd{),}
-                             \hlkwc{ntree}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{500}\hlstd{,}\hlnum{750}\hlstd{,}\hlnum{1500}\hlstd{)))}
+                                           \hlkwc{ntree}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{500}\hlstd{,}\hlnum{750}\hlstd{,}\hlnum{1500}\hlstd{)),}
+                         \hlkwc{pre}\hlstd{=}\hlstr{"centralImp"}\hlstd{)}
 
 \hlkwa{for}\hlstd{(d} \hlkwa{in} \hlkwd{seq_along}\hlstd{(DSs)) \{}
   \hlkwa{for}\hlstd{(w} \hlkwa{in} \hlkwd{names}\hlstd{(WFs)) \{}
@@ -1471,12 +1590,9 @@ example.
                   \hlstd{DSs[d],}
                   \hlkwd{c}\hlstd{(}
                     \hlkwd{do.call}\hlstd{(}\hlstr{'workflowVariants'}\hlstd{,}
-                            \hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(}\hlstr{'standardWF'}\hlstd{,}
-                               \hlkwc{learner}\hlstd{=w,}
-                               \hlkwc{evaluator.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{stats}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'mse'}\hlstd{,}\hlstr{'mae'}\hlstd{))),}
-                              \hlstd{WFs[[w]]))}
+                            \hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwc{learner}\hlstd{=w),WFs[[w]]))}
                     \hlstd{),}
-                   \hlkwd{CvSettings}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{10}\hlstd{,}\hlnum{1234}\hlstd{))}
+                   \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'mse'}\hlstd{,}\hlstr{'mae'}\hlstd{),}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{)))}
            \hlstd{)}
 
     \hlkwd{save}\hlstd{(}\hlkwc{list}\hlstd{=resObj,}\hlkwc{file}\hlstd{=}\hlkwd{paste}\hlstd{(}\hlkwd{names}\hlstd{(DSs)[d],w,}\hlstr{'Rdata'}\hlstd{,}\hlkwc{sep}\hlstd{=}\hlstr{'.'}\hlstd{))}
@@ -1486,24 +1602,26 @@ example.
 \end{kframe}
 \end{knitrout}
 
-The above code compares 12 SVM variants with 6 random forest variants, on 7 algae blooms regression tasks, using
-$3\times 10-$fold cross validation. Although this is not a very large
-experimental comparison it still includes applying 18 different
-workflow variants on 7 different prediction tasks, 30 times, i.e. 3780
-train+test cycles. Instead of running all these experiments on a
-single call to the function \texttt{performanceEstimation()} (which
-would obviously still be possible), we have made different calls for
-each workflow type (SVM, random forest and MARS) and for each
-predictive task. This means that each call will run all variants of a
-certain workflow on a certain predictive task. The result of each of
-these calls will be assigned to an object with a name composed of the
-task name and workflow learner (the \texttt{resObj} variable). In the end each of these objects is saved
-on a file with a similar name, for future loading and results
-analysis. For instance, in the end there will be a file with name
-``a1.svm.Rdata'' which contains an object of class \textbf{ComparisonResults}
-named \texttt{a1svmRes}. This object contains the  MSE and MAE 
-estimated scores of the SVM variants on the task of predicting the
-target variable ``a1'' (one of the eight algae in this data set).
+The above code compares 12 SVM variants with 6 random forest variants,
+on 7 algae blooms regression tasks, using $3\times 10-$fold cross
+validation. Although this is not a very large experimental comparison
+it still includes applying 18 different workflow variants on 7
+different prediction tasks, 30 times, i.e. 3780 train+test
+cycles. Instead of running all these experiments on a single call to
+the function \texttt{performanceEstimation()} (which would obviously
+still be possible), we have made different calls for each workflow
+type (SVM and random forest) and for each predictive task. This
+means that each call will run all variants of a certain workflow on a
+certain predictive task. The result of each of these calls will be
+assigned to an object with a name composed of the task name and
+workflow learner (the \texttt{resObj} variable). In the end each of
+these objects is saved on a file with a similar name, for future
+loading and results analysis. For instance, in the end there will be a
+file with name ``a1.svm.Rdata'' which contains an object of class
+\textbf{ComparisonResults} named \texttt{a1svmRes}. This object
+contains the MSE and MAE estimated scores of the SVM variants on the
+task of predicting the target variable ``a1'' (one of the seven algae
+in this data set).
 
 Later on, after the above experiment has finished you can load the saved objects back 
 into R and moreover, join them into a single object, as shown below:
@@ -1531,7 +1649,7 @@ into R and moreover, join them into a single object, as shown below:
 The \texttt{mergeEstimationRes()}  function when applied to objects of class
 \textbf{ComparisonResults} allows merging of these objects across different
 dimensions. Namely, such objects have the individual scores of all
-experiments spread across 4 dimensions: the iterations, the
+experiments spread across 3 dimensions:  the
 metrics, the workflows and the tasks. The argument
 \texttt{by} of the \texttt{mergeEstimationRes()} function allows you to specify how
 to merge the given objects. The most common situations are: (i)
@@ -1551,48 +1669,70 @@ be obvious:
 \begin{alltt}
 \hlstd{res}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\begin{alltt}
+\begin{verbatim}
+## 
+## ==  Cross Validation Performance Estimation Experiment ==
+## 
+## Task for estimating  mse,mae  using
+##  3 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## 
+##  18  workflows applied to  7  predictive tasks
+\end{verbatim}
+\begin{alltt}
 \hlkwd{taskNames}\hlstd{(res)}
 \end{alltt}
 \begin{verbatim}
-## NULL
+## [1] "a1" "a2" "a3" "a4" "a5" "a6" "a7"
 \end{verbatim}
 \begin{alltt}
 \hlkwd{workflowNames}\hlstd{(res)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\begin{alltt}
+\begin{verbatim}
+##  [1] "svm.v1"          "svm.v2"          "svm.v3"          "svm.v4"         
+##  [5] "svm.v5"          "svm.v6"          "svm.v7"          "svm.v8"         
+##  [9] "svm.v9"          "svm.v10"         "svm.v11"         "svm.v12"        
+## [13] "randomForest.v1" "randomForest.v2" "randomForest.v3" "randomForest.v4"
+## [17] "randomForest.v5" "randomForest.v6"
+\end{verbatim}
+\begin{alltt}
 \hlkwd{metricNames}\hlstd{(res)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+## [1] "mse" "mae"
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 With such large objects the most we can do is obtaining the best
 scores or rankings of the workflows:
 
-\begin{knitrout}\small
+\begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{topPerformers}\hlstd{(res)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+## $AlgaA1
+##      Workflow Estimate
+## mae lmOnlyPos   13.116
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
-\begin{knitrout}\small
+\begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{rankWorkflows}\hlstd{(res)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+## $AlgaA1
+## $AlgaA1$mae
+##    Workflow Estimate
+## 1 lmOnlyPos    13.12
+## 2        lm    14.31
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 Notice that both \texttt{topPerformers()} and \texttt{rankWorkflows()}
@@ -1613,18 +1753,27 @@ workflows. To facilitate this we can use the generic function
 \texttt{subset()} that can also be applied to objects of class
 \textbf{ComparisonResults}. An example of its use is given below, which results
 in a graph of the performance of the different workflows in the
-predictive task ``a1'', in terms of ``MSE'', which is show in
+predictive task ``a1'', in terms of ``MAE'', which is show in
 Figure~\ref{fig:maeA1}.
+
 
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{statistics}\hlstd{=}\hlstr{'mae'}\hlstd{))}
+\hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,} \hlkwc{metrics}\hlstd{=}\hlstr{'mae'}\hlstd{))}
 \end{alltt}
+\end{kframe}\begin{figure}[]
 
 
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'x' in selecting a method for function 'plot': Error in .local(x, ...) : unused argument (statistics = "{}mae"{})\\\#\# Calls: subset -> subset -> .local}}\end{kframe}
+{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-maeA1} 
+
+}
+
+\caption[The MAE results for the task ``a1'']{The MAE results for the task ``a1''.\label{fig:maeA1}}
+\end{figure}
+
+
 \end{knitrout}
  
 As before we are using the generic function \texttt{plot()} but this
@@ -1632,10 +1781,10 @@ time applied to a subset of the original object with all results. This
 subset is obtained using the generic function \texttt{subset()} that
 accepts several parameters to specify the subset we are interested
 on. In this case we are using the parameters \texttt{tasks} and
-\texttt{statistics} to indicate that we want to analyze only the results
+\texttt{metrics} to indicate that we want to analyze only the results
 concerning the task ``a1'' and the metric ``mae''. Other possibility
 is the parameter \texttt{workflows} for indicating a subset of the
-workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{statistics} accept
+workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{metrics} accept
 as values a character string containing a regular expression that will
 be used internally with the R function \texttt{grep()} over the vector
 of names of the respective objects (names of the workflows, names of
@@ -1648,11 +1797,19 @@ the following:
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{workflows}\hlstd{=}\hlstr{'4$'}\hlstd{))}
+\hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,} \hlkwc{workflows}\hlstd{=}\hlstr{'4$'}\hlstd{))}
 \end{alltt}
+\end{kframe}\begin{figure}[]
 
 
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'x' in selecting a method for function 'plot': Error in x[[1]] : this S4 class is not subsettable\\\#\# Calls: subset -> subset -> .local -> identical}}\end{kframe}
+{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-mseA1b} 
+
+}
+
+\caption[Illustration of the use of regular expressions in sub-setting the results objects]{Illustration of the use of regular expressions in sub-setting the results objects.\label{fig:mseA1b}}
+\end{figure}
+
+
 \end{knitrout}
 
 
@@ -1663,11 +1820,141 @@ as show in the following example:
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{summary}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,}\hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),}\hlkwc{statistics}\hlstd{=}\hlstr{'mse'}\hlstd{))}
+\hlkwd{summary}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,} \hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),}\hlkwc{metrics}\hlstd{=}\hlstr{'mse'}\hlstd{))}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: error in evaluating the argument 'object' in selecting a method for function 'summary': Error in .local(x, ...) : unused argument (statistics = "{}mse"{})\\\#\# Calls: subset -> subset -> .local}}\end{kframe}
+\begin{verbatim}
+## 
+## == Summary of a  Cross Validation Performance Estimation Experiment ==
+## 
+## Task for estimating  mse  using
+##  3 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234 
+## 
+## * Predictive Tasks ::  a1
+## * Workflows  ::  svm.v1, svm.v2, svm.v3, svm.v4, svm.v5, svm.v6, svm.v7, svm.v8, svm.v9, svm.v10, svm.v11, svm.v12 
+## 
+## -> Task:  a1
+##   *Workflow: svm.v1 
+##            mse
+## avg     305.37
+## std     147.63
+## med     275.08
+## iqr     211.22
+## min      79.09
+## max     605.37
+## invalid   0.00
+## 
+##   *Workflow: svm.v2 
+##           mse
+## avg     349.2
+## std     171.6
+## med     301.5
+## iqr     196.5
+## min     121.0
+## max     821.4
+## invalid   0.0
+## 
+##   *Workflow: svm.v3 
+##           mse
+## avg     367.2
+## std     180.4
+## med     345.7
+## iqr     203.3
+## min     142.1
+## max     916.0
+## invalid   0.0
+## 
+##   *Workflow: svm.v4 
+##            mse
+## avg     356.54
+## std     187.29
+## med     326.87
+## iqr     318.84
+## min      82.04
+## max     711.67
+## invalid   0.00
+## 
+##   *Workflow: svm.v5 
+##           mse
+## avg     376.4
+## std     235.4
+## med     283.0
+## iqr     308.7
+## min     105.0
+## max     975.8
+## invalid   0.0
+## 
+##   *Workflow: svm.v6 
+##            mse
+## avg      396.2
+## std      287.6
+## med      285.4
+## iqr      294.4
+## min       98.4
+## max     1260.5
+## invalid    0.0
+## 
+##   *Workflow: svm.v7 
+##            mse
+## avg     304.24
+## std     144.76
+## med     271.52
+## iqr     212.01
+## min      78.69
+## max     587.87
+## invalid   0.00
+## 
+##   *Workflow: svm.v8 
+##           mse
+## avg     355.6
+## std     176.4
+## med     313.4
+## iqr     191.0
+## min     130.2
+## max     862.9
+## invalid   0.0
+## 
+##   *Workflow: svm.v9 
+##           mse
+## avg     375.2
+## std     188.1
+## med     350.2
+## iqr     195.9
+## min     143.0
+## max     954.9
+## invalid   0.0
+## 
+##   *Workflow: svm.v10 
+##            mse
+## avg     359.46
+## std     188.58
+## med     331.29
+## iqr     320.81
+## min      82.85
+## max     721.56
+## invalid   0.00
+## 
+##   *Workflow: svm.v11 
+##           mse
+## avg     367.1
+## std     216.2
+## med     282.4
+## iqr     288.6
+## min     101.3
+## max     959.6
+## invalid   0.0
+## 
+##   *Workflow: svm.v12 
+##             mse
+## avg      376.06
+## std      244.88
+## med      284.02
+## iqr      278.97
+## min       94.37
+## max     1179.99
+## invalid    0.00
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 
@@ -1680,11 +1967,42 @@ particular task:
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{getIterationsResults}\hlstd{(res,}\hlstr{'svm.v6'}\hlstd{,}\hlstr{'a3'}\hlstd{)}
+\hlkwd{getScores}\hlstd{(res,} \hlstr{'svm.v6'}\hlstd{,}\hlstr{'a3'}\hlstd{)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: could not find function "{}getIterationsResults"{}}}\end{kframe}
+\begin{verbatim}
+##           mse   mae
+##  [1,]  58.773 4.040
+##  [2,]  63.421 4.836
+##  [3,] 124.213 6.630
+##  [4,]  20.818 2.902
+##  [5,]  28.508 3.202
+##  [6,]  18.425 2.774
+##  [7,]  14.446 2.509
+##  [8,]  54.975 4.584
+##  [9,]  23.522 2.871
+## [10,] 135.025 6.735
+## [11,] 112.234 5.329
+## [12,]  81.117 5.570
+## [13,]  34.504 3.779
+## [14,]   9.791 2.163
+## [15,]  30.126 3.477
+## [16,]  58.715 4.655
+## [17,]  23.793 3.171
+## [18,]  26.481 3.237
+## [19,]  99.573 5.928
+## [20,]  27.569 3.294
+## [21,]   8.496 2.129
+## [22,]  27.933 3.197
+## [23,]  20.164 2.851
+## [24,]  72.373 5.365
+## [25,]  69.470 4.814
+## [26,] 126.076 5.477
+## [27,]  65.167 5.459
+## [28,]   9.438 2.300
+## [29,]  22.697 3.512
+## [30,]  90.988 5.114
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 Getting the summary of the results of a particular workflow on a  predictive task :
@@ -1692,11 +2010,19 @@ Getting the summary of the results of a particular workflow on a  predictive tas
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{estimationSummary}\hlstd{(res,}\hlstr{'svm.v3'}\hlstd{,}\hlstr{'a7'}\hlstd{)}
+\hlkwd{estimationSummary}\hlstd{(res,}\hlstr{'svm.v3'}\hlstd{,} \hlstr{'a7'}\hlstd{)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+##             mse   mae
+## avg      30.516 3.157
+## std      29.266 1.213
+## med      23.096 3.017
+## iqr      31.305 1.053
+## min       3.084 1.394
+## max     141.577 7.616
+## invalid   0.000 0.000
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
 
 Finally, the \texttt{metricsSummary()} function allows you to apply any
@@ -1706,14 +2032,27 @@ calculates the median of the results of the SVMs on the task ``a1'',
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{metricsSummary}\hlstd{(}\hlkwd{subset}\hlstd{(res,}\hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),}\hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{),}
+\hlkwd{metricsSummary}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{workflows}\hlstd{=}\hlkwd{glob2rx}\hlstd{(}\hlstr{'*svm*'}\hlstd{),} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{),}
                \hlkwc{summary}\hlstd{=}\hlstr{'median'}\hlstd{)}
 \end{alltt}
-
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: this S4 class is not subsettable}}\end{kframe}
+\begin{verbatim}
+## $a1
+##     svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
+## mse 275.08 301.55 345.65 326.87 282.99  285.4 271.52  313.4 350.18  331.29  282.41
+## mae  11.94  12.66  13.78  12.86  12.22   12.1  11.83   12.9  13.67   12.88   12.13
+##     svm.v12
+## mse  284.02
+## mae   12.11
+\end{verbatim}
+\end{kframe}
 \end{knitrout}
-%\section{Conclusions}
+
+% =======================================================
+\section{Conclusions}
+
+We have presented \PE that aims at being a general package for estimating and comparing the performance of any approach to any predictive task in R. The package allows users to very easily carry out standard out-of-the-box comparative experiments between existing modeling tools in R. However, it also allows the users to supply their own functions implementing special workflows to solve tasks. This means that the package should cover the needs of occasional users as well as advanced users that which to try and compared their own proposed workflows.
+
+The \PE also includes several facilities for testing the statistical significance of the observed differences, namely implementing the current state of the art in this subject as described in~\cite{Dem06}, including CD diagrams for both the Nemenyi and Bonferroni-Dunn post-hoc tests.
 
 \bibliographystyle{alpha}
 \bibliography{performanceEstimation}

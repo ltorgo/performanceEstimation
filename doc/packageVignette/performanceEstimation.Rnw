@@ -1093,23 +1093,28 @@ significant. More formally, we want to know that confidence level of rejecting t
 That is the goal of the function
 \texttt{pairedComparisons()}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons()} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
 
-Function \texttt{pairedComparisons()} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out
+Function \texttt{pairedComparisons()} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
 
-carries out a series of pairwise
-comparisons between a selected baseline workflow and a set of alternatives. The goal of each of these paired comparisons is to check the confidence we have in rejecting the null hypothesis that the difference between the mean performance of the baseline workflow and that of the alternatives is zero. These paired comparisons are carried out for all predictive tasks included in the estimation process.
+\begin{itemize}
+\item \textbf{setup} - with generic information on the estimation task
+  \item \textbf{avgScores} - a matrix with the average scores on the metric of each workflow on each task
+  \item \textbf{medScores} - another matrix with information like the previous one, but instead of the average we get the median scores
+  \item \textbf{rks} - a matrix with the rank positions corresponding to the average scores
+  \item \textbf{avgRksWfs} - a vector with the average of the above ranks across all tasks
+  \item \textbf{t.test} - a list containing information concerning paired \textit{t} tests
+  \item \textbf{WilcoxonSignedRank.test} - a list containing information concerning paired \textit{Wilcoxon Signed Rank} tests
+  \item \textbf{F.test} - a list containing information concerning the \textit{F} test
+  \item \textbf{Nemenyi.test} - a list containing information concerning the post-hoc \textit{Nemenyi} test
+  \item \textbf{BonferroniDunn.test} - a list containing information concerning the post-hoc \textit{Bonferroni-Dunn} test
+\end{itemize}
 
-Our experimental infra-structure ensures that all compared workflows
-are run on exactly the same train+test partitions on all repetitions and
-for all predictive tasks. In this context, we can focus on pairwise
-statistical significance tests. Given that we cannot ensure that the
-different iterations are statistically independent (for instance there
-may be some overlap between the training samples)\footnote{That independence can only be ensured  for a single repetition of Holdout.}, we use the Wilcoxon
-signed rank test to assess the statistical significance of the
-differences between every pair of compared workflows. Let us see a
-concrete example:
+For both the \textit{t} and \textit{Wilcoxon Signed Rank} tests the components contain and array with 3 dimensions, the third dimension being the task, which means that for each task you get a matrix of results of paired comparisons. Namely, paired comparisons between each workflow and the baseline workflow. Each row of the matrix contains the average (or median in the case of Wilcoxon) score of the respective workflow, the difference between this score and the score of the baseline workflow, and the \textit{p} value associated with the hypothesis that this difference is distributed around mean (median in Wilcoxon). Please note that although our function calculates the results of the \textit{t} test, this is not recommended for most settings given the lack of independence of the values on each iteration (for instance on \textit{k}-fold cross validation each of the \textit{k} scores is obtained with training sets that have a string overlap).
 
+The other 3 tests can be used in the following two settings: (i) test if there are significant differences among any pair of workflows; and (ii) test the significance of the differences between all workflows against a baseline. In both of these two settings we should start by checking the results of the  \textit{F} test to check if we can reject the null hypothesis that the average ranks of all workflows are equivalent. In case this hypothesis is rejected (component \texttt{rejNull} of the list \texttt{F.test}) we can move to the post-hoc tests. In the setup (i) we should use the \textit{Nemenyi} test to find the critical difference among ranks above which we can say that the respective difference is statistically significant. The \textit{Nemenyi.test} component is a list with components containing this information (critical difference value, ranking differences among all pairs of workflows, and whether these differences are or not significant). Under the setup (ii) the post-hoc test that should be used is the \textit{Bonferroni-Dunn} test. In this case we just want to check if the difference between the average rank of each workflow and that of the baseline is or not significant (thus much less paired comparisons). The result is again given as a list where we have information on the critical difference, the baseline workflow name, the vector of average differences and whether these differences are different or not.
 
-<<size="scriptsize">>=
+Let us see a concrete example of using this statistical tests. Suppose we want to apply several variants of an SVM to three classification tasks and we want to check if there are significant differences among them. The following test carries out the performance estimation task:
+
+<<size="scriptsize",eval=FALSE>>=
 library(e1071)
 data(PimaIndiansDiabetes,package='mlbench')
 data(iris)
@@ -1123,26 +1128,36 @@ res <- performanceEstimation(
     EstimationTask(metrics="err",method=CV()))
 @ 
 
-Using the \texttt{topPerformers()} function we can find out the best
-scoring variant of this comparison of rpartXse-based workflows,
+The object \texttt{res} can be passed to \texttt{pairedComparisons()} to calculate the tests described before:
 
-<<>>=
-topPerformers(res)
+<<echo=FALSE>>=
+load("pima.Rdata")
+@ 
+<<message=FALSE,warning=FALSE>>=
+pres <- pairedComparisons(res)
 @ 
 
-Now we can proceed to check whether the advantage of this variant over
-the others is statistically significant,
+As we have several workflows being compared on different tasks we will start by checking the results of the Friedman \textit{F} test:
 
 <<>>=
-pairedComparisons(res,'rpartXse.v1')
+pres$err$F.test
 @ 
 
-The function \texttt{pairedComparisons()} receives as first argument the
-object resulting from the comparative experiments. The second argument
-is the baseline workflow against which you want to compare the others
-to. The output of this function is array with four dimensions. The first dimension contains the different workflows involved on each paired comparison, with the baseline in the first row (and with the columns ``Diff'' and ``p.value'' set to \texttt{NA}). The second dimension includes the information provided for each workflow, namely: i) the average estimated score for the metric; ii) the respective standard error of this estimate; iii) the difference between the score of the baseline and the score of each alternative; and iv) the confidence level (p-value) for rejecting the null hypothesis that the difference is zero.  The third dimension of the array are the metrics involved in the estimation experiment (in the above example it is a single one - the error rate), whilst the fourth dimension is the predictive tasks (again the above example only includes a single task).
+We can see that the null hypothesis that the average ranks of the workflows are equivalent can be rejected and thus we can proceed to the post-hoc test. In case we wish the check the hypothesis that there are statistically significant differences among the workflows we should proceed with a Nemenyi post-hoc test. The results of this test can be inspected as follows:
 
-In the above example the p-value for the single paired comparison that is carried out by the function is too high (0.25) and thus we can not reject the hypothesis that the difference between the error rate of two alternative workflows is zero in this particular predictive task.
+
+<<size="tiny">>=
+pres$err$Nemenyi.test
+@ 
+
+This is obviously a too extensive set of information though the conclusions are centered in the \texttt{signifDifs} component. An even better alternative can be obtained through CD diagrams, which we have implemented in function \texttt{CDdiagram.Nemenyi} whose result is shown in Figure~\ref{fig:cdn}.
+
+
+<<cdn,out.width="0.9\\textwidth",fig.width=10,fig.height=6,size="scriptsize",fig.cap="The CD diagram of the Nemenyi post-hoc test.">>=
+CDdiagram.Nemenyi(pres)
+@ 
+
+At the top left of the diagram you can see a horizontal line with the critical difference for the differences between average ranks to be considered statistically significant. Then each workflow is represented by a line with origin in its respective average rank (in the X axis). If the lines of any pair of workflows are connected by a horizontal black line, it means that the difference between them is not statistically significant. In the diagram of Figure~\ref{fig:cdn} we can observe that all lines are connected meaning that none of the paired differences between all workflows can be seen as statistically significant.
 
 
 
@@ -1151,7 +1166,7 @@ In the above example the p-value for the single paired comparison that is carrie
 
 The main advantage of the infra-structure we are proposing is to
 automate large scale performance estimation experiments. It is on these very
-large setups that the use of the infra-structure spares more time to
+large setups that the use of the infra-structure saves more time to
 the user. However, in these contexts the objects resulting from the
 estimation process are very large and some of the tools we have shown before
 for exploring the results may produce over-cluttered output. In
@@ -1170,13 +1185,13 @@ wrong in the middle you may loose lots of work/time. Using the random
 number generation seeds that are available in all experimental
 settings objects we can split the experiments in several calls and
 still ensure that the same data folds are used in all
-estimation experiments. Moreover, we will see that when all experiments are
+estimation experiments. If the seeding process is not enough due to the usage of different hardware for instance, then you may still resort to the user supplied data splits to make sure all methods are compared on the same data. We will see that when all experiments are
 finished we will be able to merge the objects of each call into a
 single object as if we had issued a single call. Let us see an
 example.
 
 <<eval=FALSE,size="small">>=
-library(DMwR)
+library(performanceEstimation)
 library(e1071)
 library(randomForest)
 
@@ -1184,15 +1199,18 @@ data(algae)
 DSs <- sapply(names(algae)[12:18],
          function(x,names.attrs) { 
            f <- as.formula(paste(x,"~ ."))
-           PredTask(f,algae[,c(names.attrs,x)],x) 
+           PredTask(f,algae[,c(names.attrs,x)],x,copy=TRUE) 
          },
          names(algae)[1:11])
 
 WFs <- list()
 WFs$svm <- list(learner.pars=list(cost=c(10,150,300),
-                    gamma=c(0.01,0.001),epsilon=c(0.1,0.05)))
+                                  gamma=c(0.01,0.001),
+                                  epsilon=c(0.1,0.05)),
+                pre="centralImp",post="na2central")
 WFs$randomForest <- list(learner.pars=list(mtry=c(5,7),
-                             ntree=c(500,750,1500)))
+                                           ntree=c(500,750,1500)),
+                         pre="centralImp")
 
 for(d in seq_along(DSs)) {
   for(w in names(WFs)) {
@@ -1202,12 +1220,9 @@ for(d in seq_along(DSs)) {
                   DSs[d],         
                   c(
                     do.call('workflowVariants',
-                            c(list('standardWF',
-                               learner=w,
-                               evaluator.pars=list(stats=c('mse','mae'))),
-                              WFs[[w]]))
+                            c(list(learner=w),WFs[[w]]))
                     ),
-                   CvSettings(3,10,1234))
+                   EstimationTask(metrics=c('mse','mae'),method=CV(nReps=3)))
            )
 
     save(list=resObj,file=paste(names(DSs)[d],w,'Rdata',sep='.'))
@@ -1215,24 +1230,26 @@ for(d in seq_along(DSs)) {
 }
 @ 
 
-The above code compares 12 SVM variants with 6 random forest variants, on 7 algae blooms regression tasks, using
-$3\times 10-$fold cross validation. Although this is not a very large
-experimental comparison it still includes applying 18 different
-workflow variants on 7 different prediction tasks, 30 times, i.e. 3780
-train+test cycles. Instead of running all these experiments on a
-single call to the function \texttt{performanceEstimation()} (which
-would obviously still be possible), we have made different calls for
-each workflow type (SVM, random forest and MARS) and for each
-predictive task. This means that each call will run all variants of a
-certain workflow on a certain predictive task. The result of each of
-these calls will be assigned to an object with a name composed of the
-task name and workflow learner (the \texttt{resObj} variable). In the end each of these objects is saved
-on a file with a similar name, for future loading and results
-analysis. For instance, in the end there will be a file with name
-``a1.svm.Rdata'' which contains an object of class \textbf{ComparisonResults}
-named \texttt{a1svmRes}. This object contains the  MSE and MAE 
-estimated scores of the SVM variants on the task of predicting the
-target variable ``a1'' (one of the eight algae in this data set).
+The above code compares 12 SVM variants with 6 random forest variants,
+on 7 algae blooms regression tasks, using $3\times 10-$fold cross
+validation. Although this is not a very large experimental comparison
+it still includes applying 18 different workflow variants on 7
+different prediction tasks, 30 times, i.e. 3780 train+test
+cycles. Instead of running all these experiments on a single call to
+the function \texttt{performanceEstimation()} (which would obviously
+still be possible), we have made different calls for each workflow
+type (SVM and random forest) and for each predictive task. This
+means that each call will run all variants of a certain workflow on a
+certain predictive task. The result of each of these calls will be
+assigned to an object with a name composed of the task name and
+workflow learner (the \texttt{resObj} variable). In the end each of
+these objects is saved on a file with a similar name, for future
+loading and results analysis. For instance, in the end there will be a
+file with name ``a1.svm.Rdata'' which contains an object of class
+\textbf{ComparisonResults} named \texttt{a1svmRes}. This object
+contains the MSE and MAE estimated scores of the SVM variants on the
+task of predicting the target variable ``a1'' (one of the seven algae
+in this data set).
 
 Later on, after the above experiment has finished you can load the saved objects back 
 into R and moreover, join them into a single object, as shown below:
@@ -1256,7 +1273,7 @@ save(res,file='allResultsAlgae.Rdata')
 The \texttt{mergeEstimationRes()}  function when applied to objects of class
 \textbf{ComparisonResults} allows merging of these objects across different
 dimensions. Namely, such objects have the individual scores of all
-experiments spread across 4 dimensions: the iterations, the
+experiments spread across 3 dimensions:  the
 metrics, the workflows and the tasks. The argument
 \texttt{by} of the \texttt{mergeEstimationRes()} function allows you to specify how
 to merge the given objects. The most common situations are: (i)
@@ -1283,11 +1300,11 @@ metricNames(res)
 With such large objects the most we can do is obtaining the best
 scores or rankings of the workflows:
 
-<<size="small">>=
+<<size="scriptsize">>=
 topPerformers(res)
 @ 
 
-<<size="small">>=
+<<size="scriptsize">>=
 rankWorkflows(res)
 @ 
 
@@ -1309,12 +1326,15 @@ workflows. To facilitate this we can use the generic function
 \texttt{subset()} that can also be applied to objects of class
 \textbf{ComparisonResults}. An example of its use is given below, which results
 in a graph of the performance of the different workflows in the
-predictive task ``a1'', in terms of ``MSE'', which is show in
+predictive task ``a1'', in terms of ``MAE'', which is show in
 Figure~\ref{fig:maeA1}.
 
+<<echo=FALSE>>=
+load('allResultsAlgae.Rdata')
+@ 
 
 <<maeA1,fig.cap="The MAE results for the task ``a1''.",out.width="0.75\\textwidth">>=
-plot(subset(res,tasks='a1',statistics='mae'))
+plot(subset(res, tasks='a1', metrics='mae'))
 @ 
  
 As before we are using the generic function \texttt{plot()} but this
@@ -1322,10 +1342,10 @@ time applied to a subset of the original object with all results. This
 subset is obtained using the generic function \texttt{subset()} that
 accepts several parameters to specify the subset we are interested
 on. In this case we are using the parameters \texttt{tasks} and
-\texttt{statistics} to indicate that we want to analyze only the results
+\texttt{metrics} to indicate that we want to analyze only the results
 concerning the task ``a1'' and the metric ``mae''. Other possibility
 is the parameter \texttt{workflows} for indicating a subset of the
-workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{statistics} accept
+workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{metrics} accept
 as values a character string containing a regular expression that will
 be used internally with the R function \texttt{grep()} over the vector
 of names of the respective objects (names of the workflows, names of
@@ -1336,7 +1356,7 @@ the following:
 
 
 <<mseA1b,fig.cap="Illustration of the use of regular expressions in sub-setting the results objects.",out.width="0.75\\textwidth">>=
-plot(subset(res,tasks='a1',workflows='4$'))
+plot(subset(res, tasks='a1', workflows='4$'))
 @ 
 
 
@@ -1345,7 +1365,7 @@ the R function \texttt{glob2rx()} to convert to regular expressions,
 as show in the following example:
 
 <<size="small">>=
-summary(subset(res,tasks='a1',workflows=glob2rx('*svm*'),statistics='mse'))
+summary(subset(res, tasks='a1', workflows=glob2rx('*svm*'),metrics='mse'))
 @ 
 
 
@@ -1356,13 +1376,13 @@ Obtaining the scores on all iterations and metrics of a workflow on a
 particular task:
 
 <<>>=
-getIterationsResults(res,'svm.v6','a3')
+getScores(res, 'svm.v6','a3')
 @ 
 
 Getting the summary of the results of a particular workflow on a  predictive task :
 
 <<>>=
-estimationSummary(res,'svm.v3','a7')
+estimationSummary(res,'svm.v3', 'a7')
 @ 
 
 Finally, the \texttt{metricsSummary()} function allows you to apply any
@@ -1370,10 +1390,16 @@ summary function (defaulting to \texttt{mean()}) to the iterations estimates. Th
 calculates the median of the results of the SVMs on the task ``a1'',
 
 <<size="small">>=
-metricsSummary(subset(res,workflows=glob2rx('*svm*'),tasks='a1'),
+metricsSummary(subset(res, workflows=glob2rx('*svm*'), tasks='a1'),
                summary='median')
 @ 
-%\section{Conclusions}
+
+% =======================================================
+\section{Conclusions}
+
+We have presented \PE that aims at being a general package for estimating and comparing the performance of any approach to any predictive task in R. The package allows users to very easily carry out standard out-of-the-box comparative experiments between existing modeling tools in R. However, it also allows the users to supply their own functions implementing special workflows to solve tasks. This means that the package should cover the needs of occasional users as well as advanced users that which to try and compared their own proposed workflows.
+
+The \PE also includes several facilities for testing the statistical significance of the observed differences, namely implementing the current state of the art in this subject as described in~\cite{Dem06}, including CD diagrams for both the Nemenyi and Bonferroni-Dunn post-hoc tests.
 
 \bibliographystyle{alpha}
 \bibliography{performanceEstimation}
