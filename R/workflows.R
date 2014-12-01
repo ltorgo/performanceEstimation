@@ -384,8 +384,8 @@ standardPRE <- function(form,train,test,steps,...) {
         } else if (s == "knnImp") {
             pars <- list(...)
             if (!("k" %in% names(pars))) pars$k <- 10 # default nr. neigh.
-            train <- knnImputation(train,k=pars$k)
-            test <- knnImputation(train,k=pars$k,distData=train[,-tgtVar])
+            train <- knnImp(train,k=pars$k)
+            test <- knnImp(train,k=pars$k,distData=train[,-tgtVar])
         } else if (s == "na.omit") {
             train <- na.omit(train)
             test <- na.omit(test)
@@ -420,7 +420,7 @@ standardPRE <- function(form,train,test,steps,...) {
 # =====================================================
 # Luis Torgo, Mar 2009, Nov 2011
 # =====================================================
-knnImputation <- function(data,k=10,scale=TRUE,distData=NULL) {
+knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
     
     n <- nrow(data)  
     if (!is.null(distData)) {

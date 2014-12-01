@@ -1,5 +1,5 @@
-\name{SMOTE}
-\alias{SMOTE}
+\name{smote}
+\alias{smote}
 
 \title{
 SMOTE algorithm for unbalanced classification problems
@@ -12,7 +12,7 @@ classification algorithm on this new data set and return the resulting
 model. 
 }
 \usage{
-SMOTE(form, data, perc.over = 2, k = 5, perc.under = 2)
+smote(form, data, perc.over = 2, k = 5, perc.under = 2)
 }
 
 \arguments{
@@ -103,7 +103,7 @@ data$Species <- factor(ifelse(data$Species == "setosa","rare","common"))
 table(data$Species)
 
 ## now using SMOTE to create a more "balanced problem"
-newData <- SMOTE(Species ~ ., data, perc.over = 6,perc.under=1)
+newData <- smote(Species ~ ., data, perc.over = 6,perc.under=1)
 table(newData$Species)
 
 ## Checking visually the created data

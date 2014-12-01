@@ -1,5 +1,5 @@
-\name{knnImputation}
-\alias{knnImputation}
+\name{knnImp}
+\alias{knnImp}
 
 \title{
   Fill in NA values with the values of the nearest neighbours
@@ -10,7 +10,7 @@
   frequent value within the neighbours to fill in the NAs.
 }
 \usage{
-knnImputation(data, k = 10, scale = TRUE, distData = NULL)
+knnImp(data, k = 10, scale = TRUE, distData = NULL)
 }
 
 \arguments{
@@ -58,7 +58,7 @@ knnImputation(data, k = 10, scale = TRUE, distData = NULL)
 \examples{
 \dontrun{
 data(algae,package="DMwR")
-cleanAlgae <- knnImputation(algae)
+cleanAlgae <- knnImp(algae)
 summary(cleanAlgae)
 }
 }

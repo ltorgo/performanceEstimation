@@ -3,7 +3,7 @@
 # Creating a SMOTE training sample for classification problems
 # L. Torgo, Feb 2010, Nov 2014
 # ---------------------------------------------------
-SMOTE <- function(form,data, perc.over=2,k=5,perc.under=2)
+smote <- function(form,data, perc.over=2,k=5,perc.under=2)
   
   # INPUTS:
   # form a model formula

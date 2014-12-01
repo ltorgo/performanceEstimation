@@ -60,7 +60,7 @@ standardPRE(form, train, test, steps, ...)
   pre-processing steps that can be used in the \code{steps} parameter:
 
   "scale" - that scales (subtracts the mean and divides by the standard
-  deviation) any numeric features on both the training and testing
+  deviation) any knnumeric features on both the training and testing
   sets. Note that the mean and standard deviation are calculated using
   only the training sample.
 
@@ -85,7 +85,7 @@ standardPRE(form, train, test, steps, ...)
   "balanced" distributions of the target class (this pre-processing step
   is only available for classification tasks!). It takes the parameters
   \code{perc.under},  \code{perc.over} and \code{k} to control the
-  algorithm. Read the  documentation of function \code{\link{SMOTE}} to
+  algorithm. Read the  documentation of function \code{\link{smote}} to
   know more details. 
 }
 \value{

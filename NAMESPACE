@@ -80,10 +80,10 @@ export(
     timeseriesWF,
     standardPRE,
     standardPOST,
-    knnImputation,
+    knnImp,
 
     ## smote.R
-    SMOTE,
+    smote,
     
     ## evaluationMetrics.R file
     regressionMetrics,

@@ -97,7 +97,7 @@ Workflow <- function(wf, ..., wfID, deps=NULL) {
     wf.pars <- list(...)
     
     ## if no ID was provided then it is one of the standard workflows
-    if (missing(wf)) {
+    if (missing(wf) || wf == "standardWF" || wf == "timeseriesWF") {
         if ("type" %in% names(wf.pars)) {
             n <- paste(wf.pars[["learner"]],wf.pars[["type"]],sep='.')
             f <- "timeseriesWF"
