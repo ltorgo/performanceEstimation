@@ -325,6 +325,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
 #    data[names(which(r[[metric]]$BonferroniDunn.test$signifDifs)),"color"] <- "red"
     len <- length(r[[metric]]$avgRksWFs)
     cd <- r[[metric]]$BonferroniDunn.test$critDif
+    baseScore <- data[r[[metric]]$BonferroniDunn.test$baseline,"invRk"]
     g <- ggplot2::ggplot(data,ggplot2::aes_string(x="invRk",y="line")) + #geom_point() +
             ggplot2::geom_segment(ggplot2::aes_string(x="invRk",y=0,xend="invRk",yend="line",col="sys")) +
             ggplot2::geom_text(data=data[data$side==-1,],
@@ -357,8 +358,12 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
                   plot.margin = grid::unit(c(1,6,1,5), "lines")
                   ) +
             ggplot2::coord_fixed(ratio=0.5) + 
-            ggplot2::annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
-                     y=0,yend=0,size=2) 
+#            ggplot2::annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
+#                     y=0,yend=0,size=2) 
+            ggplot2::annotate("segment",x=max(0,baseScore-cd),xend=min(baseScore+cd),
+                     y=0,yend=0,size=2)  +
+            ggplot2::annotate("text",x=-Inf,y=+Inf,label=paste0("Critical Difference = ",round(cd,1),"; Baseline = ",r[[metric]]$BonferroniDunn.test$baseline),vjust=0,hjust=0,size=3)
+
 
     grid::grid.newpage()
     gt <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(g))
