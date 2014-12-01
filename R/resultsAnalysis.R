@@ -122,7 +122,7 @@ pairedComparisons <-  function(obj,baseline,
             base <- compResults[[p]]$baseline <- names(which.min(compResults[[p]]$avgRksWFs))
             other <- setdiff(ws,base)
             pb <- which(ws==base)
-        } else compResults[[p]]$baseline <- baseline
+        } else base <- compResults[[p]]$baseline <- baseline
         
         ## Wilcoxon Signed Rank and t-Student tests
         compResults[[p]]$t.test <- array(NA,dim=c(nws,3,nts),
