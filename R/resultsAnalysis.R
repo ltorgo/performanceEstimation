@@ -242,8 +242,8 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
     g <- ggplot2::ggplot(data,ggplot2::aes_string(x="invRk",y="line")) + #geom_point() +
             ggplot2::geom_segment(ggplot2::aes_string(x="invRk",y=0,xend="invRk",yend="line",col="sys")) +
             ggplot2::geom_text(data=data[data$side==-1,],
-                      ggplot2::aes_string(label = "sys", x = len, y = "line",col="sys"),
-                      hjust = -.5,size=4) +
+                      ggplot2::aes_string(label = "sys", x = +Inf, y = "line",col="sys"),
+                               hjust = 0,size=4) +
             ggplot2::geom_text(data=data[data$side==1,],
                       ggplot2::aes_string(label = "sys", x = -Inf, y = "line",col="sys"),
                       hjust = 1,size=4) +
@@ -328,10 +328,10 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
     g <- ggplot2::ggplot(data,ggplot2::aes_string(x="invRk",y="line")) + #geom_point() +
             ggplot2::geom_segment(ggplot2::aes_string(x="invRk",y=0,xend="invRk",yend="line",col="sys")) +
             ggplot2::geom_text(data=data[data$side==-1,],
-                      ggplot2::aes_string(label = "sys", x = len, y = "line",col="sys",
+                      ggplot2::aes_string(label = "sys", x = +Inf, y = "line",col="sys",
  #                                fontface="face",colour="color"),
                                  fontface="face"),
-                      hjust = -.5,size=4) +
+                      hjust = 0,size=4) +
             ggplot2::geom_text(data=data[data$side==1,],
                       ggplot2::aes_string(label = "sys", x = -Inf, y = "line",col="sys",
 #                          fontface=face,colour=color),
