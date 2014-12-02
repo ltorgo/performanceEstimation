@@ -10,6 +10,6 @@ citEntry(entry="article",
          textVersion =
          paste("Torgo, L. (2014). ",
                "An Infra-Structure for Performance Estimation and Experimental Comparison of Predictive Models in R","CoRR abs/1412.0436 [cs.MS]",
-               "URL: http://arxiv,org/abs/1412.0436",
-               sep="")
+               "URL: http://arxiv.org/abs/1412.0436",
+               sep=", ")
          )
