@@ -70,9 +70,9 @@ an object of the class \code{\linkS4class{EstimationTask}} indicating the metric
   The result of the function is an object of class \code{\linkS4class{EstimationResults}}.
 }
 
-\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison of Predictive Models}.
-  \url{https://github.com/ltorgo/performanceEstimation}  
+\references{ Torgo, L. (2014) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
+  \url{http://arxiv.org/abs/1412.0436}  
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }

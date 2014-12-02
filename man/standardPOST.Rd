@@ -119,9 +119,9 @@ standardPOST(form, train, test, preds, steps, ...)
     classifiers cost-sensitive}. Proceedings of
     KDD'1999. \url{http://homes.cs.washington.edu/~pedrod/papers/kdd99.pdf} 
   
-  Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison of Predictive Models}.
-  \url{https://github.com/ltorgo/performanceEstimation}  
+  Torgo, L. (2014) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
+  \url{http://arxiv.org/abs/1412.0436}  
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{

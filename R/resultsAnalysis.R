@@ -227,7 +227,7 @@ signifDiffs <- function(ps,p.limit=0.05,metrics=names(ps),tasks=rownames(ps[[1]]
 # =====================================================
 CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
     if (is.null(r[[metric]]$F.test) | is.null(r[[metric]]$Nemenyi.test)) stop("Results of both the F and Nemenyi tests are required for these diagrams.")
-    o <- rank(r[[metric]]$avgRksWFs,ties="first")
+    o <- rank(r[[metric]]$avgRksWFs,ties.method="first")
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
                        invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,
@@ -308,7 +308,7 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
 # =====================================================
 CDdiagram.BD <- function(r,metric=names(r)[1]) {
     if (is.null(r[[metric]]$F.test) | is.null(r[[metric]]$BonferroniDunn.test)) stop("Results of both the F and Bonferroni-Dunn tests are required for these diagrams.")
-    o <- rank(r[[metric]]$avgRksWFs,ties="first")
+    o <- rank(r[[metric]]$avgRksWFs,ties.method="first")
     mxl <- ceiling(length(r[[metric]]$avgRksWFs)/2)
     data <- data.frame(avgRk=r[[metric]]$avgRksWFs,
                        invRk=length(r[[metric]]$avgRksWFs)+1-r[[metric]]$avgRksWFs,

@@ -46,9 +46,9 @@ metricsSummary(compRes, summary = "mean", ...)
 }
 
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
-\references{ Torgo, L. (2013) \emph{An Infra-Structure for Performance
-    Estimation and Experimental Comparison of Predictive Models}.
-  \url{https://github.com/ltorgo/performanceEstimation}  
+\references{ Torgo, L. (2014) \emph{An Infra-Structure for Performance
+    Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
+  \url{http://arxiv.org/abs/1412.0436}  
 }
 \seealso{
   \code{\link{performanceEstimation}},
