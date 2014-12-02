@@ -7,9 +7,7 @@ SMOTE algorithm for unbalanced classification problems
 \description{
 This function handles unbalanced classification problems using the SMOTE
 method. Namely, it can generate a new "SMOTEd" data set that addresses
-the class unbalance problem. Alternatively, it can also run a
-classification algorithm on this new data set and return the resulting
-model. 
+the class unbalance problem. 
 }
 \usage{
 smote(form, data, perc.over = 2, k = 5, perc.under = 2)
