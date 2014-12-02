@@ -1,9 +1,11 @@
-VERSION 1.0.0 (2014-10-30)
+VERSION 1.0.0 (2014-12-02)
 
 - Very radical change on the package introducing incompatibilities with 
   the version 0.x.y versions. A kind of fresh new re-start for the 
   package.
-- Far too many changes to be written here.
+- Far too many changes to be written here. You are strongly advised to 
+  check the included package vignette to check the new way the package 
+  works. 
 
 VERSION 0.1.1 (2014-03-11)
 

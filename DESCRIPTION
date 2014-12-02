@@ -16,7 +16,7 @@ Imports:
 Date: 2014-10-30
 Authors@R: person("Luis", "Torgo", email = "ltorgo@dcc.fc.up.pt", role = c("aut", "cre"))
 URL: https://github.com/ltorgo/performanceEstimation
-BugReports: https://github.com/ltorgo/performanceEstimatio/issues
+BugReports: https://github.com/ltorgo/performanceEstimation/issues
 License: GPL (>=2)
 LazyLoad: yes
 LazyData: yes

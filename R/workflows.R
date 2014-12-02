@@ -405,7 +405,7 @@ standardPRE <- function(form,train,test,steps,...) {
             train <- train[c(minExs,selMaj),]
         } else if (s == "smote") {
             if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
-            train <- SMOTE(form,train,...)
+            train <- smote(form,train,...)
         } else {
             user.pre <- do.call(s,c(list(form,train,test),list(...)))
             train <- user.pre$train
