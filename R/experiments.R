@@ -192,6 +192,94 @@ cvEstimates <- function(wf,task,estTask) {
 }
 
 
+pcvEstimates <- function(wf,task,estTask,cluster=NULL) {
+
+    par <- FALSE
+    if (!is.null(cluster)) {
+        par <- TRUE
+        if (is(cluster,"cluster")) doParallel::registerDoParallel(cluster)
+        else doParallel::registerDoParallel()
+        cat(sprintf('cvEstimates: Running in parallel with %d worker(s)\n', foreach::getDoParWorkers()))
+    }
+            
+        
+    show(estTask)
+
+    ## Did the user supplied the data splits for all folds and repetitions?
+    userSplit <- !is.null(estTask@method@dataSplits)
+    
+    n <- nrow(eval(task@dataSource))
+    if (!userSplit) n.each.part <- n %/% estTask@method@nFolds
+    
+    nits <- estTask@method@nFolds*estTask@method@nReps
+    itsInfo <- vector("list",nits)
+    
+    if (!userSplit && estTask@method@strat) {  # stratified sampling
+        respVals <- responseValues(task@formula,eval(task@dataSource))
+        regrProb <- is.numeric(respVals)
+        if (regrProb) {  # regression problem
+            ## the bucket to which each case belongs  
+            b <- cut(respVals,10)  # this 10 should be parametrizable
+        } else {
+            b <- respVals
+        }
+        ## how many on each bucket
+        bc <- table(b)
+        ## how many should be on each test partition
+        bct <- bc %/% estTask@method@nFolds
+
+    }
+
+    permutation <- 1:n
+    
+    itsInfo <- foreach(it=1:nits,
+                       .packages=.loadedPackages(),
+                       .export=c(as.character(task@dataSource))
+                       ) %dopar% {
+
+        nfold <- (it - 1) %% estTask@method@nFolds + 1
+        nrep <- (it - 1) %/% estTask@method@nFolds + 1
+        
+        if (!userSplit) {
+            set.seed(estTask@method@seed*nrep)
+            permutation <- sample(n)
+        }
+        
+        if (!userSplit) {
+            if (estTask@method@strat) {
+                out.fold <- c()
+                for(x in seq(along=levels(b))) 
+                    if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[((nfold-1)*bct[x]+1):((nfold-1)*bct[x]+bct[x])])
+            } else {
+                out.fold <- ((nfold-1)*n.each.part+1):(nfold*n.each.part)
+            }
+        } else out.fold <- outFold(estTask@method@dataSplits,it)
+        
+        it.res <- runWorkflow(wf,
+                              task@formula,
+                                        #perm.data[-out.fold,],
+                              eval(task@dataSource)[permutation[-out.fold],],
+                                        #perm.data[out.fold,])
+                              eval(task@dataSource)[permutation[out.fold],])
+        
+        list(preds=it.res@predictions,
+             info=it.res@extraInfo,
+             train=permutation[-out.fold])
+        
+    }
+    
+    ## randomize the number generator to avoid undesired
+    ## problems caused by inner set.seed()'s
+    set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
+    
+    ## Calculate the metrics estimation
+    scores <- performanceEstimation:::.scoresIts(task,estTask,itsInfo)
+                                        #scores <- .scoresIts(task,estTask,itsInfo)
+    
+    
+    EstimationResults(task,wf,estTask,scores,itsInfo)
+}
+
 #################################################################
 # Hold Out Experiments
 #################################################################
@@ -681,3 +769,6 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     }
     scores
 }
+
+
+.loadedPackages <- function(bases=c("datasets","grDevices","stats","utils","base","graphics","methods")) setdiff(sapply(strsplit(search()[grep("package",search())],":"),function(x) x[2]),bases)
