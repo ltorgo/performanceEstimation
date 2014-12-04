@@ -26,23 +26,32 @@ simply want to have the boostrap estimate for one workflow on one task,
 you may use this function directly. 
 }
 \usage{
-bootEstimates(wf,task,estTask)
+bootEstimates(wf,task,estTask,cluster)
 }
 
 \arguments{
   \item{wf}{
-an object of the class \code{Workflow} representing the
-  modeling approach to be evaluated on a certain task.
-}
+    an object of the class \code{Workflow} representing the
+    modeling approach to be evaluated on a certain task.
+  }
   \item{task}{
-an object of the class \code{PredTask} representing the
-  prediction task to be used in the evaluation.
-}
+    an object of the class \code{PredTask} representing the
+    prediction task to be used in the evaluation.
+  }
   \item{estTask}{
-an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
-  be estimated and the boostrap settings to use.
-}
-
+    an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
+    be estimated and the boostrap settings to use.
+  }
+  \item{cluster}{
+    an optional parameter that can either be \code{TRUE} or a
+    \code{\link{cluster}}. In case of \code{TRUE} the function will run in
+    parallel and will internally setup the parallel back-end (defaulting
+    to using half of the cores in your local machine). You may also setup
+    outside your parallel back-end (c.f. \code{\link{makeCluster}}) and
+    then pass the resulting \code{cluster} object to this function using
+    this parameter. In case no value is provided for this parameter the
+    function will run sequentially.
+  }
 }
 \details{
   The idea of this function is to carry out a bootstrap
@@ -61,6 +70,10 @@ an object of the class \code{\linkS4class{EstimationTask}} indicating the metric
   .632 bootstrap is the fact that the latter tries to integrate the e0
   estimate with the resubstitution estimate, i.e. when the model is
   learned and tested on the full available data sample.
+
+  Parallel execution of the estimation experiment is only recommended
+  for minimally large data sets otherwise you may actually increase the
+  computation time due to communication costs between the processes.
 
 }
 \value{

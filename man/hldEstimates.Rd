@@ -27,22 +27,32 @@ you may prefer to use this function directly.
 }
 
 \usage{
-hldEstimates(wf,task,estTask)
+hldEstimates(wf,task,estTask,cluster)
 }
 
 \arguments{
   \item{wf}{
-an object of the class \code{\linkS4class{Workflow}} representing the
-  modeling approach to be evaluated on a certain task.
-}
+    an object of the class \code{\linkS4class{Workflow}} representing the
+    modeling approach to be evaluated on a certain task.
+  }
   \item{task}{
-an object of the class \code{\linkS4class{PredTask}} representing the
-  prediction task to be used in the evaluation.
-}
+    an object of the class \code{\linkS4class{PredTask}} representing the
+    prediction task to be used in the evaluation.
+  }
   \item{estTask}{
-an object of the class \code{\linkS4class{EstimationTask}} representing the
-  hold-out settings to use.
-}
+    an object of the class \code{\linkS4class{EstimationTask}} representing the
+    hold-out settings to use.
+  }
+  \item{cluster}{
+    an optional parameter that can either be \code{TRUE} or a
+    \code{\link{cluster}}. In case of \code{TRUE} the function will run in
+    parallel and will internally setup the parallel back-end (defaulting
+    to using half of the cores in your local machine). You may also setup
+    outside your parallel back-end (c.f. \code{\link{makeCluster}}) and
+    then pass the resulting \code{cluster} object to this function using
+    this parameter. In case no value is provided for this parameter the
+    function will run sequentially.
+  }
 }
 
 \details{
@@ -62,6 +72,10 @@ an object of the class \code{\linkS4class{EstimationTask}} representing the
   the scores over the several repetitions (if using \emph{pure}
   hold-out this is only one) are the hold-out estimates of the selected
   metrics.   
+
+  Parallel execution of the estimation experiment is only recommended
+  for minimally large data sets otherwise you may actually increase the
+  computation time due to communication costs between the processes.
 
 }
 

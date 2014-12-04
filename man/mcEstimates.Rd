@@ -27,27 +27,38 @@ you may prefer to use this function directly.
 }
 
 \usage{
-mcEstimates(wf, task, estTask, verbose = TRUE)
+mcEstimates(wf, task, estTask, verbose = TRUE,cluster)
 }
 
 
 \arguments{
   \item{wf}{
-an object of the class \code{Workflow} representing the
-  modeling approach to be evaluated on a certain task.
-}
+    an object of the class \code{Workflow} representing the
+    modeling approach to be evaluated on a certain task.
+  }
   \item{task}{
-an object of the class \code{PredTask} representing the
-  prediction task to be used in the evaluation.
-}
+    an object of the class \code{PredTask} representing the
+    prediction task to be used in the evaluation.
+  }
   \item{estTask}{
-an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
-  be estimated and the Monte Carlo settings to use.
-}
+    an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
+    be estimated and the Monte Carlo settings to use.
+  }
   \item{verbose}{
     A boolean value controlling the level of output of the function
     execution, defaulting to \code{TRUE}
   }
+   \item{cluster}{
+    an optional parameter that can either be \code{TRUE} or a
+    \code{\link{cluster}}. In case of \code{TRUE} the function will run in
+    parallel and will internally setup the parallel back-end (defaulting
+    to using half of the cores in your local machine). You may also setup
+    outside your parallel back-end (c.f. \code{\link{makeCluster}}) and
+    then pass the resulting \code{cluster} object to this function using
+    this parameter. In case no value is provided for this parameter the
+    function will run sequentially.
+  }
+ 
 }
 
 \details{
@@ -85,6 +96,10 @@ an object of the class \code{\linkS4class{EstimationTask}} indicating the metric
   \code{\linkS4class{WFoutput}}. See the Examples section below for an
   example of these functions. Further examples are given in the package
   vignette.
+
+  Parallel execution of the estimation experiment is only recommended
+  for minimally large data sets otherwise you may actually increase the
+  computation time due to communication costs between the processes.
   
 }
 

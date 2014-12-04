@@ -28,22 +28,32 @@ you may prefer to use this function directly.
 }
 
 \usage{
-cvEstimates(wf,task,estTask)
+cvEstimates(wf,task,estTask,cluster)
 }
 
 \arguments{
   \item{wf}{
- an object of the class \code{\linkS4class{Workflow}} representing the
-  modeling approach to be evaluated on a certain task.
-}
+    an object of the class \code{\linkS4class{Workflow}} representing the
+    modeling approach to be evaluated on a certain task.
+  }
   \item{task}{
- an object of the class \code{\linkS4class{PredTask}} defining the
-  prediction task for which we want estimates.
-}
+    an object of the class \code{\linkS4class{PredTask}} defining the
+    prediction task for which we want estimates.
+  }
   \item{estTask}{
-an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
-  be estimated and the cross validation settings to use.
-}
+    an object of the class \code{\linkS4class{EstimationTask}} indicating the metrics to
+    be estimated and the cross validation settings to use.
+  }
+  \item{cluster}{
+    an optional parameter that can either be \code{TRUE} or a
+    \code{\link{cluster}}. In case of \code{TRUE} the function will run in
+    parallel and will internally setup the parallel back-end (defaulting
+    to using half of the cores in your local machine). You may also setup
+    outside your parallel back-end (c.f. \code{\link{makeCluster}}) and
+    then pass the resulting \code{cluster} object to this function using
+    this parameter. In case no value is provided for this parameter the
+    function will run sequentially.
+  }
 }
 
 \details{
@@ -63,7 +73,9 @@ an object of the class \code{\linkS4class{EstimationTask}} indicating the metric
   partitions aside as test set. In the end the average of the k scores
   obtained on each iteration is the cross validation estimate.
 
-  
+  Parallel execution of the estimation experiment is only recommended
+  for minimally large data sets otherwise you may actually increase the
+  computation time due to communication costs between the processes.
 }
 
 \value{
@@ -144,6 +156,23 @@ eval.res2 <- cvEstimates(
 
 ## Check a summary of the results
 summary(eval.res2)
+
+##
+## Parallel execution example
+##
+## Comparing the time of sequential and parallel execution
+## using half of the cores of the local machine
+##
+data(Satellite,package="mlbench")
+library(e1071)
+system.time({p <- cvEstimates(Workflow(learner="svm"),
+                              PredTask(classes ~ .,Satellite),
+                              EstimationTask("err",Boot(nReps=10)),
+                              cluster=TRUE)})[3]
+system.time({np <- cvEstimates(Workflow(learner="svm"),
+                               PredTask(classes ~ .,Satellite),
+                               EstimationTask("err",Boot(nReps=10)))})[3]
+
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
