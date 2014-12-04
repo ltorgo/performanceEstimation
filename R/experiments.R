@@ -150,7 +150,7 @@ cvEstimates <- function(wf,task,estTask,cluster) {
     }
 
     permutation <- 1:n
-
+    it <- NULL  # dummy assignment due to Note on cran-check
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(it=1:nits,
                                 .packages=.loadedPackages(),
@@ -194,8 +194,7 @@ cvEstimates <- function(wf,task,estTask,cluster) {
     set.seed(prod(as.integer(unlist(strsplit(strsplit(date()," ")[[1]][4],":")))))
     
     ## Calculate the metrics estimation
-    scores <- performanceEstimation:::.scoresIts(task,estTask,itsInfo)
-                                        #scores <- .scoresIts(task,estTask,itsInfo)
+    scores <- .scoresIts(task,estTask,itsInfo)
     
     EstimationResults(task,wf,estTask,scores,itsInfo)
 }
@@ -266,6 +265,7 @@ hldEstimates <- function(wf,task,estTask,cluster) {
 
     permutation <- 1:n
 
+    r <- NULL  # dummy assignment due to Note on cran-check
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:estTask@method@nReps,
                                 .packages=.loadedPackages(),
@@ -363,6 +363,7 @@ loocvEstimates <- function(wf,task,estTask,verbose=FALSE,cluster) {
 
     itsInfo <- vector("list",n)
 
+    r <- NULL  # dummy assignment due to Note on cran-check
     if (verbose && missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:n,
                                 .packages=.loadedPackages(),
@@ -451,7 +452,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
     
     itsInfo <- vector("list",estTask@method@nReps)
 
-
+    r <- NULL  # dummy assignment due to Note on cran-check
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:estTask@method@nReps,
                                 .packages=.loadedPackages(),
@@ -614,7 +615,7 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
         starting.points <- sapply(estTask@method@dataSplits[[1]], function(d) d$test[1])
     }
 
-
+    it <- NULL  # dummy assignment due to Note on cran-check
     itsInfo <- foreach::foreach(it=seq(along=starting.points),
                                 .packages=.loadedPackages(),
                                 .export=c(as.character(task@dataSource))

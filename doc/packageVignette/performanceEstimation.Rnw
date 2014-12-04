@@ -165,7 +165,7 @@ res <- performanceEstimation(
 This simple example illustrates several key concepts of our
 infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
-the estimation process. It has 3 arguments: (i) a vector of
+the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
 specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
