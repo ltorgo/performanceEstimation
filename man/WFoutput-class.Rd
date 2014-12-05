@@ -79,7 +79,6 @@ showClass("WFoutput")
 
 ## A user-defined workflow returning a WFoutput object
 myWF <- function(form,train,test,wL=0.5,...) {
-    require(rpart,quietly=TRUE)
     ml <- lm(form,train)
     mr <- rpart(form,train)
     pl <- predict(ml,test)
