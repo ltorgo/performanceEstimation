@@ -154,7 +154,7 @@ cvEstimates <- function(wf,task,estTask,cluster) {
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(it=1:nits,
                                 .packages=.loadedPackages(),
-                                .export=c(as.character(task@dataSource))
+                                .export=if (class(task@dataSource) == "data.frame") NULL else c(as.character(task@dataSource))
                                 ) %fun%  {
         
         if (missing(cluster)) cat(" ",it)
@@ -269,7 +269,7 @@ hldEstimates <- function(wf,task,estTask,cluster) {
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:estTask@method@nReps,
                                 .packages=.loadedPackages(),
-                                .export=c(as.character(task@dataSource))
+                                .export=if (class(task@dataSource) == "data.frame") NULL else c(as.character(task@dataSource))
                                 ) %fun%  {
 
 
@@ -367,7 +367,7 @@ loocvEstimates <- function(wf,task,estTask,verbose=FALSE,cluster) {
     if (verbose && missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:n,
                                 .packages=.loadedPackages(),
-                                .export=c(as.character(task@dataSource))
+                                .export=if (class(task@dataSource) == "data.frame") NULL else c(as.character(task@dataSource))
                                 ) %fun%  {
 
         if (verbose && missing(cluster)) cat('*')
@@ -456,7 +456,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
     if (missing(cluster)) cat("Iteration :")
     itsInfo <- foreach::foreach(r=1:estTask@method@nReps,
                                 .packages=.loadedPackages(),
-                                .export=c(as.character(task@dataSource))
+                                .export=if (class(task@dataSource) == "data.frame") NULL else c(as.character(task@dataSource))
                                 ) %fun%  {
 
 
@@ -618,7 +618,7 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
     it <- NULL  # dummy assignment due to Note on cran-check
     itsInfo <- foreach::foreach(it=seq(along=starting.points),
                                 .packages=.loadedPackages(),
-                                .export=c(as.character(task@dataSource))
+                                .export=if (class(task@dataSource) == "data.frame") NULL else c(as.character(task@dataSource))
                                 ) %fun%  {
 
 
