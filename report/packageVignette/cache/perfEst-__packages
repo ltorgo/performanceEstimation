@@ -1,0 +1,12 @@
+base
+Defaults
+DMwR
+e1071
+knitr
+lattice
+performanceEstimation
+quantmod
+randomForest
+TTR
+xts
+zoo

@@ -1,9 +1,7 @@
-doc
+report
 
 ^.*tar.gz$
 README.md
 tests.R
 todo.txt
 
-pexperiments.R
-newPaired.R
