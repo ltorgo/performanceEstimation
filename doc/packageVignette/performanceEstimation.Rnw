@@ -664,7 +664,7 @@ library(quantmod)
 library(randomForest)
 getSymbols('^GSPC',from='2008-01-01',to='2012-12-31')
 data.model <- specifyModel(
-  Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10)+Delt(Vo(GSPC),k=1:3))
+  Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10))
 data <- as.data.frame(modelData(data.model))
 colnames(data)[1] <- 'PercVarClose'
 spExp <- performanceEstimation(
@@ -1058,7 +1058,7 @@ library(quantmod)
 library(randomForest)
 getSymbols('^GSPC',from='2008-01-01',to='2012-12-31')
 data.model <- specifyModel(
-  Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10)+Delt(Vo(GSPC),k=1:3))
+  Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10))
 data <- modelData(data.model)
 colnames(data)[1] <- 'PercVarClose'
 spExp <- performanceEstimation(
@@ -1187,15 +1187,54 @@ settings objects we can split the experiments in several calls and
 still ensure that the same data folds are used in all
 estimation experiments. If the seeding process is not enough due to the usage of different hardware for instance, then you may still resort to the user supplied data splits to make sure all methods are compared on the same data. We will see that when all experiments are
 finished we will be able to merge the objects of each call into a
-single object as if we had issued a single call. Let us see an
-example.
+single object as if we had issued a single call. 
+
+Another way of improving performance on large experiments is through parallel computation. \PE includes facilities to run experiment in parallel through the existing parallel back-ends in R. The simplest of options, that has the advantage of not requiring you to know anything at all about parallel computation in R, is to call the \texttt{performanceEstimation} function with a fourth parameter that will make all experiments to run in parallel on the different cores of any standard multicore computer. The following is a simple example of achieving this effect:
+
+<<size="small">>=
+library(performanceEstimation)
+library(e1071)
+data(Satellite,package="mlbench")
+pres <- performanceEstimation(
+    PredTask(classes ~ .,Satellite),
+    Workflow(learner="svm"),
+    EstimationTask("err",CV()),
+    cluster=TRUE
+    )
+@ 
+
+By adding this extra parameter the lower level functions that implement the estimation procedures (in this case cross validation but the concept is applicable to any of the other methods), will automatically create a (local) parallel back-end using half of the cores of your computer. On reasonably large data sets this simple extra setting will typically lead to cut execution times by a significant amount. 
+
+Other more complex parallel settings are also possible but they require you to know how to create the clusters before calling our function. For instance, you could create a cluster (using function \texttt{makeCluster} of package \textbf{parallel}) that involved several computers. The object of class \texttt{cluster} that results from these steps should then be sent through parameter \texttt{cluster} of our \texttt{performanceEstimation} function so that the function can take advantage of this parallel back-end. The following is a simple illustrative example:
+
+<<eval=FALSE,size="small">>=
+library(parallel)
+myclust <- makeCluster(c("localhost","192.168.2.10","192.168.2.13"),"SOCK")
+library(performanceEstimation)
+library(e1071)
+data(Satellite,package="mlbench")
+pres <- performanceEstimation(
+    PredTask(classes ~ .,Satellite),
+    Workflow(learner="svm"),
+    EstimationTask("err",CV()),
+    cluster=myclust
+    )
+stopCluster(myclust)
+@ 
+
+Please note that there are a few assumptions on the above example, namely concerning access of your username in localhost to the remote machines whose IP's are given. This means that the username exists on all machines and that appropriate SSH keys have been set so that no passwords are required for accessing the remote machines.
+
+\vspace*{0.5cm}
+
+Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation()} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation()} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
+
 
 <<eval=FALSE,size="small">>=
 library(performanceEstimation)
 library(e1071)
 library(randomForest)
 
-data(algae)
+data(algae,package="DMwR")
 DSs <- sapply(names(algae)[12:18],
          function(x,names.attrs) { 
            f <- as.formula(paste(x,"~ ."))
@@ -1222,7 +1261,8 @@ for(d in seq_along(DSs)) {
                     do.call('workflowVariants',
                             c(list(learner=w),WFs[[w]]))
                     ),
-                   EstimationTask(metrics=c('mse','mae'),method=CV(nReps=3)))
+                   EstimationTask(metrics=c('mse','mae'),method=CV(nReps=3)),
+                   cluster=TRUE)
            )
 
     save(list=resObj,file=paste(names(DSs)[d],w,'Rdata',sep='.'))
@@ -1400,6 +1440,8 @@ metricsSummary(subset(res, workflows=glob2rx('*svm*'), tasks='a1'),
 We have presented \PE that aims at being a general package for estimating and comparing the performance of any approach to any predictive task in R. The package allows users to very easily carry out standard out-of-the-box comparative experiments between existing modeling tools in R. However, it also allows the users to supply their own functions implementing special workflows to solve tasks. This means that the package should cover the needs of occasional users as well as advanced users that which to try and compared their own proposed workflows.
 
 The \PE also includes several facilities for testing the statistical significance of the observed differences, namely implementing the current state of the art in this subject as described in~\cite{Dem06}, including CD diagrams for both the Nemenyi and Bonferroni-Dunn post-hoc tests.
+
+Finally, we have provided a few illustrations of how to use \PE for larger experiments, namely taking advantage of parallel computation that is available in R.
 
 \bibliographystyle{alpha}
 \bibliography{performanceEstimation}

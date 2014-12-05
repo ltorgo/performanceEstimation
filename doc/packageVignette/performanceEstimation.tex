@@ -209,12 +209,11 @@ estimates could be obtained with our proposed infra-structure.
 ## 
 ## ** PREDICTIVE TASK :: iris.Species
 ## 
-## ++ MODEL/WORKFLOW :: standardWF 
+## ++ MODEL/WORKFLOW :: svm 
 ## Task for estimating  err  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Repetition  1 
-## Fold:  1  2  3  4  5  6  7  8  9  10
+## Iteration :  1  2  3  4  5  6  7  8  9  10
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -222,7 +221,7 @@ estimates could be obtained with our proposed infra-structure.
 This simple example illustrates several key concepts of our
 infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
-the estimation process. It has 3 arguments: (i) a vector of
+the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
 specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
@@ -315,10 +314,10 @@ experimental comparisons, as shown by the next few illustrative examples.
 ## 	 Run with seed =  1234 
 ## 
 ## * Predictive Tasks ::  iris.Species
-## * Workflows  ::  standardWF 
+## * Workflows  ::  svm 
 ## 
 ## -> Task:  iris.Species
-##   *Workflow: standardWF 
+##   *Workflow: svm 
 ##             err
 ## avg     0.03333
 ## std     0.04714
@@ -671,8 +670,7 @@ The following is a simple example of using data pre-processing steps within our 
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Repetition  1 
-## Fold:  1  2  3  4  5  6  7  8  9  10
+## Iteration :  1  2  3  4  5  6  7  8  9  10
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -761,16 +759,13 @@ In the next example we illustrate the use of the post-processing routines by ``c
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Repetition  1 
-## Fold:  1  2  3  4  5  6  7  8  9  10
-## 
+## Iteration :  1  2  3  4  5  6  7  8  9  10
 ## 
 ## ++ MODEL/WORKFLOW :: lmOnlyPos 
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Repetition  1 
-## Fold:  1  2  3  4  5  6  7  8  9  10
+## Iteration :  1  2  3  4  5  6  7  8  9  10
 \end{verbatim}
 \begin{alltt}
 \hlkwd{summary}\hlstd{(res)}
@@ -881,7 +876,7 @@ The following code illustrates these two approaches by comparing them to the sta
 \hlkwd{library}\hlstd{(randomForest)}
 \hlkwd{getSymbols}\hlstd{(}\hlstr{'^GSPC'}\hlstd{,}\hlkwc{from}\hlstd{=}\hlstr{'2008-01-01'}\hlstd{,}\hlkwc{to}\hlstd{=}\hlstr{'2012-12-31'}\hlstd{)}
 \hlstd{data.model} \hlkwb{<-} \hlkwd{specifyModel}\hlstd{(}
-  \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{)}\hlopt{+}\hlkwd{Delt}\hlstd{(}\hlkwd{Vo}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{))}
+  \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{))}
 \hlstd{data} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}\hlkwd{modelData}\hlstd{(data.model))}
 \hlkwd{colnames}\hlstd{(data)[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlstr{'PercVarClose'}
 \hlstd{spExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
@@ -1311,7 +1306,7 @@ data for training and 25\% for testing.
 \hlkwd{library}\hlstd{(randomForest)}
 \hlkwd{getSymbols}\hlstd{(}\hlstr{'^GSPC'}\hlstd{,}\hlkwc{from}\hlstd{=}\hlstr{'2008-01-01'}\hlstd{,}\hlkwc{to}\hlstd{=}\hlstr{'2012-12-31'}\hlstd{)}
 \hlstd{data.model} \hlkwb{<-} \hlkwd{specifyModel}\hlstd{(}
-  \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{)}\hlopt{+}\hlkwd{Delt}\hlstd{(}\hlkwd{Vo}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{3}\hlstd{))}
+  \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{))}
 \hlstd{data} \hlkwb{<-} \hlkwd{modelData}\hlstd{(data.model)}
 \hlkwd{colnames}\hlstd{(data)[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlstr{'PercVarClose'}
 \hlstd{spExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
@@ -1555,8 +1550,68 @@ settings objects we can split the experiments in several calls and
 still ensure that the same data folds are used in all
 estimation experiments. If the seeding process is not enough due to the usage of different hardware for instance, then you may still resort to the user supplied data splits to make sure all methods are compared on the same data. We will see that when all experiments are
 finished we will be able to merge the objects of each call into a
-single object as if we had issued a single call. Let us see an
-example.
+single object as if we had issued a single call. 
+
+Another way of improving performance on large experiments is through parallel computation. \PE includes facilities to run experiment in parallel through the existing parallel back-ends in R. The simplest of options, that has the advantage of not requiring you to know anything at all about parallel computation in R, is to call the \texttt{performanceEstimation} function with a fourth parameter that will make all experiments to run in parallel on the different cores of any standard multicore computer. The following is a simple example of achieving this effect:
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{library}\hlstd{(e1071)}
+\hlkwd{data}\hlstd{(Satellite,}\hlkwc{package}\hlstd{=}\hlstr{"mlbench"}\hlstd{)}
+\hlstd{pres} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+    \hlkwd{PredTask}\hlstd{(classes} \hlopt{~} \hlstd{.,Satellite),}
+    \hlkwd{Workflow}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlstr{"err"}\hlstd{,}\hlkwd{CV}\hlstd{()),}
+    \hlkwc{cluster}\hlstd{=}\hlnum{TRUE}
+    \hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 
+## ##### PERFORMANCE ESTIMATION USING  CROSS VALIDATION  #####
+## 
+## ** PREDICTIVE TASK :: Satellite.classes
+## 
+## ++ MODEL/WORKFLOW :: svm 
+## cvEstimates: Running in parallel with 2 worker(s)
+## Task for estimating  err  using
+##  1 x 10 - Fold Cross Validation
+## 	 Run with seed =  1234
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+By adding this extra parameter the lower level functions that implement the estimation procedures (in this case cross validation but the concept is applicable to any of the other methods), will automatically create a (local) parallel back-end using half of the cores of your computer. On reasonably large data sets this simple extra setting will typically lead to cut execution times by a significant amount. 
+
+Other more complex parallel settings are also possible but they require you to know how to create the clusters before calling our function. For instance, you could create a cluster (using function \texttt{makeCluster} of package \textbf{parallel}) that involved several computers. The object of class \texttt{cluster} that results from these steps should then be sent through parameter \texttt{cluster} of our \texttt{performanceEstimation} function so that the function can take advantage of this parallel back-end. The following is a simple illustrative example:
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(parallel)}
+\hlstd{myclust} \hlkwb{<-} \hlkwd{makeCluster}\hlstd{(}\hlkwd{c}\hlstd{(}\hlstr{"localhost"}\hlstd{,}\hlstr{"192.168.2.10"}\hlstd{,}\hlstr{"192.168.2.13"}\hlstd{),}\hlstr{"SOCK"}\hlstd{)}
+\hlkwd{library}\hlstd{(performanceEstimation)}
+\hlkwd{library}\hlstd{(e1071)}
+\hlkwd{data}\hlstd{(Satellite,}\hlkwc{package}\hlstd{=}\hlstr{"mlbench"}\hlstd{)}
+\hlstd{pres} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
+    \hlkwd{PredTask}\hlstd{(classes} \hlopt{~} \hlstd{.,Satellite),}
+    \hlkwd{Workflow}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{),}
+    \hlkwd{EstimationTask}\hlstd{(}\hlstr{"err"}\hlstd{,}\hlkwd{CV}\hlstd{()),}
+    \hlkwc{cluster}\hlstd{=myclust}
+    \hlstd{)}
+\hlkwd{stopCluster}\hlstd{(myclust)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Please note that there are a few assumptions on the above example, namely concerning access of your username in localhost to the remote machines whose IP's are given. This means that the username exists on all machines and that appropriate SSH keys have been set so that no passwords are required for accessing the remote machines.
+
+\vspace*{0.5cm}
+
+Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation()} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation()} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
+
 
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -1565,7 +1620,7 @@ example.
 \hlkwd{library}\hlstd{(e1071)}
 \hlkwd{library}\hlstd{(randomForest)}
 
-\hlkwd{data}\hlstd{(algae)}
+\hlkwd{data}\hlstd{(algae,}\hlkwc{package}\hlstd{=}\hlstr{"DMwR"}\hlstd{)}
 \hlstd{DSs} \hlkwb{<-} \hlkwd{sapply}\hlstd{(}\hlkwd{names}\hlstd{(algae)[}\hlnum{12}\hlopt{:}\hlnum{18}\hlstd{],}
          \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{,}\hlkwc{names.attrs}\hlstd{) \{}
            \hlstd{f} \hlkwb{<-} \hlkwd{as.formula}\hlstd{(}\hlkwd{paste}\hlstd{(x,}\hlstr{"~ ."}\hlstd{))}
@@ -1592,7 +1647,8 @@ example.
                     \hlkwd{do.call}\hlstd{(}\hlstr{'workflowVariants'}\hlstd{,}
                             \hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwc{learner}\hlstd{=w),WFs[[w]]))}
                     \hlstd{),}
-                   \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'mse'}\hlstd{,}\hlstr{'mae'}\hlstd{),}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{)))}
+                   \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{'mse'}\hlstd{,}\hlstr{'mae'}\hlstd{),}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{3}\hlstd{)),}
+                   \hlkwc{cluster}\hlstd{=}\hlnum{TRUE}\hlstd{)}
            \hlstd{)}
 
     \hlkwd{save}\hlstd{(}\hlkwc{list}\hlstd{=resObj,}\hlkwc{file}\hlstd{=}\hlkwd{paste}\hlstd{(}\hlkwd{names}\hlstd{(DSs)[d],w,}\hlstr{'Rdata'}\hlstd{,}\hlkwc{sep}\hlstd{=}\hlstr{'.'}\hlstd{))}
@@ -1713,9 +1769,40 @@ scores or rankings of the workflows:
 \hlkwd{topPerformers}\hlstd{(res)}
 \end{alltt}
 \begin{verbatim}
-## $AlgaA1
-##      Workflow Estimate
-## mae lmOnlyPos   13.116
+## $a1
+##            Workflow Estimate
+## mse randomForest.v3  265.374
+## mae randomForest.v1   11.066
+## 
+## $a2
+##            Workflow Estimate
+## mse randomForest.v5   94.463
+## mae         svm.v11    5.917
+## 
+## $a3
+##     Workflow Estimate
+## mse   svm.v3   44.442
+## mae  svm.v10    3.911
+## 
+## $a4
+##            Workflow Estimate
+## mse randomForest.v5   18.238
+## mae         svm.v10    1.882
+## 
+## $a5
+##            Workflow Estimate
+## mse randomForest.v1   44.415
+## mae          svm.v7    4.037
+## 
+## $a6
+##     Workflow Estimate
+## mse   svm.v6  111.757
+## mae  svm.v12    5.548
+## 
+## $a7
+##            Workflow Estimate
+## mse randomForest.v3   26.208
+## mae         svm.v10    2.383
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1726,11 +1813,130 @@ scores or rankings of the workflows:
 \hlkwd{rankWorkflows}\hlstd{(res)}
 \end{alltt}
 \begin{verbatim}
-## $AlgaA1
-## $AlgaA1$mae
-##    Workflow Estimate
-## 1 lmOnlyPos    13.12
-## 2        lm    14.31
+## $a1
+## $a1$mse
+##          Workflow Estimate
+## 1 randomForest.v3    265.4
+## 2 randomForest.v5    265.6
+## 3 randomForest.v1    266.0
+## 4 randomForest.v6    272.3
+## 5 randomForest.v4    272.6
+## 
+## $a1$mae
+##          Workflow Estimate
+## 1 randomForest.v1    11.07
+## 2 randomForest.v3    11.07
+## 3 randomForest.v5    11.08
+## 4 randomForest.v4    11.19
+## 5 randomForest.v2    11.20
+## 
+## 
+## $a2
+## $a2$mse
+##          Workflow Estimate
+## 1 randomForest.v5    94.46
+## 2 randomForest.v6    94.88
+## 3 randomForest.v3    94.91
+## 4 randomForest.v1    94.95
+## 5 randomForest.v4    95.03
+## 
+## $a2$mae
+##   Workflow Estimate
+## 1  svm.v11    5.917
+## 2   svm.v1    5.938
+## 3  svm.v10    5.941
+## 4   svm.v4    5.954
+## 5   svm.v5    5.968
+## 
+## 
+## $a3
+## $a3$mse
+##          Workflow Estimate
+## 1          svm.v3    44.44
+## 2          svm.v2    44.54
+## 3          svm.v8    45.27
+## 4          svm.v9    45.31
+## 5 randomForest.v5    46.31
+## 
+## $a3$mae
+##   Workflow Estimate
+## 1  svm.v10    3.911
+## 2   svm.v4    3.915
+## 3   svm.v7    3.943
+## 4   svm.v1    3.956
+## 5   svm.v5    4.007
+## 
+## 
+## $a4
+## $a4$mse
+##          Workflow Estimate
+## 1 randomForest.v5    18.24
+## 2 randomForest.v3    18.25
+## 3 randomForest.v1    18.26
+## 4          svm.v4    18.37
+## 5 randomForest.v2    18.56
+## 
+## $a4$mae
+##   Workflow Estimate
+## 1  svm.v10    1.882
+## 2   svm.v4    1.883
+## 3   svm.v7    1.984
+## 4   svm.v1    1.994
+## 5  svm.v11    2.022
+## 
+## 
+## $a5
+## $a5$mse
+##          Workflow Estimate
+## 1 randomForest.v1    44.42
+## 2 randomForest.v3    44.43
+## 3 randomForest.v5    44.50
+## 4 randomForest.v4    45.51
+## 5 randomForest.v2    45.53
+## 
+## $a5$mae
+##   Workflow Estimate
+## 1   svm.v7    4.037
+## 2  svm.v10    4.056
+## 3   svm.v4    4.061
+## 4   svm.v1    4.074
+## 5   svm.v5    4.077
+## 
+## 
+## $a6
+## $a6$mse
+##          Workflow Estimate
+## 1          svm.v6    111.8
+## 2         svm.v12    113.1
+## 3          svm.v5    121.9
+## 4         svm.v11    123.2
+## 5 randomForest.v3    123.3
+## 
+## $a6$mae
+##   Workflow Estimate
+## 1  svm.v12    5.548
+## 2   svm.v7    5.572
+## 3   svm.v6    5.587
+## 4   svm.v4    5.633
+## 5   svm.v1    5.644
+## 
+## 
+## $a7
+## $a7$mse
+##          Workflow Estimate
+## 1 randomForest.v3    26.21
+## 2 randomForest.v5    26.22
+## 3 randomForest.v1    26.33
+## 4 randomForest.v2    26.45
+## 5 randomForest.v4    26.50
+## 
+## $a7$mae
+##   Workflow Estimate
+## 1  svm.v10    2.383
+## 2   svm.v4    2.408
+## 3   svm.v7    2.419
+## 4   svm.v1    2.440
+## 5   svm.v6    2.440
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2053,6 +2259,8 @@ calculates the median of the results of the SVMs on the task ``a1'',
 We have presented \PE that aims at being a general package for estimating and comparing the performance of any approach to any predictive task in R. The package allows users to very easily carry out standard out-of-the-box comparative experiments between existing modeling tools in R. However, it also allows the users to supply their own functions implementing special workflows to solve tasks. This means that the package should cover the needs of occasional users as well as advanced users that which to try and compared their own proposed workflows.
 
 The \PE also includes several facilities for testing the statistical significance of the observed differences, namely implementing the current state of the art in this subject as described in~\cite{Dem06}, including CD diagrams for both the Nemenyi and Bonferroni-Dunn post-hoc tests.
+
+Finally, we have provided a few illustrations of how to use \PE for larger experiments, namely taking advantage of parallel computation that is available in R.
 
 \bibliographystyle{alpha}
 \bibliography{performanceEstimation}
