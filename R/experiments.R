@@ -622,11 +622,11 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
                                 ) %fun%  {
 
 
+
+        start <- starting.points[it]
         if (missing(cluster)) cat('Repetition ',it,'\n\t start test = ',
                                   start,'; test size = ',test.size,'\n')
 
-
-        start <- starting.points[it]
 
         if (!userSplit) {
             rep.res <- runWorkflow(wf,
