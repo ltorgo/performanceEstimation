@@ -347,7 +347,7 @@ setMethod("plot",
                                   ),"Performance Estimation Results")
               plt <- ggplot2::ggplot(allRes,ggplot2::aes_string(y="score",x="sys")) +
                      ggplot2::geom_boxplot(ggplot2::aes_string(group="sys")) +
-                     ggplot2::geom_jitter(position = ggplot2::position_jitter(width = .15,height=0),color="red",size=3,alpha=0.5) + 
+                     ggplot2::geom_jitter(position = ggplot2::position_jitter(width = .15,height=0),color="red",size=3,alpha=0.25) + 
                      ggplot2::ggtitle(tlt) +
                      ggplot2::ylab("Distribution of Statistics Scores") +
                      ggplot2::xlab("Alternative Workflows") +
