@@ -132,7 +132,7 @@ cvEstimates <- function(wf,task,estTask,cluster) {
     nits <- estTask@method@nFolds*estTask@method@nReps
     itsInfo <- vector("list",nits)
 
-    ## Stratefied sampling stuff
+    ## Stratified sampling stuff
     if (!userSplit && estTask@method@strat) { 
         respVals <- responseValues(task@formula,eval(task@dataSource))
         regrProb <- is.numeric(respVals)
@@ -602,8 +602,8 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
         test.size <- if (estTask@method@szTest < 1) as.integer(n*estTask@method@szTest) else estTask@method@szTest
         if (n-test.size+1 <= train.size+1) stop('mcEstimates:: Invalid train/test sizes.',call.=FALSE)
     } else {
-        train.size <- length(estTask@method@dataSplits[[1]][[1]]$train)
-        test.size <- length(estTask@method@dataSplits[[1]][[1]]$test)
+        train.size <- length(estTask@method@dataSplits[[1]]$train)
+        test.size <- length(estTask@method@dataSplits[[1]]$test)
     }
   
     set.seed(estTask@method@seed)
@@ -612,7 +612,7 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
         selection.range <- (train.size+1):(n-test.size+1)
         starting.points <- sort(sample(selection.range,estTask@method@nReps))
     } else {
-        starting.points <- sapply(estTask@method@dataSplits[[1]], function(d) d$test[1])
+        starting.points <- sapply(estTask@method@dataSplits, function(d) d$test[1])
     }
 
     it <- NULL  # dummy assignment due to Note on cran-check
@@ -636,8 +636,8 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
         } else {
             rep.res <- runWorkflow(wf,
                                    task@formula,
-                                   eval(task@dataSource)[estTask@method@dataSplits[[1]][[it]]$train,],
-                                   eval(task@dataSource)[estTask@method@dataSplits[[1]][[it]]$test,])
+                                   eval(task@dataSource)[estTask@method@dataSplits[[it]]$train,],
+                                   eval(task@dataSource)[estTask@method@dataSplits[[it]]$test,])
 
         }
 
@@ -717,10 +717,10 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
 ## calculates the scores of all iterations of an estimation exp
 .scoresIts <- function(task,estTask,its) {
-    trReq <- any(estTask@metrics %in% c("nmse","nmae","theil"))
+    trReq <- estTask@trainReq || any(estTask@metrics %in% c("nmse","nmae","theil"))
 
     nIts <- length(its)
-    if (estTask@evaluator=="" ) 
+    if (estTask@evaluator=="" )  # no user defined evaluation function
         if (is.classification(task)) estTask@evaluator <- "classificationMetrics"
         else                         estTask@evaluator <- "regressionMetrics"
     scores <- matrix(NA,nrow=nIts,ncol=length(estTask@metrics))
@@ -729,7 +729,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     predMs <- setdiff(estTask@metrics,wts)
     for(i in 1:nIts) {
         if (length(predMs)) {
-            if (trReq) {
+            if (trReq) {  # info on the training data required by evaluator
                 scores[i,predMs] <- do.call(estTask@evaluator,
                                             c(list(trues=its[[i]]$preds[,"true"],
                                                    preds=its[[i]]$preds[,"predicted"],

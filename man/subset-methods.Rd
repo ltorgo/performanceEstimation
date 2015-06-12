@@ -34,13 +34,24 @@
     \code{\link{workflowNames}})  evaluated in the experiment to specify the subset
     you want to select.
 
-    Finally, the parameter \code{tasks}
+    The parameter \code{tasks}
     allows you to indicate a vector with the subset of predictive tasks to be
     extracted. Alternatively, you can
      provide a regular expression to be matched against the name
     of the tasks used in the experiment (see function
     \code{\link{taskNames}}) to specify the subset
-    you want to select. 
+    you want to select.
+
+    Finally, the parameter \code{partial} allows you to control how the
+    names of the other parameters (tasks, workflows and metrics) are
+    matched against the original names in the \code{ComparisonResults}
+    object. It defaults to \code{TRUE} which means that the function
+    \code{\link{grep}} is used, whilst with \code{FALSE} the mathcin is
+    done using the function \code{\link{match}}. For instance, if you
+    have three metrics being estimated with names "F", "F1" and "F2",
+    and you call subset with \code{metrics="F"}, this would in effect
+    subset all three metrics, whilst with \code{partial=FALSE} only the
+    first of the three would be considered.
 
 }
 }}

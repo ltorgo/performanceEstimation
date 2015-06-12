@@ -42,13 +42,39 @@ calculate these metrics.
       task.}
     \item{\code{evaluator.pars}:}{An optional  list containing
       the parameters to be passed to the function calculating the metrics.}
+    \item{\code{trainReq}:}{An optional  logical value indicating
+      whether the metrics to be calculated require that the training
+      data is supplied (defaulting to \code{FALSE}). Note that if the
+      user selects any of the metrics "nmse", "nmae" or "theil" this
+      will be set to \code{TRUE}.}
   }
 }
 \section{Methods}{
   \describe{
     \item{show}{\code{signature(object = "EstimationTask")}: method used to
       show the contents of a \code{EstimationTask} object. }
-	 }
+  }
+}
+\details{
+ In case you are providing your own user-defined evaluator functions
+ (through parameters \code{evaluator} anbd \code{evaluator.pars}) you
+ need to follow some protocol in defining these functions so that the
+ package may correctly call them during the execution of the estimation
+ experiments. More specifically, the first 3 parameters of the
+ user-defined evaluator functions must be: \code{trues}, \code{preds}
+ and \code{stats}. The parameter \code{trues}  will "receive" the vector
+ of true values of the target variable of each test set, whilst the
+ parameter \code{preds} will get the vector of model predictions. Based
+ on these two vectors you should calculate whatever metrics are
+ indicated through the parameter \code{stats} that is a vector of
+ strings. In case the slot \code{trainReq} is \code{TRUE} then the
+ user-defined evaluator function should also have as fourth parameter
+ the parameter \code{train.y} that will "receive" the values of the
+ target variable on the training set. The remaining parameters of the
+ user-defined function can be freely defined by you and their values
+ will be specified through the contents of the \code{evaluator.pars}
+ list.
+ 
 }
 \references{
 Torgo, L. (2014) \emph{An Infra-Structure for Performance
@@ -82,7 +108,8 @@ EstimationTask(metrics=c("acc","totTime"),method=Holdout(nReps=3,hldSz=0.2))
 
 ## The first we define the function that calculates this metric. It
 ## needs to have 'trues' and 'preds' as the first two arguments
-powErr <- function(trues,preds,pow=3,...) {
+powErr <- function(trues,preds,stats,pow=3) {
+     if (stats != "pow.err") stop("Unable to calculate that metric!")
      c(pow.err = mean((trues-preds)^pow))
 }
 
