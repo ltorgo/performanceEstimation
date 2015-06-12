@@ -14,7 +14,7 @@
 
   \item{\code{signature(x = "ComparisonResults")}}{
     The method has as first argument the object of class \code{\linkS4class{ComparisonResults}}
-    that you wish to subset. This method also includes 3 extra arguments that
+    that you wish to subset. This method also includes 4 extra arguments that
     you can use to supply the subsetting criteria.
 
     Namely, the parameter
