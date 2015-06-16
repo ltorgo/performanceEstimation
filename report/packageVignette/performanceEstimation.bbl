@@ -1,6 +1,12 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
 \begin{thebibliography}{MDH{\etalchar{+}}12}
 
+\bibitem[BFOS84]{BFOS84}
+L.~Breiman, J.~Friedman, R.~Olshen, and C.~Stone.
+\newblock {\em Classification and Regression Trees}.
+\newblock Statistics/Probability Series. Wadsworth \& Brooks/Cole Advanced
+  Books \& Software, 1984.
+
 \bibitem[CBHK02]{CBOK02}
 N.~V. Chawla, K.~W. Bowyer, L.~O. Hall, and W.~P. Kegelmeyer.
 \newblock Smote: Synthetic minority over-sampling technique.
@@ -11,11 +17,11 @@ J.~Demsar.
 \newblock Statistical comparisons of classifiers over multiple data sets.
 \newblock {\em Journal of Machine Learning Research}, 7:1--30, 2006.
 
-\bibitem[Dom99]{Dom99}
-P.~Domingos.
-\newblock Metacost: A general method for making classifiers cost-sensitive.
-\newblock In {\em Proceedings of the Fifth International Conference on
-  Knowledge Discovery and Data Mining}, pages 155--164. ACM Press, 1999.
+\bibitem[Elk01]{Elk01}
+Charles Elkan.
+\newblock The foundations of cost-sensitive learning.
+\newblock In {\em Proceedings of the 7th International Joint Conference on
+  Artificial Intelligence (IJCAI'2001)}, 2001.
 
 \bibitem[MDH{\etalchar{+}}12]{e1071}
 David Meyer, Evgenia Dimitriadou, Kurt Hornik, Andreas Weingessel, and

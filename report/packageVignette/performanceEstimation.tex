@@ -707,7 +707,7 @@ As with pre-processing steps you may also write your own prediction post-process
   parameters \textbf{infLim} and \textbf{supLim}. Note that this is only
   applicable to predictions that are vectors of numeric values.
 
-\item[metacost] - apply the MetaCost~\cite{Dom99} algorithm to the predictions of a
+\item[maxutil] - maximize the utility of the predictions~\cite{Elk01}  of a
   classifier. This method is only applicable to classification tasks and
   to algorithms that are able to produce as predictions a vector of
   class probabilities for each test case, i.e. a matrix of probabilities
@@ -715,8 +715,8 @@ As with pre-processing steps you may also write your own prediction post-process
   provided through the parameter \textbf{cb.matrix}. For each test case,
   and given the probabilities estimated by the classifier and the cost
   benefit matrix, the method predicts the classifier that maximizes the
-  utility of the prediction. This approach is a slight 'evolution' of
-  the original idea that only considered the costs of errors and not the
+  utility of the prediction. This approach~\cite{Elk01} is a slight 'evolution' of
+  the original idea~\cite{BFOS84} that only considered the costs of errors and not the
   benefits of the correct classifications as in the case of cost-benefit
   matrices we are using here. The parameter \textbf{cb.matrix} must
   contain a (square) matrix of dimension $NClasses\times NClasses$ where entry
@@ -1040,13 +1040,41 @@ following experiment:
 % ====================================================================
 \section{Estimation Tasks}
 
-The third argument of the main function \texttt{performanceEstimation} defines the estimation task we want to carry out. Its value is an S4 object of class \textbf{EstimationTask} that can be created through the constructor function with the same name. The main arguments of this constructor are \textbf{metrics} and \textbf{method}. The first is a vector with names of metrics for which we want reliable estimates, while the second is the method to be used to obtain these estimates.
+The third argument of the main function \texttt{performanceEstimation} defines the estimation task we want to carry out. Its value is an S4 object of class \textbf{EstimationTask} that can be created through the constructor function with the same name. The main arguments of this constructor are \textbf{metrics} and \textbf{method}. The first is a vector with names of metrics for which we want reliable estimates, while the second is the method to be used to obtain these estimates. Other arguments of the constructor are \textbf{evaluator} and \textbf{evaluator.pars} that allow the specification of functions for calculating user-defined evaluation metrics. Finally, the last parameter of the constructor is \textbf{trainReq} that is a Boolean value indicating whether the training data should also be ``sent'' to the evaluation functions. This is useful for metrics that require the training data for being calculated (e.g. some normalized metrics use the average value of the target variable in the training set)
 
 \subsection{Performance Metrics}
 
 The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of this metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
 
 In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
+
+\subsection{User-defined Performance Metrics}
+
+Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. Specifically, the user-defined functions should have as the first 3 parameters: (i) \textbf{trues} that receives the vector of true values of the target variable in the test set; (ii) \textbf{preds} that receives the vector of model predictions for such test cases; and (iii) \textbf{stats} that is a vector with the names of the metrics to be calculated (the user-defined functions may be able to calculate several metrics). Any further parameters of the function are up to the user and may be set through values in the \textbf{evaluator.pars} list. The user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified in the parameter \textbf{stats}.
+
+Suppose we want to calculate the error of a regression model as the difference between true and predicted values raised to some power. We could define a function to calculate such metric following our package input/output protocol as:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{powErr} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{trues}\hlstd{,}\hlkwc{preds}\hlstd{,}\hlkwc{stats}\hlstd{,}\hlkwc{pow}\hlstd{=}\hlnum{3}\hlstd{) \{}
+    \hlkwa{if} \hlstd{(stats} \hlopt{!=} \hlstr{"pow.err"}\hlstd{)} \hlkwd{stop}\hlstd{(}\hlstr{"Unable to calculate that metric!"}\hlstd{)}
+    \hlkwd{c}\hlstd{(}\hlkwc{pow.err} \hlstd{=} \hlkwd{mean}\hlstd{((trues}\hlopt{-}\hlstd{preds)}\hlopt{^}\hlstd{pow))}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Using such function in the context of some 10-fold cross validation estimation experiment would involve creating an estimation task as:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"pow.err"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{(),}
+               \hlkwc{evaluator}\hlstd{=}\hlstr{"powErr"}\hlstd{,}\hlkwc{evaluator.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{pow}\hlstd{=}\hlnum{4}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 \subsection{Estimation Methodologies}\label{sec:expMeth}
