@@ -89,7 +89,7 @@ standardPOST(form, train, test, preds, steps, ...)
   parameters \code{infLim} and \code{supLim}. Note that this is only
   applicable to predictions that are vectors of numeric values.
 
-  "metacost" - apply the MetaCost (Domingos, 1999) algorithm to the predictions of a
+  "maxutil" - maximize the utility of the predictions (Elkan, 2001) of a
   classifier. This method is only applicable to classification tasks and
   to algorithms that are able to produce as predictions a vector of
   class probabilities for each test case, i.e. a matrix of probabilities
@@ -97,17 +97,17 @@ standardPOST(form, train, test, preds, steps, ...)
   provided through the parameter \code{cb.matrix}. For each test case,
   and given the probabilities estimated by the classifier and the cost
   benefit matrix, the method predicts the classifier that maximizes the
-  utility of the prediction. This approach is a slight 'evolution' of
-  the original idea that only considered the costs of errors and not the
-  benefits of the correct classifications as in the case of cost-benefit
-  matrices we are using here. The parameter \code{cb.matrix} must
-  contain a (square) matrix of dimension NClasses x NClasses where entry
-  X_i,j corresponds to the cost/benefit of predicting a test case as
-  belonging to class j when it is of class i. The diagonal of this
-  matrix (correct predicitons) should contain positive numbers
-  (benefits), whilst numbers outside of the matrix should contain
-  negative numbers (costs of misclassifications). See the Examples
-  section for an illustration.
+  utility of the prediction. This approach (Elkan, 2001) is a slight
+  'evolution' of the original idea (Breiman et al., 1984) that only
+  considered the costs of errors and not the benefits of the correct
+  classifications as in the case of cost-benefit matrices we are using
+  here. The parameter \code{cb.matrix} must contain a (square) matrix of
+  dimension NClasses x NClasses where entry X_i,j corresponds to the
+  cost/benefit of predicting a test case as belonging to class j when it
+  is of class i. The diagonal of this matrix (correct predicitons)
+  should contain positive numbers (benefits), whilst numbers outside of
+  the matrix should contain negative numbers (costs of
+  misclassifications). See the Examples section for an illustration.
 
 }
 \value{
@@ -115,9 +115,11 @@ standardPOST(form, train, test, preds, steps, ...)
 }
 \references{
 
-  Domingos,P. (1999), \emph{MetaCost: a general method for making
-    classifiers cost-sensitive}. Proceedings of
-    KDD'1999. \url{http://homes.cs.washington.edu/~pedrod/papers/kdd99.pdf} 
+  Breiman,L., Friedman,J., Olshen,R. and Stone,C. (1984),
+  \emph{Classification and Regression Trees}, Wadsworth and Brooks.
+  
+  Elkan, C. (2001),  \emph{The Foundations of Cost-Sensitive Learning}. Proceedings of
+    IJCAI'2001.
   
   Torgo, L. (2014) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
@@ -171,7 +173,7 @@ resN <- performanceEstimation(
 summary(getIterationPreds(resN,1,1,it=1))
 
 ######################
-## An example with meta-cost for cost-sensitive learning for the
+## An example with utility maximization learning for the
 ## BreastCancer data set on package mlbench
 ##
 data(BreastCancer,package="mlbench")
@@ -195,7 +197,7 @@ r <- performanceEstimation(
         PredTask(Class ~ .,BreastCancer[,-1],"breastCancer"),
         c(Workflow(wfID="rpart.cost",
                    learner="rpart",
-                   post="metacost",
+                   post="maxutil",
                    post.pars=list(cb.matrix=cb)
                   ),
           Workflow(wfID="rpart",

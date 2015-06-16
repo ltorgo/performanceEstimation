@@ -4,6 +4,7 @@ DEVELOPMENT VERSION
 - Example of user-defined function in EstimationTask documentation was corrected.
 - Documentation of the subset method of ComparisonResults objects was corrected to refer the parameter partial.
 - Corrected bug on the way mcEstimates accessed the user suplied dataSplits
+- The post-processing method that maximizes the utility of predictions for classification tasks was wrongly associated with the MetaCost work of Pedro Domingos. Although strongly related this was incorrect. Renamed everything to 'maxutil' and referred the work of Charles Elkan as the major reference on this approach.
 
 VERSION 1.0.0 (2014-12-02)
 
