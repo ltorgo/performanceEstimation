@@ -32,7 +32,7 @@ The following is a very simple example of how to use the package to obtain a 10-
                                 PredTask(Species ~ ., iris),
                                 Workflow(learner="svm"),
                                 EstimationTask(metrics="err", method=CV())
-			      )
+                              )
 
 After executing the previous code the user could obtain a general overview of the results either in the graphical or textual formats:
 
