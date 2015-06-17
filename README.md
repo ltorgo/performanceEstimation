@@ -21,7 +21,7 @@ After installation using any of the above procedures, the package can be used as
 
      library(performanceEstimation)
 
-**A simple illustrative example
+**A simple illustrative example:**
 
 The following is a very simple example of how to use the package to obtain a 10-fold cross validation estimate of the error rate of an SVM on the famous **iris** data set:
 
