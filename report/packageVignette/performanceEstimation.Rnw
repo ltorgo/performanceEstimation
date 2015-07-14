@@ -711,9 +711,9 @@ myWorkFlow <- function(form,train,test,...) {
   preds <- predict(myModel,test)
   ## cary out some predictions post-processing
   newPreds <- mySpecificPostProcessingSteps(form,train,test,preds)
-  ## finally produce the worflow output object with the predictions
-  trues <- responseValues(form,test)
-  res <- WFoutput(rownames(test),trues,newPreds)
+  names(newPreds) <- rownames(test)
+  ## finally produce the list containing the output of the workflow
+  res <- list(trues=responseValues(form,test),preds=newPreds)
   return(res)
 }
 @ 
@@ -723,16 +723,11 @@ Not all workflows will require all these steps, though some may even
 require more. This is clearly something that is up to the user. The
 only strict requirements for these functions are: (i) the first 3
 parameters of the workflow function should be the formula, train and
-test data frames; and (ii) the result of the function should be an
-object of the S4 class \textbf{WFoutput}.
+test data frames; and (ii) the result of the function should be a list. 
 
-Objects of class \textbf{WFoutput} contain the result of applying the
-workflow to a train+test partition. They are created using the
-constructor function \textbf{WFoutput()} that takes as first argument the row ids of the test set, as second the true values of the target variable in the test set and as third the predictions of the workflow for these test cases. These
-objects may optionally contain any other information the creator of the workflow function deems
-important to return. This optional information is "attached" to the object using the replacement function \textbf{workflowInformation()}. This function accepts as value  a
-list  whose content is completely free and left to the creator of
-the workflow function. As example of the usage of this function will be given later in this section. 
+Regarding the components of this results list, in case you wish to use the functions of the package that calculate some standard prediction metrics, then you should make sure that this list contains at least a component named \texttt{trues} with the vector of the true values of the target variable in the test set, and another component named \texttt{preds} with the respective predictions produced by the workflow for this test cases.
+ These lists returned by the workflows  may optionally contain any other information the creator of the workflow function deems
+important to return. 
 
 The sketch shown above also illustrates the use of the function
 \texttt{responseValues()} that can be used to obtain the values of the target
@@ -776,8 +771,9 @@ RLensemble <- function(f, tr, ts, weightRT=0.5, step=FALSE, ..., .models=FALSE) 
   pr <- predict(r,ts)
   pl <- predict(l,noNAsTS) 
   ps <- weightRT*pr+(1-weightRT)*pl
-  res <- WFoutput(rownames(ts),responseValues(f,ts),ps)
-  if (.models) workflowInformation(res) <- list(linearModel=l,tree=r)
+  names(ps) <- rownames(ts)
+  res <- list(trues=responseValues(f,ts),preds=ps)
+  if (.models) res <- c(res,list(linearModel=l,tree=r))
   res
 }
 @ 
@@ -789,7 +785,7 @@ nearest neighbour strategy (see the help page of the function
 details). These versions are to be used by the \texttt{lm()} function
 that is unable to cope with cases with missing values. After obtaining
 the two models and their predictions the function calculates a
-weighted average of both predictions. Note how we have used the function \texttt{workflowInformation} to attach a list with the two models to the \textbf{WFoutput} results object, in case the user calls the function with \texttt{.models=TRUE}.
+weighted average of both predictions. Note that if \texttt{.models=TRUE} we add the models to the results list.
 
 To evaluate different variants of this workflow we could run the
 following experiment:
@@ -807,7 +803,7 @@ expRes <- performanceEstimation(
 % ====================================================================
 \section{Estimation Tasks}
 
-The third argument of the main function \texttt{performanceEstimation} defines the estimation task we want to carry out. Its value is an S4 object of class \textbf{EstimationTask} that can be created through the constructor function with the same name. The main arguments of this constructor are \textbf{metrics} and \textbf{method}. The first is a vector with names of metrics for which we want reliable estimates, while the second is the method to be used to obtain these estimates. Other arguments of the constructor are \textbf{evaluator} and \textbf{evaluator.pars} that allow the specification of functions for calculating user-defined evaluation metrics. Finally, the last parameter of the constructor is \textbf{trainReq} that is a Boolean value indicating whether the training data should also be ``sent'' to the evaluation functions. This is useful for metrics that require the training data for being calculated (e.g. some normalized metrics use the average value of the target variable in the training set)
+The third argument of the main function \texttt{performanceEstimation} defines the estimation task we want to carry out. Its value is an S4 object of class \textbf{EstimationTask} that can be created through the constructor function with the same name. The main arguments of this constructor are \textbf{metrics} and \textbf{method}. The first is a vector with names of metrics for which we want reliable estimates, while the second is the method to be used to obtain these estimates. Other arguments of the constructor are \textbf{evaluator} and \textbf{evaluator.pars} that allow the specification of functions for calculating user-defined evaluation metrics. Finally, the last parameter of the constructor is \textbf{trainReq} that is a Boolean value indicating whether the training data should also be ``sent'' to the evaluation functions. This is useful for metrics that require the training data for being calculated (e.g. some normalized metrics use the average value of the target variable in the training set).
 
 \subsection{Performance Metrics}
 
@@ -817,14 +813,14 @@ In case the user wants to estimate some metric not implemented in our package sh
 
 \subsection{User-defined Performance Metrics}
 
-Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. Specifically, the user-defined functions should have as the first 3 parameters: (i) \textbf{trues} that receives the vector of true values of the target variable in the test set; (ii) \textbf{preds} that receives the vector of model predictions for such test cases; and (iii) \textbf{stats} that is a vector with the names of the metrics to be calculated (the user-defined functions may be able to calculate several metrics). Any further parameters of the function are up to the user and may be set through values in the \textbf{evaluator.pars} list. The user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified in the parameter \textbf{stats}.
+Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. Specifically, the user-defined functions should have as the first 2 parameters: (i) a parameter that will receive the list resulting from the workflow call; (ii)  \textbf{stats} that is a vector with the names of the metrics to be calculated (the user-defined functions may be able to calculate several metrics). Any further parameters of the function are up to the user and may be set through values in the \textbf{evaluator.pars} list. The user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified in the parameter \textbf{stats}. The names of the scores in the vector should be the names of the metrics specified in the parameter \textbf{stats}.
 
 Suppose we want to calculate the error of a regression model as the difference between true and predicted values raised to some power. We could define a function to calculate such metric following our package input/output protocol as:
 
 <<userDef-eval>>=
-powErr <- function(trues,preds,stats,pow=3) {
+powErr <- function(itResults,stats,pow=3) {
     if (stats != "pow.err") stop("Unable to calculate that metric!")
-    c(pow.err = mean((trues-preds)^pow))
+    c(pow.err = mean((itResults$trues-itResults$preds)^pow))
 }
 @
 
@@ -888,7 +884,7 @@ bcExp <- performanceEstimation(
 @ 
 
 Please note the use of the \texttt{evaluator.pars} parameter of the
-\texttt{EstimationTask} constructor function. We have used it to indicate which of the class labels of this problem should be considered the ``positive'' class, which is required to compute the values of the F, recall and precision metrics we are estimation through $3\times 10-$fold cross validation. This parameter setting is passed to the \texttt{classificationMetrics} function that is the default for classification tasks like Breast Cancer.
+\texttt{EstimationTask} constructor function. We have used it to indicate which of the class labels of this problem should be considered the ``positive'' class, which is required to compute the values of the F, recall and precision metrics we are estimating through $3\times 10-$fold cross validation. This parameter setting is passed to the \texttt{classificationMetrics} function that is the default for classification tasks like Breast Cancer.
 
 \subsubsection{Bootstrapping}
 
