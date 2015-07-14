@@ -78,7 +78,7 @@ functions and thus your required input will be limited to the minimum. The
 package also provides a series of predictive performance metrics for
 different tasks. Still, you are not limited to these metrics and can
 use any metric as long as it exists in R or you provide a function
-calculating it. Finally, the most recent versions of the package also
+calculating it. Finally, the package also
 include several standard data pre-processing and predictions
 post-processing steps that again can be incorporated into the
 workflows being evaluated.  
@@ -175,7 +175,7 @@ specification of the estimation task (essentially the metrics to be estimated an
 
 \textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined with the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
 
-In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using the function \texttt{standardWF} with the parameter \textbf{learner} set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
+In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using the function \texttt{standardWF} with the parameter \textbf{learner} set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
 
 
 
@@ -306,9 +306,6 @@ PredTask(Species ~ .,iris)
 @ 
 
 We should remark that, by default and for memory economy particularly if you are using large data sets, the objects of this class do not copy internally the data of the provided data frame. This  means that they assume that the data frame provided in the second argument will still exist when the estimation experiments will be executed. If you want the data to be copied into the \textbf{PredTask} object then you should call the constructor as follows:
-only store the data
-required for the specified task, as it should be clear from this other
-simple example:
 
 <<>>=
 data(iris)
