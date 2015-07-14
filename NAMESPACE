@@ -17,8 +17,7 @@ exportClasses(
 
     EstimationTask,
 
-    Workflow,
-    WFoutput
+    Workflow
     )
 
 exportMethods(show)
@@ -40,8 +39,6 @@ export(
 
     Workflow,
     
-    WFoutput,
-
     ## experiments.R file
     performanceEstimation,
 
@@ -66,7 +63,7 @@ export(
     ## resultsManipulation.R file
     mergeEstimationRes,
     taskNames, workflowNames, metricNames,
-    getScores, getIterationInfo, getIterationPreds,
+    getScores, getIterationsInfo, getIterationsPreds,
     estimationSummary,
 
     ## workflows.R file

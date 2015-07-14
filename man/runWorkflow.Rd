@@ -26,8 +26,14 @@ Further arguments that are required by the workflow function
 }
 }
 \value{
-  The execution of a workflow produces an object of class
-  \code{\linkS4class{WFoutput}} 
+  The execution of a workflow should produce a list as result. If you
+  plan to apply any of the functions provided in this package to
+  calculate standard performance metrics
+  (\code{\link{classificationMetrics}} or
+  \code{\link{regressionMetrics}}) then your list should contain at
+  least two components: one named \emph{trues} with the true values of
+  the target variable in the test set, and the other named \emph{preds}
+  with the respective predictions of the workflow.
 }
 \references{ Torgo, L. (2014) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
@@ -35,9 +41,6 @@ Further arguments that are required by the workflow function
 }
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 \seealso{
-  \code{\linkS4class{WFoutput}},
-  \code{\link{workflowInformation}},
-  \code{\link{workflowPredictions}},
   \code{\linkS4class{Workflow}}
 
 }

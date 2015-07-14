@@ -17,6 +17,10 @@ regressionMetrics <- function(trues,preds,
                       stats="mse",
                       train.y=NULL)
 {
+    ## Checking preds
+    if (!is.null(dim(preds))) stop("regressionMetrics:: expecting a vector as predictions.")
+
+    ## Cheking the statistics
     knownMetrics <- c('mae','mse','rmse','mape','nmse','nmae','theil')
     if (identical(stats,"all"))
         stats <- if (is.null(train.y)) setdiff(knownMetrics,c("nmse","nmae")) else knownMetrics
@@ -26,6 +30,16 @@ regressionMetrics <- function(trues,preds,
     if (!all(stats %in% knownMetrics))
         stop("regressionMetrics:: don't know how to calculate -> ",call.=FALSE,
              paste(stats[which(!(stats %in% knownMetrics))],collapse=','))
+
+    ## copying with missing predictions
+    if (length(preds) != length(trues)) {
+        warning("regressionMetrics:: less predictions than test cases, filling with NAs.")
+        t <- trues
+        t[] <- NA
+        t[names(preds)] <- preds
+        preds <- t
+    }
+   
     N <- length(trues)
     sae <- sum(abs(trues-preds))
     sse <- sum((trues-preds)^2)
@@ -55,6 +69,10 @@ classificationMetrics <- function(trues,preds,
                  )
 
 {
+    ## Checking preds
+    if (!is.null(dim(preds))) stop("classificationMetrics:: expecting a vector as predictions.")
+
+    ## Cheking the statistics
     twoClsMetrics <- c('fpr','fnr','tpr','tnr','rec','sens','spec',
                        'prec','rpp','lift','F')
     knownMetrics <- c(twoClsMetrics,c('acc','err','totU',
@@ -76,6 +94,15 @@ classificationMetrics <- function(trues,preds,
 
     r <- rep(NA,length(knownMetrics))
     names(r) <- knownMetrics
+
+    ## copying with missing predictions (only necessary for non-standard WFs)
+    if (length(preds) != length(trues)) {
+        warning("classificationMetrics:: less predictions than test cases, filling with NAs.")
+        t <- trues
+        t[] <- NA
+        t[names(preds)] <- preds
+        preds <- t
+    }
 
     ## copying with eventually missing class labels
     preds <- factor(preds,levels=allCls)

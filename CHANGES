@@ -1,3 +1,15 @@
+DEVELOPMENT VERSION
+
+- WFouput was removed from the framework. Now workflows should simply return a list with the information necessary for the calculation of the required performance metrics. Our provided evaluation functions (classificationMetrics and regressionMetrics) required some information from the result of the workflows (at least a component named "preds" containing a named vector of predicted values and another component named "trues" containing the corresponding vector of true values of the test cases). If you are using some of our provided standard workflows you do not need to worry about this because they return a list with such components. However, if using your own user-defined workflows and you want to use our evaluation functions then you need to worry abou this. In summary, if your code was using standard workflows and evaluation metrics provided by this package, then no changes should be needed to your code. However, if that is not the case then you may need to carry out some small changes to your workflows or your evaluation functions.
+
+- The removal of WFoutput had many changes in several functions namely: .scoresIts (experiments.R), runWorkflow (workflows.R) and classificationMetrics and regressionMetrics (evaluationMetrics.R). There was also a change in the EstimationResults class. All these changes have no impact in any code that was using the standard workflows provided by the package - they should work as before with no change necessary. Code using user-defined workflows will have an impact as well as user-defined evaluator functions.
+
+- With the disappearance of WFoutput it also disappears the workflowInformation and workflowPredictions functions
+
+- Functions getIterationInfo and getIterationPreds where renamed into getIterationsInfo and getIterationsPreds, respectively. They now have an additional functionality of allowing the user to obtain a list with the results of all iterations instead of only of a specific one, as before. Moreover, the results (either of a specific iteration or all of them) are of a different type. They use to be of class WFouput but now are simply lists, which is now the result of running any workflow.
+
+
+
 VERSION 1.0.1 (2015-06-17)
 
 - EstimationTask class changed to include a parameter that specifies whether the training data is required for the evaluator function to calculate the metrics.

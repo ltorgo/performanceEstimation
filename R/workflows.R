@@ -171,8 +171,7 @@ getWorkflow <- function(var,obj)
 #
 runWorkflow <- function(l,...) {
   if (!inherits(l,'Workflow')) stop(l,' is not of class "Workflow".')
-  res <- do.call(l@func,c(list(...),l@pars))
-  if (!inherits(res,'WFoutput')) stop('Provided workflow should return a "WFoutput" object.') else res
+  do.call(l@func,c(list(...),l@pars))
 }
 
 
@@ -253,16 +252,22 @@ standardWF <- function(form,train,test,
             t[names(ps),] <- ps
             ps <- t
         }
-    }    
+    }
+    
 
     ## Data post-processing stage
     if (!is.null(post)) {
         ps <- do.call("standardPOST",c(list(form,train,test,ps,steps=post),post.pars))
         if (.fullOutput) .fullRes$postprocessing <- ps
     }
-    
-    res <- WFoutput(rownames(test),trues,ps)
-    workflowInformation(res) <- if (.fullOutput) c(list(times=c(trainT=t.tr,testT=t.ts)),.fullRes) else list(times=c(trainT=t.tr,testT=t.ts))
+
+    ## giving correct names to the predictions
+    if (is.null(dim(ps))) names(ps) <- rownames(test)
+    else rownames(ps) <- rownames(test)
+
+    ## the final return object (a list) from the workflow
+    res <- list(trues=trues,preds=ps,times=c(trainT=t.tr,testT=t.ts))
+    if (.fullOutput) res <- c(res,.fullRes) 
     res
 }
  
@@ -330,10 +335,11 @@ timeseriesWF <- function(form,train,test,
     }
     if (verbose) cat('\n')
     if (.fullOutput) .fullRes$modeling <- models
+
     
+    trues <- responseValues(form,test)
     ## Checking for learners that do not ouput as many predictions as test cases!
     ## (e.g. SVM from e1071!)
-    trues <- responseValues(form,test)
     if (length(preds) != length(trues)) {
         warning("timeseriesWF:: less predictions than test cases, filling with NAs.")
         t <- trues
@@ -348,9 +354,13 @@ timeseriesWF <- function(form,train,test,
                          c(list(form,train,test,preds,steps=post),post.pars))
         if (.fullOutput) .fullRes$postprocessing <- preds
     }
+
+    ## giving correct names to the predictions
+    names(preds) <- rownames(test)
     
-    res <- WFoutput(rownames(test),trues,preds)
-    workflowInformation(res) <- if (.fullOutput) c(list(times=c(trainT=t.tr,testT=t.ts)),.fullRes) else list(times=c(trainT=t.tr,testT=t.ts))
+    ## the final return object (a list) from the workflow
+    res <- list(trues=trues,preds=preds,times=c(trainT=t.tr,testT=t.ts))
+    res <- if (.fullOutput) c(res,.fullRes) 
     res
 }
 

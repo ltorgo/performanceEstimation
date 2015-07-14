@@ -116,49 +116,6 @@ Workflow <- function(wf, ..., wfID, deps=NULL) {
 }
 
 
-## ==============================================================
-## CLASS: WFoutput
-##
-## A class for storing the information resulting from applying a
-## workflow to a predictive task
-## ==============================================================
-
-
-## --------------------------------------------------------------
-## Definition
-##
-setClass("WFoutput",
-         slots=c(predictions   = "data.frame",  # a data.frame nTest x 2 (true,pred)
-                 extraInfo     = "list")        # list of whatever info the wf author wants
-)
-
-
-## --------------------------------------------------------------
-## Constructor
-##
-WFoutput <- function(rIDs,ts,ps,e=list()) {
-  o              <- new("WFoutput")
-
-  if (!is.null(dim(ps))) {
-      preds <- colnames(ps)[apply(ps,1,which.max)]
-      probs <- ps
-  } else {
-      preds <- ps
-      probs <- NULL
-  }
-  if (length(preds) != length(ts)) {
-      warning("WFoutput:: less predictions than test cases, filling with NAs.")
-      t <- ts
-      t[] <- NA
-      t[names(ps)] <- preds
-      preds <- t
-  }
-  o@predictions  <- data.frame(row.names=rIDs,true=ts,predicted=preds)
-  if (!is.null(probs)) o@predictions <- cbind(o@predictions,probs)
-  o@extraInfo    <- e
-  o
-}
-
 
 ## ==============================================================
 ## CLASS: EstCommon
@@ -394,9 +351,9 @@ EstimationResults <- function(t,w,et,sc,e) {
   o@estTask          <- et
   o@iterationsScores <- sc
   ## classification tasks, code back predictions to class labels
-  if (is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
+  if (et@evaluator=="" & is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
       for (i in 1:length(e))
-          e[[i]]$preds[,"predicted"] <- factor(e[[i]]$preds[,"predicted"],levels=levels(responseValues(t@formula,eval(t@dataSource))))
+          e[[i]]$preds <- factor(e[[i]]$preds,levels=levels(responseValues(t@formula,eval(t@dataSource))))
   }
   o@iterationsInfo  <- e
   o

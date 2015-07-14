@@ -88,8 +88,8 @@ A named list of parameter values to be passed to the post-processing functions.
   }
   \item{.fullOutput}{
     A boolean that if set to \code{TRUE} will make the function return
-  the models that was obtained in the extra information of the workflow
-  output object (you may inspect it using function \code{\link{workflowInformation}}) (defaults  to \code{FALSE}).
+  more information in the list that results from its execution like for
+  instance  the  models (defaults  to \code{FALSE}).
   }
   \item{verbose}{
     A Boolean indicating whether a "*" character should be printed every
@@ -148,7 +148,8 @@ A named list of parameter values to be passed to the post-processing functions.
 
 }
 \value{
-  An object of class \code{\linkS4class{WFoutput}}
+  A list with several components containing the result of runing the
+  workflow.
 }
 \references{ Torgo, L. (2014) \emph{An Infra-Structure for Performance
     Estimation and Experimental Comparison of Predictive Models in R}. arXiv:1412.0436 [cs.MS]
@@ -159,13 +160,10 @@ A named list of parameter values to be passed to the post-processing functions.
 \seealso{
   \code{\link{standardWF}},
   \code{\link{performanceEstimation}},
-  \code{\link{workflowPredictions}},
-  \code{\link{workflowInformation}},
   \code{\link{getIterationInfo}},
   \code{\link{getIterationPreds}},
   \code{\link{standardPRE}},
-  \code{\link{standardPOST}},
-  \code{\linkS4class{WFoutput}}
+  \code{\link{standardPOST}}
 }
 \examples{
 

@@ -92,8 +92,7 @@ mcEstimates(wf, task, estTask, verbose = TRUE,cluster)
   period. To carry out this train+test iteration the user may use the
   standard time series workflow that is provided (check the help page of
   \code{\link{timeseriesWF}}), or may provide hers/his own workflow that
-  should return an object of class
-  \code{\linkS4class{WFoutput}}. See the Examples section below for an
+  should return a list as result. See the Examples section below for an
   example of these functions. Further examples are given in the package
   vignette.
 

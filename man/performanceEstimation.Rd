@@ -191,7 +191,7 @@ myWF <- function(form,train,test,wL=0.5,...) {
     pl <- predict(ml,test)
     pr <- predict(mr,test)
     ps <- wL*pl+(1-wL)*pr
-    WFoutput(rownames(test),responseValues(form,test),ps)
+    list(trues=responseValues(form,test),preds=ps)
 }
 resmywf <- performanceEstimation(
              PredTask(mpg ~ ., mtcars),

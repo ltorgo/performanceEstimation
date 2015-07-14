@@ -99,30 +99,33 @@ getScores <- function(results,workflow,task) {
 ## ----------------------------------------------------------
 ## The scores on all iterations
 ## ----------------------------------------------------------
-getIterationInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
+getIterationsInfo <- function(obj,workflow=1,task=1,rep,fold,it) {
+    if (missing(rep) && missing(fold) && missing(it)) return(obj[[task]][[workflow]]@iterationsInfo)
     if ((missing(rep) || missing(fold)) && missing(it))
-        stop("getITsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+        stop("getIterationsInfo:: to get the results of a particular iteration you need to supply both 'rep' and 'fold', or simply 'it'")
     if (!missing(it)) {
-        if (it > nrow(obj[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj[[task]][[workflow]]@iterationsInfo[[it]]$info
+        if (it > nrow(obj[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationsInfo:: only",nrow(obj[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[it]]
     } else {
-        if (rep >  obj[[task]][[workflow]]@estTask@method@nReps || fold > obj[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
-        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]]$info
+        if (rep >  obj[[task]][[workflow]]@estTask@method@nReps || fold > obj[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationsInfo:: only",obj[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
+        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]]
     }
 }
 
 ## ----------------------------------------------------------
 ## The scores on all iterations
 ## ----------------------------------------------------------
-getIterationPreds <- function(obj,workflow=1,task=1,rep,fold,it) {
+getIterationsPreds <- function(obj,workflow=1,task=1,rep,fold,it,predComp="preds") {
+    if (missing(rep) && missing(fold) && missing(it))
+        return(sapply(obj[[task]][[workflow]]@iterationsInfo, function(x) x[[predComp]]))
     if ((missing(rep) || missing(fold)) && missing(it))
-        stop("getPredictionsInfo:: you need to supply both 'rep' and 'fold' or 'it'")
+        stop("getPredictionsInfo:: to get the results of a particular iteration you need to supply both 'rep' and 'fold', or simply 'it'")
     if (!missing(it)) {
         if (it > nrow(obj[[task]][[workflow]]@iterationsScores)) stop(paste("getIterationInfo:: only",nrow(obj[[task]][[workflow]]@iterationsScores),"iterations available.\n"))
-        obj[[task]][[workflow]]@iterationsInfo[[it]]$preds
+        obj[[task]][[workflow]]@iterationsInfo[[it]][[predComp]]
     } else {
         if (rep >  obj[[task]][[workflow]]@estTask@method@nReps || fold > obj[[task]][[workflow]]@estTask@method@nFolds) stop(paste("getIterationInfo:: only",obj[[task]][[workflow]]@estTask@method@nReps,"repetitions and",obj[[task]][[workflow]]@estTask@method@nFolds,"folds available.\n"))
-        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]]$preds
+        obj[[task]][[workflow]]@iterationsInfo[[(rep-1)*obj[[task]][[workflow]]@estTask@method@nFolds+fold]][[predComp]]
     }
 }
 

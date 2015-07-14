@@ -143,9 +143,8 @@ myLM <- function(form,train,test,k=10,.outModel=FALSE) {
     ## variable is always positive so we change negative predictions into 0)
     p <- ifelse(p < 0,0,p)
     ## now get the final return object
-    res <- WFoutput(rownames(nts),responseValues(form,nts),p)
-    if (.outModel)
-      workflowInformation(res) <- list(model=m) 
+    res <- list(trues=responseValues(form,nts), preds=p)
+    if (.outModel) res <- c(res,list(model=m))
     res
 }
 

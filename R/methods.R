@@ -71,22 +71,6 @@ setMethod("summary",
 
 
 
-################################################################
-## WFoutput methods
-################################################################
-
-setMethod("show",
-          "WFoutput",
-          function(object) {
-            cat('WFoutput object :\n')
-            cat("\t'@predictions' slot containing the predictions with dimensions ",nrow(object@predictions),"x",ncol(object@predictions),"\n")
-            if (length(object@extraInfo)) 
-              cat("\t'@extraInfo' slot containing extra information returned by the workflow function.\n")
-            cat("\n")
-          })
-
-
-
 
 
 ################################################################
