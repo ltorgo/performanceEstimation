@@ -360,7 +360,7 @@ timeseriesWF <- function(form,train,test,
     
     ## the final return object (a list) from the workflow
     res <- list(trues=trues,preds=preds,times=c(trainT=t.tr,testT=t.ts))
-    res <- if (.fullOutput) c(res,.fullRes) 
+    if (.fullOutput) res <- c(res,.fullRes) 
     res
 }
 
