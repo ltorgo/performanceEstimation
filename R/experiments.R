@@ -499,7 +499,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
         
         if (length(predMs)) {
             trR <- if (trReq) list(train.y=eval(task@dataSource)[1:n,task@target]) else NULL
-            fstArgs <- if (standEval) list(trues=resub$trues,preds=resub$preds) else list(resub)
+            fstArgs <- if (standEval) list(trues=resub$trues,preds=resub$preds) else resub
             resubScores <- do.call(evalFunc,
                                    c(fstArgs,
                                      list(stats=predMs),
@@ -509,7 +509,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
         for(i in 1:nIts) {
             if (length(predMs)) {
                 trR <- if (trReq) list(train.y=eval(task@dataSource)[itsInfo[[i]]$train,task@target]) else NULL
-                fstArgs <- if (standEval) list(trues=itsInfo[[i]]$trues,preds=itsInfo[[i]]$preds) else list(itsInfo[[i]])
+                fstArgs <- if (standEval) list(trues=itsInfo[[i]]$trues,preds=itsInfo[[i]]$preds) else itsInfo[[i]]
                 scores[i,predMs] <- 0.632*do.call(evalFunc,
                                                   c(fstArgs,
                                                     list(stat=predMs),
@@ -715,7 +715,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     for(i in 1:nIts) {
         if (length(predMs)) {
             trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,task@target]) else NULL
-            fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else list(its[[i]])
+            fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else its[[i]]
             scores[i,predMs] <- do.call(evalFunc,
                                         c(fstArgs,
                                           list(stats=predMs),
