@@ -518,7 +518,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
                                                   ) + 0.368*resubScores
             }
             if (length(wts)) {
-                allts <- as.numeric(itsInfo[[i]]$info$times)
+                allts <- as.numeric(itsInfo[[i]]$times)
                 scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],
                                    totTime=allts[1]+allts[2])[wts]
             }
@@ -724,7 +724,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
             
         }
         if (length(wts)) {
-            allts <- as.numeric(its[[i]]$info$times)
+            allts <- as.numeric(its[[i]]$times)
             scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],totTime=allts[1]+allts[2])[wts]
         }
     }
