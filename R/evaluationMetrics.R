@@ -14,15 +14,15 @@
 # s <- regressionMetrics(tr,ps,stats=c('mse','mae'))
 #
 regressionMetrics <- function(trues,preds,
-                      stats="mse",
-                      train.y=NULL)
+                              stats=NULL,
+                              train.y=NULL)
 {
     ## Checking preds
     if (!is.null(dim(preds))) stop("regressionMetrics:: expecting a vector as predictions.")
 
     ## Cheking the statistics
     knownMetrics <- c('mae','mse','rmse','mape','nmse','nmae','theil')
-    if (identical(stats,"all"))
+    if (is.null(stats))  # user wants all available stats
         stats <- if (is.null(train.y)) setdiff(knownMetrics,c("nmse","nmae")) else knownMetrics
     
     if (any(c('nmse','nmad') %in% stats) && is.null(train.y))
@@ -61,7 +61,7 @@ regressionMetrics <- function(trues,preds,
 # s <- classificationMetrics(tr,ps,benMtrx=matrix(c(2,-13,-4,5),2,2))
 #
 classificationMetrics <- function(trues,preds,
-                 stats="err",
+                 stats=NULL,
                  benMtrx=NULL,
                  allCls=unique(c(levels(as.factor(trues)),levels(as.factor(preds)))),
                  posClass=allCls[1],
@@ -78,7 +78,7 @@ classificationMetrics <- function(trues,preds,
     knownMetrics <- c(twoClsMetrics,c('acc','err','totU',
                       'microF','macroF',"macroRec","macroPrec"))
 
-    if (identical(stats,"all")) {
+    if (is.null(stats)) {
         stats <- knownMetrics
         if (length(allCls) > 2) stats <- setdiff(stats,twoClsMetrics)
         if (is.null(benMtrx))   stats <- setdiff(stats,'totU')

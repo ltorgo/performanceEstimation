@@ -192,7 +192,8 @@ setMethod("show",
 setMethod("show",
           "EstimationTask",
           function(object) {
-              cat("Task for estimating ",paste(object@metrics,collapse=",")," using\n")
+              if (is.null(object@metrics)) cat("Task for estimating all metrics of the selected evaluation function using\n")
+              else cat("Task for estimating ",paste(object@metrics,collapse=",")," using\n")
               print(object@method)
           }
          )

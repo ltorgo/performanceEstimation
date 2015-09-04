@@ -482,7 +482,8 @@ bootEstimates <- function(wf,task,estTask,cluster) {
   
     ## Calculate the metrics estimation
     if (estTask@method@type == ".632") {  # this method is different from all others
-        trReq <- any(estTask@metrics %in% c("nmse","nmae","theil"))
+        trReq <- estTask@trainReq || any(estTask@metrics %in% c("nmse","nmae","theil")) || (is.regression(task) && is.null(estTask@metrics))
+        
         nIts <- length(itsInfo)
         
         standEval <- if (estTask@evaluator == "" ) TRUE else FALSE
@@ -491,32 +492,42 @@ bootEstimates <- function(wf,task,estTask,cluster) {
         else
             evalFunc <- estTask@evaluator
 
-        scores <- matrix(NA,nrow=nIts,ncol=length(estTask@metrics))
-        colnames(scores) <- estTask@metrics
-        
         wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
         predMs <- setdiff(estTask@metrics,wts)
-        
-        if (length(predMs)) {
-            trR <- if (trReq) list(train.y=eval(task@dataSource)[1:n,task@target]) else NULL
-            fstArgs <- if (standEval) list(trues=resub$trues,preds=resub$preds) else resub
-            resubScores <- do.call(evalFunc,
-                                   c(fstArgs,
-                                     list(stats=predMs),
-                                     trR,
-                                     estTask@evaluator.pars))
+        stats <- if (!is.null(predMs)) list(stats=predMs) else NULL
+
+        ## getting the resubstitution scores
+        trR <- if (trReq) list(train.y=eval(task@dataSource)[1:n,task@target]) else NULL
+        fstArgs <- if (standEval) list(trues=resub$trues,preds=resub$preds) else resub
+        resubScores <- do.call(evalFunc,
+                               c(fstArgs,
+                                 stats,
+                                 trR,
+                                 estTask@evaluator.pars))
+
+        ## The structure holding all scores
+        if (is.null(estTask@metrics)) {
+            ncols <- length(resubScores)
+            namcols <- names(resubScores)
+        } else {
+            ncols <- length(estTask@metrics)
+            namcols <- estTask@metrics
         }
+        scores <- matrix(NA,nrow=nIts,ncol=ncols,
+                         dimnames=list(1:nIts,namcols))
+
         for(i in 1:nIts) {
-            if (length(predMs)) {
-                trR <- if (trReq) list(train.y=eval(task@dataSource)[itsInfo[[i]]$train,task@target]) else NULL
-                fstArgs <- if (standEval) list(trues=itsInfo[[i]]$trues,preds=itsInfo[[i]]$preds) else itsInfo[[i]]
-                scores[i,predMs] <- 0.632*do.call(evalFunc,
-                                                  c(fstArgs,
-                                                    list(stat=predMs),
-                                                    trR,
-                                                    estTask@evaluator.pars)
-                                                  ) + 0.368*resubScores
-            }
+            trR <- if (trReq) list(train.y=eval(task@dataSource)[itsInfo[[i]]$train,task@target]) else NULL
+            fstArgs <- if (standEval) list(trues=itsInfo[[i]]$trues,preds=itsInfo[[i]]$preds) else itsInfo[[i]]
+            ss <- 0.632*do.call(evalFunc,
+                                c(fstArgs,
+                                  stats,
+                                  trR,
+                                  estTask@evaluator.pars)
+                                ) + 0.368*resubScores
+            
+            if (is.null(predMs))  scores[i,] <- ss else scores[i,predMs] <- ss
+
             if (length(wts)) {
                 allts <- as.numeric(itsInfo[[i]]$times)
                 scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],
@@ -696,7 +707,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
 ## calculates the scores of all iterations of an estimation exp
 .scoresIts <- function(task,estTask,its) {
-    trReq <- estTask@trainReq || any(estTask@metrics %in% c("nmse","nmae","theil"))
+    trReq <- estTask@trainReq || any(estTask@metrics %in% c("nmse","nmae","theil")) || (is.regression(task) && is.null(estTask@metrics))
 
     nIts <- length(its)
 
@@ -706,23 +717,32 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     else
         evalFunc <- estTask@evaluator
 
-    scores <- matrix(NA,nrow=nIts,ncol=length(estTask@metrics))
-    colnames(scores) <- estTask@metrics
-    
+    scores <- NULL
     wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
     predMs <- setdiff(estTask@metrics,wts)
+    stats <- if (!is.null(predMs)) list(stats=predMs) else NULL
     
     for(i in 1:nIts) {
-        if (length(predMs)) {
-            trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,task@target]) else NULL
-            fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else its[[i]]
-            scores[i,predMs] <- do.call(evalFunc,
-                                        c(fstArgs,
-                                          list(stats=predMs),
-                                          trR,
-                                          estTask@evaluator.pars))
-            
+        trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,task@target]) else NULL
+        fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else its[[i]]
+        ss <- do.call(evalFunc,
+                      c(fstArgs,
+                        stats,
+                        trR,
+                        estTask@evaluator.pars))
+        if (is.null(scores)) {
+            if (is.null(estTask@metrics)) {
+                ncols <- length(ss)
+                namcols <- names(ss)
+            } else {
+                ncols <- length(estTask@metrics)
+                namcols <- estTask@metrics
+            }
+            scores <- matrix(NA,nrow=nIts,ncol=ncols,
+                             dimnames=list(1:nIts,namcols))
         }
+        if (is.null(predMs))  scores[i,] <- ss else scores[i,predMs] <- ss
+        
         if (length(wts)) {
             allts <- as.numeric(its[[i]]$times)
             scores[i,wts] <- c(trTime=allts[1],tsTime=allts[2],totTime=allts[1]+allts[2])[wts]
