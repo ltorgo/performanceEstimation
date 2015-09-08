@@ -13,7 +13,7 @@ metrics may require additional information to be given (see Details section).
 }
 \usage{
 classificationMetrics(trues,preds,
-            stats="err",
+            stats=NULL,
             benMtrx=NULL,
             allCls=unique(c(levels(as.factor(trues)),levels(as.factor(preds)))),
             posClass=allCls[1],
@@ -29,9 +29,8 @@ A  vector or factor with the predicted values of the target variable.
 }
   \item{stats}{
     A vector with the names of the evaluation statistics to
-    calculate (see Details section). If none is indicated it will
-  default to the error rate ("err"). It is also possible to
-  indicate the value "all", and all available metrics will be calculated.
+    calculate (see Details section). If none is indicated (default) it will
+  calculate all available metrics.
   }
   \item{benMtrx}{
     An optional cost/benefit matrix with numeric values representing the benefits (positive
@@ -202,7 +201,7 @@ preds <- predict(tree,test,type='class')
 ## Calculate the  error rate
 classificationMetrics(test$Species,preds)
 ## Calculate the all possible error metrics
-classificationMetrics(test$Species,preds,stats="all")
+classificationMetrics(test$Species,preds)
 ## Now trying calculating the utility of the predictions
 cbM <- matrix(c(10,-20,-20,-20,20,-10,-20,-10,20),3,3)
 classificationMetrics(test$Species,preds,"totU",cbM)

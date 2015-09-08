@@ -64,6 +64,7 @@
 \usepackage{breakurl}
 
 \newcommand{\PE}{package \texttt{performanceEstimation}\ }
+\newcommand{\PEversion}{1.0.2\ }
 
 \author{Luis Torgo\\FCUP - LIAAD/INESC Tec\\University of Porto\\
   \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inesctec.pt}}
@@ -97,7 +98,7 @@
 \section{Introduction}
 
 The goal of this document is to describe the infra-structure that is
-available in \PE to estimate the performance of different approaches
+available in \PE\footnote{This document was written for version \PEversion of the package.} to estimate the performance of different approaches
 to predictive tasks.  The main goal of this package is to provide a
 general infra-structure that can be used to estimate the performance
 using several predictive performance metrics of any modelling approach
@@ -108,7 +109,7 @@ of approaches to these tasks for which you can estimate the
 performance - the user just needs to provide a workflow function
 (following some interface rules) that implements the approach for
 which the predictive performance is to be estimated. The package
-includes some standard workflow functions that implement the standard
+includes some standard workflow functions that implement the typical
 learn+test approach that most users will be interested
 in. This means that if you just want to estimate the performance of
 some variants of a method already implemented in R (e.g. an SVM), on
@@ -179,6 +180,39 @@ of workflows by specifying sets of parameters that the user wishes to
 consider in the comparisons.
 
 % ====================================================================
+\section{Package Installation}\label{sec:install}
+
+The package can be installed as any other R package that is available at the R central repository (CRAN), i.e. by simply executing the code:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"performanceEstimation"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+This is the recommended form of installing the package an we assume that you start by doing this before you proceed to try the examples described in this document. This will install the current stable version of the package that at the time of writing of this document is version \PEversion.
+
+If you wish to try some eventual new developments of the package that are still under testing and have not yet been released to the general public (thus are subject to bugs), then you may install the development version of the package that is available at the package GitHub Web page:
+
+\url{https://github.com/ltorgo/performanceEstimation}
+
+In order to install this development version (again not recommended unless you have a good reason for it), you may issue the following commands in R:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(devtools)}  \hlcom{# You need to install this package before!}
+\hlkwd{install_github}\hlstd{(}\hlstr{"ltorgo/performanceEstimation"}\hlstd{,}\hlkwc{ref}\hlstd{=}\hlstr{"develop"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The GitHub Web page referred above is also the right place for you to report any issues you have with the package or help in its development.
+
+
+% ====================================================================
 \section{A Simple Illustrative Example}\label{sec:simpleEx}
 
 Let us assume we are interested in estimating the predictive performance of several variants of
@@ -223,7 +257,7 @@ infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
 the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
-specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
+specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing the information related with these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
 \textbf{PredTask} objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
 
@@ -318,14 +352,14 @@ experimental comparisons, as shown by the next few illustrative examples.
 ## 
 ## -> Task:  iris.Species
 ##   *Workflow: svm 
-##             err
-## avg     0.03333
-## std     0.04714
-## med     0.00000
-## iqr     0.06667
-## min     0.00000
-## max     0.13333
-## invalid 0.00000
+##                err
+## avg     0.03333333
+## std     0.04714045
+## med     0.00000000
+## iqr     0.06666667
+## min     0.00000000
+## max     0.13333333
+## invalid 0.00000000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -353,14 +387,13 @@ show in Figure~\ref{fig:ex1Iris}.
 \begin{alltt}
 \hlkwd{plot}\hlstd{(res)}
 \end{alltt}
-\end{kframe}\begin{figure}[]
+\end{kframe}\begin{figure}
 
-
-{\centering \includegraphics[width=0.8\textwidth]{figures/perfEst-ex1Iris} 
+{\centering \includegraphics[width=0.7\textwidth]{figures/perfEst-ex1Iris-1} 
 
 }
 
-\caption[The distribution of the error rate on the 10 folds]{The distribution of the error rate on the 10 folds. Red dots show the performance on each individual iteration of the estimation process.\label{fig:ex1Iris}}
+\caption[The distribution of the error rate on the 10 folds]{The distribution of the error rate on the 10 folds. Red dots show the performance on each individual iteration of the estimation process.}\label{fig:ex1Iris}
 \end{figure}
 
 
@@ -485,9 +518,9 @@ variants of the workflow. The variants are essentially all possible
 combinations of the values in each vector. In the above example we
 provide 5 values for \textbf{cost} and 3 for \textbf{gamma} and thus
 we will have 15 \textbf{Workflow} objects. It may happen that some of
-the parameters of the workflow, actually take as valid values a
+the parameters of the workflow actually take as valid values a
 vector. In those situations you do not want the function to use the
-values to generate variants. You can achived this effect by including
+values to generate variants. You can achieve this effect by including
 the name of that parameter in the parameter \textbf{as.is} of the
 function \texttt{workflowVariants}.
 
@@ -629,7 +662,7 @@ We have implemented a few of these functions. Namely, in the \textbf{pre} argume
 
 \item[smote] - this operation uses the SMOTE~\cite{CBOK02}
   resampling algorithm to  generate a new training sample with a more
-  ``balanced'' distributions of the target class (this pre-processing step
+  ``balanced'' distribution of the target class (this pre-processing step
   is only available for classification tasks!). It takes the parameters
   \textbf{perc.under},  \textbf{perc.over} and \textbf{k} to control the
   algorithm. Read the  documentation of function \texttt{SMOTE} to
@@ -780,24 +813,24 @@ In the next example we illustrate the use of the post-processing routines by ``c
 ## 
 ## -> Task:  AlgaA1
 ##   *Workflow: lm 
-##            mae
-## avg     14.309
-## std      1.858
-## med     14.340
-## iqr      2.448
-## min     11.652
-## max     17.452
-## invalid  0.000
+##               mae
+## avg     14.308536
+## std      1.857755
+## med     14.340022
+## iqr      2.447854
+## min     11.652404
+## max     17.451525
+## invalid  0.000000
 ## 
 ##   *Workflow: lmOnlyPos 
-##            mae
-## avg     13.116
-## std      1.690
-## med     13.173
-## iqr      2.273
-## min      9.956
-## max     15.303
-## invalid  0.000
+##               mae
+## avg     13.116271
+## std      1.690161
+## med     13.173095
+## iqr      2.273219
+## min      9.955684
+## max     15.302897
+## invalid  0.000000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1037,22 +1070,21 @@ The third argument of the main function \texttt{performanceEstimation} defines t
 
 \subsection{Performance Metrics}
 
-The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of this metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
+The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of these metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. The user may also omit the \textbf{metrics} parameter and in that case all metrics available in the evaluation function will be calculated. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
 
-In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
+%In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
 
 \subsection{User-defined Performance Metrics}
 
-Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. Specifically, the user-defined functions should have as the first 2 parameters: (i) a parameter that will receive the list resulting from the workflow call; (ii)  \textbf{stats} that is a vector with the names of the metrics to be calculated (the user-defined functions may be able to calculate several metrics). Any further parameters of the function are up to the user and may be set through values in the \textbf{evaluator.pars} list. The user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified in the parameter \textbf{stats}. The names of the scores in the vector should be the names of the metrics specified in the parameter \textbf{stats}.
+Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. In terms of input parameters to these functions, our infra-structure will call these user-defined functions with: (i) the outcome of the workflow; (ii) any metric names that were specified in parameter \textbf{metrics}; (iii) the target values in the training set if the parameter \textbf{trainReq} was set to \texttt{TRUE}; and (iv) any other parameters specified through \textbf{evaluator.pars}. In terms of output, the user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified by the user. The names of the scores in the vector should be the names of the metrics specified in the parameter \textbf{metrics}.
 
 Suppose we want to calculate the error of a regression model as the difference between true and predicted values raised to some power. We could define a function to calculate such metric following our package input/output protocol as:
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{powErr} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{itResults}\hlstd{,}\hlkwc{stats}\hlstd{,}\hlkwc{pow}\hlstd{=}\hlnum{3}\hlstd{) \{}
-    \hlkwa{if} \hlstd{(stats} \hlopt{!=} \hlstr{"pow.err"}\hlstd{)} \hlkwd{stop}\hlstd{(}\hlstr{"Unable to calculate that metric!"}\hlstd{)}
-    \hlkwd{c}\hlstd{(}\hlkwc{pow.err} \hlstd{=} \hlkwd{mean}\hlstd{((itResults}\hlopt{$}\hlstd{trues}\hlopt{-}\hlstd{itResults}\hlopt{$}\hlstd{preds)}\hlopt{^}\hlstd{pow))}
+\hlstd{powErr} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{trues}\hlstd{,}\hlkwc{preds}\hlstd{,}\hlkwc{pow}\hlstd{=}\hlnum{3}\hlstd{,}\hlkwc{...}\hlstd{) \{}
+    \hlkwd{c}\hlstd{(}\hlkwc{pow.err} \hlstd{=} \hlkwd{mean}\hlstd{((trues}\hlopt{-}\hlstd{preds)}\hlopt{^}\hlstd{pow))}
 \hlstd{\}}
 \end{alltt}
 \end{kframe}
@@ -1069,6 +1101,17 @@ Using such function in the context of some 10-fold cross validation estimation e
 \end{kframe}
 \end{knitrout}
 
+In effect, you could take advantage of the defaults and actually just call it like this:
+
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{EstimationTask}\hlstd{(}\hlkwc{evaluator}\hlstd{=}\hlstr{"powErr"}\hlstd{,}\hlkwc{evaluator.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{pow}\hlstd{=}\hlnum{4}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The default of \textbf{method} is exactly Cross validation and the default of \textbf{metrics} is to calculate all metrics of the provided evaluator function.
 
 \subsection{Estimation Methodologies}\label{sec:expMeth}
 
@@ -1165,7 +1208,7 @@ Bellow you can find a small illustration using the Servo data set available in p
                    \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{trace}\hlstd{=F,}\hlkwc{linout}\hlstd{=T,}
                        \hlkwc{size}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{5}\hlstd{),}\hlkwc{decay}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.01}\hlstd{,}\hlnum{0.1}\hlstd{))}
           \hlstd{),}
-  \hlkwd{EstimationTask}\hlstd{(}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{Bootstrap}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{100}\hlstd{)))}
+  \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"mse"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{Bootstrap}\hlstd{(}\hlkwc{nReps}\hlstd{=}\hlnum{100}\hlstd{)))}
 \end{alltt}
 \end{kframe}
 \end{knitrout}
@@ -1423,13 +1466,13 @@ As we have several workflows being compared on different tasks we will start by 
 \end{alltt}
 \begin{verbatim}
 ## $chi
-## [1] 18.57
+## [1] 18.575
 ## 
 ## $FF
-## [1] 1.586
+## [1] 1.585912
 ## 
 ## $critVal
-## [1] 0.8892
+## [1] 0.8892237
 ## 
 ## $rejNull
 ## [1] TRUE
@@ -1447,41 +1490,41 @@ We can see that the null hypothesis that the average ranks of the workflows are 
 \end{alltt}
 \begin{verbatim}
 ## $critDif
-## [1] 12.38
+## [1] 12.38302
 ## 
 ## $rkDifs
-##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
-## svm.v1  0.0000 1.5000 1.0000 1.8333 1.5000 0.6667 0.8333 0.1667 1.3333   2.833   7.667
-## svm.v2  1.5000 0.0000 0.5000 0.3333 0.0000 2.1667 2.3333 1.3333 0.1667   1.333   9.167
-## svm.v3  1.0000 0.5000 0.0000 0.8333 0.5000 1.6667 1.8333 0.8333 0.3333   1.833   8.667
-## svm.v4  1.8333 0.3333 0.8333 0.0000 0.3333 2.5000 2.6667 1.6667 0.5000   1.000   9.500
-## svm.v5  1.5000 0.0000 0.5000 0.3333 0.0000 2.1667 2.3333 1.3333 0.1667   1.333   9.167
-## svm.v6  0.6667 2.1667 1.6667 2.5000 2.1667 0.0000 0.1667 0.8333 2.0000   3.500   7.000
-## svm.v7  0.8333 2.3333 1.8333 2.6667 2.3333 0.1667 0.0000 1.0000 2.1667   3.667   6.833
-## svm.v8  0.1667 1.3333 0.8333 1.6667 1.3333 0.8333 1.0000 0.0000 1.1667   2.667   7.833
-## svm.v9  1.3333 0.1667 0.3333 0.5000 0.1667 2.0000 2.1667 1.1667 0.0000   1.500   9.000
-## svm.v10 2.8333 1.3333 1.8333 1.0000 1.3333 3.5000 3.6667 2.6667 1.5000   0.000  10.500
-## svm.v11 7.6667 9.1667 8.6667 9.5000 9.1667 7.0000 6.8333 7.8333 9.0000  10.500   0.000
-## svm.v12 6.6667 8.1667 7.6667 8.5000 8.1667 6.0000 5.8333 6.8333 8.0000   9.500   1.000
-## svm.v13 2.3333 3.8333 3.3333 4.1667 3.8333 1.6667 1.5000 2.5000 3.6667   5.167   5.333
-## svm.v14 1.0000 2.5000 2.0000 2.8333 2.5000 0.3333 0.1667 1.1667 2.3333   3.833   6.667
-## svm.v15 1.0000 2.5000 2.0000 2.8333 2.5000 0.3333 0.1667 1.1667 2.3333   3.833   6.667
-##         svm.v12 svm.v13 svm.v14 svm.v15
-## svm.v1    6.667   2.333  1.0000  1.0000
-## svm.v2    8.167   3.833  2.5000  2.5000
-## svm.v3    7.667   3.333  2.0000  2.0000
-## svm.v4    8.500   4.167  2.8333  2.8333
-## svm.v5    8.167   3.833  2.5000  2.5000
-## svm.v6    6.000   1.667  0.3333  0.3333
-## svm.v7    5.833   1.500  0.1667  0.1667
-## svm.v8    6.833   2.500  1.1667  1.1667
-## svm.v9    8.000   3.667  2.3333  2.3333
-## svm.v10   9.500   5.167  3.8333  3.8333
-## svm.v11   1.000   5.333  6.6667  6.6667
-## svm.v12   0.000   4.333  5.6667  5.6667
-## svm.v13   4.333   0.000  1.3333  1.3333
-## svm.v14   5.667   1.333  0.0000  0.0000
-## svm.v15   5.667   1.333  0.0000  0.0000
+##            svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6    svm.v7    svm.v8
+## svm.v1  0.0000000 1.5000000 1.0000000 1.8333333 1.5000000 0.6666667 0.8333333 0.1666667
+## svm.v2  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667 2.3333333 1.3333333
+## svm.v3  1.0000000 0.5000000 0.0000000 0.8333333 0.5000000 1.6666667 1.8333333 0.8333333
+## svm.v4  1.8333333 0.3333333 0.8333333 0.0000000 0.3333333 2.5000000 2.6666667 1.6666667
+## svm.v5  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667 2.3333333 1.3333333
+## svm.v6  0.6666667 2.1666667 1.6666667 2.5000000 2.1666667 0.0000000 0.1666667 0.8333333
+## svm.v7  0.8333333 2.3333333 1.8333333 2.6666667 2.3333333 0.1666667 0.0000000 1.0000000
+## svm.v8  0.1666667 1.3333333 0.8333333 1.6666667 1.3333333 0.8333333 1.0000000 0.0000000
+## svm.v9  1.3333333 0.1666667 0.3333333 0.5000000 0.1666667 2.0000000 2.1666667 1.1666667
+## svm.v10 2.8333333 1.3333333 1.8333333 1.0000000 1.3333333 3.5000000 3.6666667 2.6666667
+## svm.v11 7.6666667 9.1666667 8.6666667 9.5000000 9.1666667 7.0000000 6.8333333 7.8333333
+## svm.v12 6.6666667 8.1666667 7.6666667 8.5000000 8.1666667 6.0000000 5.8333333 6.8333333
+## svm.v13 2.3333333 3.8333333 3.3333333 4.1666667 3.8333333 1.6666667 1.5000000 2.5000000
+## svm.v14 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333 0.1666667 1.1666667
+## svm.v15 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333 0.1666667 1.1666667
+##            svm.v9   svm.v10   svm.v11  svm.v12  svm.v13   svm.v14   svm.v15
+## svm.v1  1.3333333  2.833333  7.666667 6.666667 2.333333 1.0000000 1.0000000
+## svm.v2  0.1666667  1.333333  9.166667 8.166667 3.833333 2.5000000 2.5000000
+## svm.v3  0.3333333  1.833333  8.666667 7.666667 3.333333 2.0000000 2.0000000
+## svm.v4  0.5000000  1.000000  9.500000 8.500000 4.166667 2.8333333 2.8333333
+## svm.v5  0.1666667  1.333333  9.166667 8.166667 3.833333 2.5000000 2.5000000
+## svm.v6  2.0000000  3.500000  7.000000 6.000000 1.666667 0.3333333 0.3333333
+## svm.v7  2.1666667  3.666667  6.833333 5.833333 1.500000 0.1666667 0.1666667
+## svm.v8  1.1666667  2.666667  7.833333 6.833333 2.500000 1.1666667 1.1666667
+## svm.v9  0.0000000  1.500000  9.000000 8.000000 3.666667 2.3333333 2.3333333
+## svm.v10 1.5000000  0.000000 10.500000 9.500000 5.166667 3.8333333 3.8333333
+## svm.v11 9.0000000 10.500000  0.000000 1.000000 5.333333 6.6666667 6.6666667
+## svm.v12 8.0000000  9.500000  1.000000 0.000000 4.333333 5.6666667 5.6666667
+## svm.v13 3.6666667  5.166667  5.333333 4.333333 0.000000 1.3333333 1.3333333
+## svm.v14 2.3333333  3.833333  6.666667 5.666667 1.333333 0.0000000 0.0000000
+## svm.v15 2.3333333  3.833333  6.666667 5.666667 1.333333 0.0000000 0.0000000
 ## 
 ## $signifDifs
 ##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
@@ -1837,127 +1880,127 @@ scores or rankings of the workflows:
 ## $a1
 ## $a1$mse
 ##          Workflow Estimate
-## 1 randomForest.v3    265.4
-## 2 randomForest.v5    265.6
-## 3 randomForest.v1    266.0
-## 4 randomForest.v6    272.3
-## 5 randomForest.v4    272.6
+## 1 randomForest.v3 265.3743
+## 2 randomForest.v5 265.6385
+## 3 randomForest.v1 266.0238
+## 4 randomForest.v6 272.3064
+## 5 randomForest.v4 272.5888
 ## 
 ## $a1$mae
 ##          Workflow Estimate
-## 1 randomForest.v1    11.07
-## 2 randomForest.v3    11.07
-## 3 randomForest.v5    11.08
-## 4 randomForest.v4    11.19
-## 5 randomForest.v2    11.20
+## 1 randomForest.v1 11.06603
+## 2 randomForest.v3 11.07444
+## 3 randomForest.v5 11.08084
+## 4 randomForest.v4 11.18655
+## 5 randomForest.v2 11.19782
 ## 
 ## 
 ## $a2
 ## $a2$mse
 ##          Workflow Estimate
-## 1 randomForest.v5    94.46
-## 2 randomForest.v6    94.88
-## 3 randomForest.v3    94.91
-## 4 randomForest.v1    94.95
-## 5 randomForest.v4    95.03
+## 1 randomForest.v5 94.46308
+## 2 randomForest.v6 94.88411
+## 3 randomForest.v3 94.90805
+## 4 randomForest.v1 94.95223
+## 5 randomForest.v4 95.03046
 ## 
 ## $a2$mae
 ##   Workflow Estimate
-## 1  svm.v11    5.917
-## 2   svm.v1    5.938
-## 3  svm.v10    5.941
-## 4   svm.v4    5.954
-## 5   svm.v5    5.968
+## 1  svm.v11 5.917035
+## 2   svm.v1 5.937923
+## 3  svm.v10 5.940801
+## 4   svm.v4 5.954024
+## 5   svm.v5 5.967910
 ## 
 ## 
 ## $a3
 ## $a3$mse
 ##          Workflow Estimate
-## 1          svm.v3    44.44
-## 2          svm.v2    44.54
-## 3          svm.v8    45.27
-## 4          svm.v9    45.31
-## 5 randomForest.v5    46.31
+## 1          svm.v3 44.44234
+## 2          svm.v2 44.54107
+## 3          svm.v8 45.27262
+## 4          svm.v9 45.31149
+## 5 randomForest.v5 46.30568
 ## 
 ## $a3$mae
 ##   Workflow Estimate
-## 1  svm.v10    3.911
-## 2   svm.v4    3.915
-## 3   svm.v7    3.943
-## 4   svm.v1    3.956
-## 5   svm.v5    4.007
+## 1  svm.v10 3.911241
+## 2   svm.v4 3.914820
+## 3   svm.v7 3.943484
+## 4   svm.v1 3.956006
+## 5   svm.v5 4.006819
 ## 
 ## 
 ## $a4
 ## $a4$mse
 ##          Workflow Estimate
-## 1 randomForest.v5    18.24
-## 2 randomForest.v3    18.25
-## 3 randomForest.v1    18.26
-## 4          svm.v4    18.37
-## 5 randomForest.v2    18.56
+## 1 randomForest.v5 18.23780
+## 2 randomForest.v3 18.25305
+## 3 randomForest.v1 18.26055
+## 4          svm.v4 18.36773
+## 5 randomForest.v2 18.56495
 ## 
 ## $a4$mae
 ##   Workflow Estimate
-## 1  svm.v10    1.882
-## 2   svm.v4    1.883
-## 3   svm.v7    1.984
-## 4   svm.v1    1.994
-## 5  svm.v11    2.022
+## 1  svm.v10 1.881994
+## 2   svm.v4 1.883301
+## 3   svm.v7 1.983666
+## 4   svm.v1 1.994250
+## 5  svm.v11 2.022148
 ## 
 ## 
 ## $a5
 ## $a5$mse
 ##          Workflow Estimate
-## 1 randomForest.v1    44.42
-## 2 randomForest.v3    44.43
-## 3 randomForest.v5    44.50
-## 4 randomForest.v4    45.51
-## 5 randomForest.v2    45.53
+## 1 randomForest.v1 44.41519
+## 2 randomForest.v3 44.43139
+## 3 randomForest.v5 44.50338
+## 4 randomForest.v4 45.50986
+## 5 randomForest.v2 45.53312
 ## 
 ## $a5$mae
 ##   Workflow Estimate
-## 1   svm.v7    4.037
-## 2  svm.v10    4.056
-## 3   svm.v4    4.061
-## 4   svm.v1    4.074
-## 5   svm.v5    4.077
+## 1   svm.v7 4.036624
+## 2  svm.v10 4.055948
+## 3   svm.v4 4.061444
+## 4   svm.v1 4.074267
+## 5   svm.v5 4.077211
 ## 
 ## 
 ## $a6
 ## $a6$mse
 ##          Workflow Estimate
-## 1          svm.v6    111.8
-## 2         svm.v12    113.1
-## 3          svm.v5    121.9
-## 4         svm.v11    123.2
-## 5 randomForest.v3    123.3
+## 1          svm.v6 111.7569
+## 2         svm.v12 113.1213
+## 3          svm.v5 121.9274
+## 4         svm.v11 123.1705
+## 5 randomForest.v3 123.3406
 ## 
 ## $a6$mae
 ##   Workflow Estimate
-## 1  svm.v12    5.548
-## 2   svm.v7    5.572
-## 3   svm.v6    5.587
-## 4   svm.v4    5.633
-## 5   svm.v1    5.644
+## 1  svm.v12 5.548443
+## 2   svm.v7 5.572169
+## 3   svm.v6 5.587264
+## 4   svm.v4 5.633257
+## 5   svm.v1 5.643838
 ## 
 ## 
 ## $a7
 ## $a7$mse
 ##          Workflow Estimate
-## 1 randomForest.v3    26.21
-## 2 randomForest.v5    26.22
-## 3 randomForest.v1    26.33
-## 4 randomForest.v2    26.45
-## 5 randomForest.v4    26.50
+## 1 randomForest.v3 26.20759
+## 2 randomForest.v5 26.21914
+## 3 randomForest.v1 26.32753
+## 4 randomForest.v2 26.44505
+## 5 randomForest.v4 26.49540
 ## 
 ## $a7$mae
 ##   Workflow Estimate
-## 1  svm.v10    2.383
-## 2   svm.v4    2.408
-## 3   svm.v7    2.419
-## 4   svm.v1    2.440
-## 5   svm.v6    2.440
+## 1  svm.v10 2.382957
+## 2   svm.v4 2.407783
+## 3   svm.v7 2.419313
+## 4   svm.v1 2.439576
+## 5   svm.v6 2.439598
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2062,124 +2105,124 @@ as show in the following example:
 ## 
 ## -> Task:  a1
 ##   *Workflow: svm.v1 
-##            mse
-## avg     305.37
-## std     147.63
-## med     275.08
-## iqr     211.22
-## min      79.09
-## max     605.37
-## invalid   0.00
+##               mse
+## avg     305.37037
+## std     147.62784
+## med     275.08382
+## iqr     211.22466
+## min      79.09407
+## max     605.36798
+## invalid   0.00000
 ## 
 ##   *Workflow: svm.v2 
-##           mse
-## avg     349.2
-## std     171.6
-## med     301.5
-## iqr     196.5
-## min     121.0
-## max     821.4
-## invalid   0.0
+##              mse
+## avg     349.1888
+## std     171.6171
+## med     301.5451
+## iqr     196.5386
+## min     120.9873
+## max     821.4265
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v3 
-##           mse
-## avg     367.2
-## std     180.4
-## med     345.7
-## iqr     203.3
-## min     142.1
-## max     916.0
-## invalid   0.0
+##              mse
+## avg     367.1953
+## std     180.4110
+## med     345.6525
+## iqr     203.3054
+## min     142.0827
+## max     915.9872
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v4 
-##            mse
-## avg     356.54
-## std     187.29
-## med     326.87
-## iqr     318.84
-## min      82.04
-## max     711.67
-## invalid   0.00
+##               mse
+## avg     356.54033
+## std     187.29360
+## med     326.86720
+## iqr     318.83908
+## min      82.03737
+## max     711.67485
+## invalid   0.00000
 ## 
 ##   *Workflow: svm.v5 
-##           mse
-## avg     376.4
-## std     235.4
-## med     283.0
-## iqr     308.7
-## min     105.0
-## max     975.8
-## invalid   0.0
+##              mse
+## avg     376.3833
+## std     235.3738
+## med     282.9879
+## iqr     308.7286
+## min     104.9834
+## max     975.8439
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v6 
-##            mse
-## avg      396.2
-## std      287.6
-## med      285.4
-## iqr      294.4
-## min       98.4
-## max     1260.5
-## invalid    0.0
+##                mse
+## avg      396.15700
+## std      287.60697
+## med      285.41018
+## iqr      294.37250
+## min       98.40015
+## max     1260.52110
+## invalid    0.00000
 ## 
 ##   *Workflow: svm.v7 
-##            mse
-## avg     304.24
-## std     144.76
-## med     271.52
-## iqr     212.01
-## min      78.69
-## max     587.87
-## invalid   0.00
+##               mse
+## avg     304.23863
+## std     144.75696
+## med     271.52274
+## iqr     212.00615
+## min      78.69374
+## max     587.86503
+## invalid   0.00000
 ## 
 ##   *Workflow: svm.v8 
-##           mse
-## avg     355.6
-## std     176.4
-## med     313.4
-## iqr     191.0
-## min     130.2
-## max     862.9
-## invalid   0.0
+##              mse
+## avg     355.5680
+## std     176.4419
+## med     313.3674
+## iqr     190.9779
+## min     130.2359
+## max     862.8762
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v9 
-##           mse
-## avg     375.2
-## std     188.1
-## med     350.2
-## iqr     195.9
-## min     143.0
-## max     954.9
-## invalid   0.0
+##              mse
+## avg     375.2226
+## std     188.0744
+## med     350.1804
+## iqr     195.8608
+## min     143.0326
+## max     954.8950
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v10 
-##            mse
-## avg     359.46
-## std     188.58
-## med     331.29
-## iqr     320.81
-## min      82.85
-## max     721.56
-## invalid   0.00
+##               mse
+## avg     359.45788
+## std     188.57821
+## med     331.28706
+## iqr     320.80755
+## min      82.84897
+## max     721.55851
+## invalid   0.00000
 ## 
 ##   *Workflow: svm.v11 
-##           mse
-## avg     367.1
-## std     216.2
-## med     282.4
-## iqr     288.6
-## min     101.3
-## max     959.6
-## invalid   0.0
+##              mse
+## avg     367.1249
+## std     216.2313
+## med     282.4140
+## iqr     288.6100
+## min     101.2520
+## max     959.5912
+## invalid   0.0000
 ## 
 ##   *Workflow: svm.v12 
-##             mse
-## avg      376.06
-## std      244.88
-## med      284.02
-## iqr      278.97
-## min       94.37
-## max     1179.99
-## invalid    0.00
+##                mse
+## avg      376.05576
+## std      244.87929
+## med      284.02493
+## iqr      278.97164
+## min       94.36646
+## max     1179.99337
+## invalid    0.00000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2197,37 +2240,37 @@ particular task:
 \hlkwd{getScores}\hlstd{(res,} \hlstr{'svm.v6'}\hlstd{,}\hlstr{'a3'}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##           mse   mae
-##  [1,]  58.773 4.040
-##  [2,]  63.421 4.836
-##  [3,] 124.213 6.630
-##  [4,]  20.818 2.902
-##  [5,]  28.508 3.202
-##  [6,]  18.425 2.774
-##  [7,]  14.446 2.509
-##  [8,]  54.975 4.584
-##  [9,]  23.522 2.871
-## [10,] 135.025 6.735
-## [11,] 112.234 5.329
-## [12,]  81.117 5.570
-## [13,]  34.504 3.779
-## [14,]   9.791 2.163
-## [15,]  30.126 3.477
-## [16,]  58.715 4.655
-## [17,]  23.793 3.171
-## [18,]  26.481 3.237
-## [19,]  99.573 5.928
-## [20,]  27.569 3.294
-## [21,]   8.496 2.129
-## [22,]  27.933 3.197
-## [23,]  20.164 2.851
-## [24,]  72.373 5.365
-## [25,]  69.470 4.814
-## [26,] 126.076 5.477
-## [27,]  65.167 5.459
-## [28,]   9.438 2.300
-## [29,]  22.697 3.512
-## [30,]  90.988 5.114
+##              mse      mae
+##  [1,]  58.773058 4.039651
+##  [2,]  63.420588 4.836262
+##  [3,] 124.212723 6.629852
+##  [4,]  20.818437 2.902345
+##  [5,]  28.507875 3.202152
+##  [6,]  18.424942 2.774288
+##  [7,]  14.446194 2.509190
+##  [8,]  54.975336 4.584341
+##  [9,]  23.521575 2.871156
+## [10,] 135.025071 6.735133
+## [11,] 112.234104 5.328625
+## [12,]  81.117165 5.569711
+## [13,]  34.504072 3.779135
+## [14,]   9.790665 2.162704
+## [15,]  30.126166 3.476657
+## [16,]  58.715226 4.654773
+## [17,]  23.793327 3.171367
+## [18,]  26.480963 3.236722
+## [19,]  99.572929 5.928280
+## [20,]  27.569010 3.293526
+## [21,]   8.495628 2.129290
+## [22,]  27.933235 3.197012
+## [23,]  20.164491 2.850632
+## [24,]  72.373337 5.364697
+## [25,]  69.470293 4.813790
+## [26,] 126.075926 5.477111
+## [27,]  65.167023 5.459279
+## [28,]   9.437532 2.299811
+## [29,]  22.696736 3.511973
+## [30,]  90.988401 5.114133
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2240,14 +2283,14 @@ Getting the summary of the results of a particular workflow on a  predictive tas
 \hlkwd{estimationSummary}\hlstd{(res,}\hlstr{'svm.v3'}\hlstd{,} \hlstr{'a7'}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##             mse   mae
-## avg      30.516 3.157
-## std      29.266 1.213
-## med      23.096 3.017
-## iqr      31.305 1.053
-## min       3.084 1.394
-## max     141.577 7.616
-## invalid   0.000 0.000
+##                mse      mae
+## avg      30.516360 3.156927
+## std      29.265924 1.213391
+## med      23.096086 3.016725
+## iqr      31.305352 1.053218
+## min       3.083724 1.393694
+## max     141.576530 7.615879
+## invalid   0.000000 0.000000
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2264,12 +2307,12 @@ calculates the median of the results of the SVMs on the task ``a1'',
 \end{alltt}
 \begin{verbatim}
 ## $a1
-##     svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
-## mse 275.08 301.55 345.65 326.87 282.99  285.4 271.52  313.4 350.18  331.29  282.41
-## mae  11.94  12.66  13.78  12.86  12.22   12.1  11.83   12.9  13.67   12.88   12.13
-##     svm.v12
-## mse  284.02
-## mae   12.11
+##        svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6    svm.v7    svm.v8
+## mse 275.08382 301.54507 345.65254 326.86720 282.98787 285.41018 271.52274 313.36744
+## mae  11.93685  12.65768  13.78127  12.85777  12.21762  12.10388  11.82759  12.89971
+##        svm.v9   svm.v10   svm.v11   svm.v12
+## mse 350.18044 331.28706 282.41397 284.02493
+## mae  13.67427  12.87902  12.13263  12.10956
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

@@ -61,7 +61,7 @@ all iterations results
 \author{ Luis Torgo \email{ltorgo@dcc.fc.up.pt} }
 
 \seealso{
-  \code{\link{getIterationPreds}},
+  \code{\link{getIterationsPreds}},
   \code{\link{getScores}},
   \code{\link{performanceEstimation}}
 }

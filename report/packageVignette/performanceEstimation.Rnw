@@ -15,6 +15,7 @@
 \usepackage{breakurl}
 
 \newcommand{\PE}{package \texttt{performanceEstimation}\ }
+\newcommand{\PEversion}{1.0.2\ }
 
 \author{Luis Torgo\\FCUP - LIAAD/INESC Tec\\University of Porto\\
   \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inesctec.pt}}
@@ -58,7 +59,7 @@ library(performanceEstimation)
 \section{Introduction}
 
 The goal of this document is to describe the infra-structure that is
-available in \PE to estimate the performance of different approaches
+available in \PE\footnote{This document was written for version \PEversion of the package.} to estimate the performance of different approaches
 to predictive tasks.  The main goal of this package is to provide a
 general infra-structure that can be used to estimate the performance
 using several predictive performance metrics of any modelling approach
@@ -69,7 +70,7 @@ of approaches to these tasks for which you can estimate the
 performance - the user just needs to provide a workflow function
 (following some interface rules) that implements the approach for
 which the predictive performance is to be estimated. The package
-includes some standard workflow functions that implement the standard
+includes some standard workflow functions that implement the typical
 learn+test approach that most users will be interested
 in. This means that if you just want to estimate the performance of
 some variants of a method already implemented in R (e.g. an SVM), on
@@ -140,6 +141,31 @@ of workflows by specifying sets of parameters that the user wishes to
 consider in the comparisons.
 
 % ====================================================================
+\section{Package Installation}\label{sec:install}
+
+The package can be installed as any other R package that is available at the R central repository (CRAN), i.e. by simply executing the code:
+
+<<eval=FALSE>>=
+install.packages("performanceEstimation")
+@ 
+
+This is the recommended form of installing the package an we assume that you start by doing this before you proceed to try the examples described in this document. This will install the current stable version of the package that at the time of writing of this document is version \PEversion.
+
+If you wish to try some eventual new developments of the package that are still under testing and have not yet been released to the general public (thus are subject to bugs), then you may install the development version of the package that is available at the package GitHub Web page:
+
+\url{https://github.com/ltorgo/performanceEstimation}
+
+In order to install this development version (again not recommended unless you have a good reason for it), you may issue the following commands in R:
+
+<<eval=FALSE>>=
+library(devtools)  # You need to install this package before!
+install_github("ltorgo/performanceEstimation",ref="develop")
+@ 
+
+The GitHub Web page referred above is also the right place for you to report any issues you have with the package or help in its development.
+
+
+% ====================================================================
 \section{A Simple Illustrative Example}\label{sec:simpleEx}
 
 Let us assume we are interested in estimating the predictive performance of several variants of
@@ -167,7 +193,7 @@ infra-structure. First of all, we have the main function  -
 \texttt{performanceEstimation()}, which is used to carry out
 the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
-specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
+specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing the information related with these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
 \textbf{PredTask} objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
 
@@ -266,7 +292,7 @@ display of the distribution of performance metrics across the
 different iterations of the estimation process using box-plots, as
 show in Figure~\ref{fig:ex1Iris}. 
 
-<<ex1Iris,fig.cap="The distribution of the error rate on the 10 folds. Red dots show the performance on each individual iteration of the estimation process.",out.width="0.8\\textwidth">>=
+<<ex1Iris,fig.cap="The distribution of the error rate on the 10 folds. Red dots show the performance on each individual iteration of the estimation process.",out.width="0.7\\textwidth">>=
 plot(res)  
 @ 
 
@@ -361,9 +387,9 @@ variants of the workflow. The variants are essentially all possible
 combinations of the values in each vector. In the above example we
 provide 5 values for \textbf{cost} and 3 for \textbf{gamma} and thus
 we will have 15 \textbf{Workflow} objects. It may happen that some of
-the parameters of the workflow, actually take as valid values a
+the parameters of the workflow actually take as valid values a
 vector. In those situations you do not want the function to use the
-values to generate variants. You can achived this effect by including
+values to generate variants. You can achieve this effect by including
 the name of that parameter in the parameter \textbf{as.is} of the
 function \texttt{workflowVariants}.
 
@@ -493,7 +519,7 @@ We have implemented a few of these functions. Namely, in the \textbf{pre} argume
 
 \item[smote] - this operation uses the SMOTE~\cite{CBOK02}
   resampling algorithm to  generate a new training sample with a more
-  ``balanced'' distributions of the target class (this pre-processing step
+  ``balanced'' distribution of the target class (this pre-processing step
   is only available for classification tasks!). It takes the parameters
   \textbf{perc.under},  \textbf{perc.over} and \textbf{k} to control the
   algorithm. Read the  documentation of function \texttt{SMOTE} to
@@ -807,20 +833,19 @@ The third argument of the main function \texttt{performanceEstimation} defines t
 
 \subsection{Performance Metrics}
 
-The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of this metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
+The package implements a reasonable set of the most common performance metrics. These include classification, regression and time series metrics. These are internally calculated by the functions \texttt{classificationMetrics} and \texttt{regressionMetrics}. The help pages of these two functions include an exhaustive list of these metrics together with their definitions. Depending on the predictive tasks being used one of these functions will be called to calculate the metrics the user indicates in the parameter \textbf{metrics} of the \texttt{EstimationTask} constructor. The user may also omit the \textbf{metrics} parameter and in that case all metrics available in the evaluation function will be calculated. On top of the metrics implemented in these functions the user may also include the strings ``trTime'', ``tsTime'' and ``totTime'' to obtain estimates of the training, testing and total computation times taken by the workflow. 
 
-In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
+%In case the user wants to estimate some metric not implemented in our package she/he needs to write a function implementing its calculation. This function needs to be written following a certain  protocol that can be checked in the help page of the class \textbf{EstimationTask}. The name of the special purpose metric calculation function should be provided to the \texttt{EstimationTask} constructor through the parameter \textbf{evaluator}. Any parameters that are required to be passed to this user-defined function can also be passed through the parameter \textbf{evaluator.pars}.
 
 \subsection{User-defined Performance Metrics}
 
-Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. Specifically, the user-defined functions should have as the first 2 parameters: (i) a parameter that will receive the list resulting from the workflow call; (ii)  \textbf{stats} that is a vector with the names of the metrics to be calculated (the user-defined functions may be able to calculate several metrics). Any further parameters of the function are up to the user and may be set through values in the \textbf{evaluator.pars} list. The user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified in the parameter \textbf{stats}. The names of the scores in the vector should be the names of the metrics specified in the parameter \textbf{stats}.
+Although the functions \texttt{classificationMetrics} and \texttt{regressionMetrics} implement a large set of performance metrics, it is inevitable that some applications may require some domain-specific metrics for which users want reliable estimates. Our package allows the indication of user-defined functions that calculate such domain-specific metrics. This is achieved through parameters \textbf{evaluator} and \textbf{evaluator.pars} of the \textbf{EstimationTask} constructor. The first allows the user to specify the name of such function, whilst the second is a list with parameter values to use when calling such function. In order to be usable by our package such functions need to obey some input/output protocol. In terms of input parameters to these functions, our infra-structure will call these user-defined functions with: (i) the outcome of the workflow; (ii) any metric names that were specified in parameter \textbf{metrics}; (iii) the target values in the training set if the parameter \textbf{trainReq} was set to \texttt{TRUE}; and (iv) any other parameters specified through \textbf{evaluator.pars}. In terms of output, the user-defined functions must return as a result a (named) vector with as many scores as the number of metrics specified by the user. The names of the scores in the vector should be the names of the metrics specified in the parameter \textbf{metrics}.
 
 Suppose we want to calculate the error of a regression model as the difference between true and predicted values raised to some power. We could define a function to calculate such metric following our package input/output protocol as:
 
 <<userDef-eval>>=
-powErr <- function(itResults,stats,pow=3) {
-    if (stats != "pow.err") stop("Unable to calculate that metric!")
-    c(pow.err = mean((itResults$trues-itResults$preds)^pow))
+powErr <- function(trues,preds,pow=3,...) {
+    c(pow.err = mean((trues-preds)^pow))
 }
 @
 
@@ -831,6 +856,13 @@ EstimationTask(metrics="pow.err",method=CV(),
                evaluator="powErr",evaluator.pars=list(pow=4))
 @ 
 
+In effect, you could take advantage of the defaults and actually just call it like this:
+
+<<estTask2, eval=FALSE>>=
+EstimationTask(evaluator="powErr",evaluator.pars=list(pow=4))
+@ 
+
+The default of \textbf{method} is exactly Cross validation and the default of \textbf{metrics} is to calculate all metrics of the provided evaluator function.
 
 \subsection{Estimation Methodologies}\label{sec:expMeth}
 
@@ -921,7 +953,7 @@ nnExp <- performanceEstimation(
                    learner.pars=list(trace=F,linout=T,
                        size=c(3,5),decay=c(0.01,0.1))
           ),
-  EstimationTask("mse",method=Bootstrap(nReps=100)))
+  EstimationTask(metrics="mse",method=Bootstrap(nReps=100)))
 @ 
 
 \subsubsection{Holdout and Random Sub-sampling}

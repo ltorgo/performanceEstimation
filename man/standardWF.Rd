@@ -151,7 +151,7 @@ A named list of parameter values to be passed to the post-processing functions.
   the learning and prediction stages. This information is returned as a
   component named "times" of the results list that can be obtained
   for instance by using the
-  \code{\link{getIterationInfo}} if the workflow is being used in the
+  \code{\link{getIterationsInfo}} if the workflow is being used in the
   context of an experimental comparison. If \code{.fullOutput} is set to
   \code{TRUE} the workflow will also include information on the
   pre-processing steps (in a component named "preprocessing"),
@@ -177,8 +177,8 @@ A named list of parameter values to be passed to the post-processing functions.
 \seealso{
   \code{\link{performanceEstimation}},
   \code{\link{timeseriesWF}},
-  \code{\link{getIterationInfo}},
-  \code{\link{getIterationPreds}},
+  \code{\link{getIterationsInfo}},
+  \code{\link{getIterationsPreds}},
   \code{\link{standardPRE}},
   \code{\link{standardPOST}}
 }
@@ -196,8 +196,8 @@ irisExp <- performanceEstimation(
   w.s,
   EstimationTask("acc"))
 
-getIterationPreds(irisExp,1,1,it=4)
-getIterationInfo(irisExp,1,1,rep=1,fold=2)
+getIterationsPreds(irisExp,1,1,it=4)
+getIterationsInfo(irisExp,1,1,rep=1,fold=2)
 
 ## A more sophisticated standardWF
 ## - as pre-processing we imput NAs with either the median (numeric

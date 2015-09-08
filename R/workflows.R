@@ -175,22 +175,6 @@ runWorkflow <- function(l,...) {
 }
 
 
-## --------------------------------------------------------------
-## Workflow output manipulation
-## --------------------------------------------------------------
-
-
-workflowPredictions <- function(obj) obj@predictions
-
-
-`workflowInformation<-` <- function(obj,value) {
-    if (!is.list(value)) stop("workflowInformation:: value must be a list!")
-    obj@extraInfo <- value
-    obj
-}
-
-workflowInformation <- function(obj) obj@extraInfo
-
 
 ## --------------------------------------------------------------
 ## Standard Workflows

@@ -11,7 +11,7 @@ and the other with the predicted target variable values. Some of the
 metrics may require additional information to be given (see Details section).		
 }
 \usage{
-regressionMetrics(trues, preds,stats = "mse",train.y = NULL)
+regressionMetrics(trues, preds, stats = NULL, train.y = NULL)
 }
 
 \arguments{
@@ -23,9 +23,8 @@ A numeric vector with the predicted values of the target variable.
 }
   \item{stats}{
 A vector with the names of the evaluation statistics to
-  calculate (see Details section). If none is indicated it will
-  calculate the mean squared error ("mse"). It is also possible to
-  indicate the value "all", and all available metrics will be calculated.
+  calculate (see Details section). If none is indicated (default) it will
+  calculate all available metrics of this function. 
 }
 \item{train.y}{
   An optional numeric vector with the values
@@ -120,7 +119,7 @@ regressionMetrics(test[,'Infant.Mortality'],preds)
 ## calculate mae and rmse
 regressionMetrics(test[,'Infant.Mortality'],preds,stats=c('mae','rmse'))
 ## calculate all statistics
-regressionMetrics(test[,'Infant.Mortality'],preds,stats="all",train.y=train[,'Infant.Mortality'])
+regressionMetrics(test[,'Infant.Mortality'],preds,train.y=train[,'Infant.Mortality'])
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

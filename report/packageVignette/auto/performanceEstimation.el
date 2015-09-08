@@ -2,6 +2,7 @@
  (lambda ()
     (LaTeX-add-bibliographies)
     (LaTeX-add-labels
+     "sec:install"
      "sec:simpleEx"
      "sec:variants"
      "sec:standardWF"
@@ -10,7 +11,8 @@
      "sec:MC"
      "fig:MC")
     (TeX-add-symbols
-     "PE")
+     "PE"
+     "PEversion")
     (TeX-run-style-hooks
      "breakurl"
      "fancyvrb"

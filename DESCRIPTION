@@ -13,7 +13,7 @@ Version: 1.0.2
 Depends: R(>= 3.0), methods
 Imports:
     ggplot2 (>= 0.9.3), foreach (>= 1.2.0), doParallel (>= 1.0.8)
-Date: 2015-06-13
+Date: 2015-09-08
 Authors@R: person("Luis", "Torgo", email = "ltorgo@dcc.fc.up.pt", role = c("aut", "cre"))
 URL: https://github.com/ltorgo/performanceEstimation
 BugReports: https://github.com/ltorgo/performanceEstimation/issues

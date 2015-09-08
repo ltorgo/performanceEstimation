@@ -5,6 +5,9 @@
 import(methods)
 ##import(ggplot2)
 
+importFrom("stats", "IQR", "complete.cases", "df", "median",
+     "model.frame", "model.response", "na.omit", "qtukey",
+     "reshape", "runif", "sd", "t.test", "wilcox.test")
 
 exportClasses(
     CV, Holdout, LOOCV,
@@ -70,9 +73,6 @@ export(
     workflowVariants,
     getWorkflow,
     runWorkflow,
-    workflowPredictions,
-    'workflowInformation<-',
-    workflowInformation,
     standardWF,
     timeseriesWF,
     standardPRE,

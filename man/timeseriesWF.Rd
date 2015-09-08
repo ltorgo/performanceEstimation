@@ -160,8 +160,8 @@ A named list of parameter values to be passed to the post-processing functions.
 \seealso{
   \code{\link{standardWF}},
   \code{\link{performanceEstimation}},
-  \code{\link{getIterationInfo}},
-  \code{\link{getIterationPreds}},
+  \code{\link{getIterationsInfo}},
+  \code{\link{getIterationsPreds}},
   \code{\link{standardPRE}},
   \code{\link{standardPOST}}
 }

@@ -15,7 +15,7 @@ allows you to obtain the predictions on all iterations, instead of a
 single iteration.
 }
 \usage{
-getIterationsPreds(obj, workflow = 1, task = 1, rep, fold, it, predsComp="preds")
+getIterationsPreds(obj, workflow = 1, task = 1, rep, fold, it, predComp="preds")
 }
 \arguments{
   \item{obj}{
@@ -47,7 +47,7 @@ An integer representing the iteration you want to
   \code{rep} and \code{fold}, respectivily)
 
 }
-\item{predsComp}{
+\item{predComp}{
   A string with the name of the component of the list returned by the
   workflow that contains the predictions (it defaults to "preds")
 
