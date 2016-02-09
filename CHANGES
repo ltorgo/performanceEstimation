@@ -1,3 +1,8 @@
+DEVELOPMENT VERSION
+
+- Corrected a problem with the metric names in the results objects. They were not properly filled in when using user-supplied evaluator functions.
+- Changed the way some functions where being called internally (suggestion of Andre Mikulec). The new version allows you to supply, for instance, a learner equal to "e1071::svm" thus avoiding having to load the e1071 package before running the experiments. 
+
 VERSION 1.0.2 (2015-09-08)
 
 - WFouput was removed from the framework. Now workflows should simply return a list with the information necessary for the calculation of the required performance metrics. Our provided evaluation functions (classificationMetrics and regressionMetrics) required some information from the result of the workflows (at least a component named "preds" containing a named vector of predicted values and another component named "trues" containing the corresponding vector of true values of the test cases). If you are using some of our provided standard workflows you do not need to worry about this because they return a list with such components. However, if using your own user-defined workflows and you want to use our evaluation functions then you need to worry abou this. In summary, if your code was using standard workflows and evaluation metrics provided by this package, then no changes should be needed to your code as a consequence of this removal of the class WFoutput. However, if that is not the case then you may need to carry out some small changes to your workflows or your evaluation functions.
