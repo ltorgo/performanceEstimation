@@ -170,8 +170,9 @@ getWorkflow <- function(var,obj)
 # runWorkflow(l,medv ~ ., Boston)
 #
 runWorkflow <- function(l,...) {
-  if (!inherits(l,'Workflow')) stop(l,' is not of class "Workflow".')
-  do.call(l@func,c(list(...),l@pars))
+    if (!inherits(l,'Workflow')) stop(l,' is not of class "Workflow".')
+  #do.call(l@func,c(list(...),l@pars))
+    do.call(eval(parse(text=l@func)),c(list(...),l@pars))
 }
 
 
@@ -206,14 +207,17 @@ standardWF <- function(form,train,test,
     ## Learning and prediction stage
     tm <- Sys.time()
     if (is.null(predictor)) {  ## there is no separate predict stage (e.g. kNN)
-        ps <- do.call(learner,c(list(form,train,test),learner.pars))
+        #ps <- do.call(learner,c(list(form,train,test),learner.pars))
+        ps <- do.call(eval(parse(text=learner)),c(list(form,train,test),learner.pars))
         t.tr <- t.ts <- as.numeric(Sys.time() - tm,units="secs")
         if (.fullOutput) .fullRes$modeling <- ps
     } else {
-        m <- do.call(learner,c(list(form,train),learner.pars))
+        #m <- do.call(learner,c(list(form,train),learner.pars))
+        m <- do.call(eval(parse(text=learner)),c(list(form,train),learner.pars))
         t.tr <- as.numeric(Sys.time() - tm,units="secs")
         tm <- Sys.time()
-        ps <- do.call(predictor,c(list(m,test),predictor.pars))
+        #ps <- do.call(predictor,c(list(m,test),predictor.pars))
+        ps <- do.call(eval(parse(text=predictor)),c(list(m,test),predictor.pars))
         t.ts <- as.numeric(Sys.time() - tm,units="secs")
         if (.fullOutput) .fullRes$modeling <- if (is.null(post)) m else list(model=m,initPreds=ps)
     }
@@ -301,14 +305,17 @@ timeseriesWF <- function(form,train,test,
 
         tm <- Sys.time()
         if (is.null(predictor)) {
-            ps <- do.call(learner,c(list(form,tr,ts),learner.pars))
+            #ps <- do.call(learner,c(list(form,tr,ts),learner.pars))
+            ps <- do.call(eval(parse(text=learner)),c(list(form,tr,ts),learner.pars))
             t.tr <- t.ts <- t.tr + as.numeric(Sys.time() - tm,units="secs")
             if (.fullOutput) models <- c(models,list(start=s,ps=ps))
         } else {
-            m <- do.call(learner,c(list(form,tr),learner.pars))
+            #m <- do.call(learner,c(list(form,tr),learner.pars))
+            m <- do.call(eval(parse(text=learner)),c(list(form,tr),learner.pars))
             t.tr <- t.tr + as.numeric(Sys.time() - tm,units="secs")
             tm <- Sys.time()
-            ps <- do.call(predictor,c(list(m,ts),predictor.pars))
+            #ps <- do.call(predictor,c(list(m,ts),predictor.pars))
+            ps <- do.call(eval(parse(text=predictor)),c(list(m,ts),predictor.pars))
             t.ts <- t.ts + as.numeric(Sys.time() - tm,units="secs")
             if (.fullOutput) models <- c(models,list(start=s,model=m,preds=ps))
         }
@@ -401,7 +408,8 @@ standardPRE <- function(form,train,test,steps,...) {
             if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
             train <- smote(form,train,...)
         } else {
-            user.pre <- do.call(s,c(list(form,train,test),list(...)))
+            #user.pre <- do.call(s,c(list(form,train,test),list(...)))
+            user.pre <- do.call(eval(parse(text=s)),c(list(form,train,test),list(...)))
             train <- user.pre$train
             test  <- user.pre$test
         }
@@ -515,7 +523,8 @@ standardPOST <- function(form,train,test,preds,steps,...) {
             
         ## -----------    
         } else {
-            preds <- do.call(s,c(list(form,train,test,preds),...))
+            #preds <- do.call(s,c(list(form,train,test,preds),...))
+            preds <- do.call(eval(parse(text=s)),c(list(form,train,test,preds),...))
         }
     }
 
