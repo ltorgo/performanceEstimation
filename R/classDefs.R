@@ -48,6 +48,7 @@ PredTask <- function(form,data,taskName=NULL,type=NULL,copy=FALSE) {
   } else {
       eval.env <- 1
       if (is.null(taskName)) taskName <-  paste(deparse(substitute(data)),tgt,sep=".")
+      data <- as.data.frame(eval(data,envir=eval.env)) # this was added because of dplyr tbl_df that were giving probls when copy=T
   }
 
   if (inherits(try(mf <- model.frame(form,eval(data,envir=eval.env),na.action=NULL),TRUE),"try-error"))
@@ -55,7 +56,7 @@ PredTask <- function(form,data,taskName=NULL,type=NULL,copy=FALSE) {
 
   
   if (is.null(type)) {
-      taskType <- if (is.factor(eval(data,envir=eval.env)[,tgt])) "class" else "regr"
+      taskType <- if (is.factor(eval(data,envir=eval.env)[[tgt]])) "class" else "regr"
   } else {
       if (!(type %in% c("class","regr","ts")))
           stop(paste("PredTask::",type,"tasks not implemented."),call.=FALSE)

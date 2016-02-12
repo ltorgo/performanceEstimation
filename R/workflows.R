@@ -223,7 +223,7 @@ standardWF <- function(form,train,test,
     }
 
     ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
-    if (is.numeric(train[,as.character(form[[2]])]) && !is.null(dim(ps))) ps <- ps[,1]
+    if (is.numeric(train[[as.character(form[[2]])]]) && !is.null(dim(ps))) ps <- ps[,1]
         
     trues <- responseValues(form,test)
     ## Checking for learners that do not ouput as many predictions as test cases!
@@ -320,7 +320,7 @@ timeseriesWF <- function(form,train,test,
             if (.fullOutput) models <- c(models,list(start=s,model=m,preds=ps))
         }
         ## Checking for strange things (like regression methods not returning a vector, e.g. earth)
-        if (is.numeric(tr[,as.character(form[[2]])]) && !is.null(dim(ps))) ps <- ps[,1]
+        if (is.numeric(tr[[as.character(form[[2]])]]) && !is.null(dim(ps))) ps <- ps[,1]
         
         preds <- c(preds,ps)
     }
@@ -392,20 +392,20 @@ standardPRE <- function(form,train,test,steps,...) {
             train <- na.omit(train)
             test <- na.omit(test)
         } else if (s == "undersample") {
-            if (is.numeric(train[,tgtVar])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
+            if (is.numeric(train[[tgtVar]])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
             pars <- list(...)
-            clDistr <- table(train[,tgtVar])
+            clDistr <- table(train[[tgtVar]])
             minCl <- which.min(clDistr)
             minClName <- names(minCl)
             nMin <- min(clDistr)
-            minExs <- which(train[,tgtVar] == minClName)
+            minExs <- which(train[[tgtVar]] == minClName)
             if (!("perc.under" %in% names(pars))) pars$perc.under <- 1 # default under %
             selMaj <- sample((1:NROW(train))[-minExs],
                              as.integer(pars$perc.under*nMin),
                              replace=TRUE)
             train <- train[c(minExs,selMaj),]
         } else if (s == "smote") {
-            if (is.numeric(train[,tgtVar])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
+            if (is.numeric(train[[tgtVar]])) stop("SMOTE is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
             train <- smote(form,train,...)
         } else {
             #user.pre <- do.call(s,c(list(form,train,test),list(...)))
@@ -434,7 +434,7 @@ knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
     
     ncol <- ncol(data)
     nomAttrs <- rep(F,ncol)
-    for(i in seq(ncol)) nomAttrs[i] <- is.factor(data[,i])
+    for(i in seq(ncol)) nomAttrs[i] <- is.factor(data[[i]])
     nomAttrs <- which(nomAttrs)
     hasNom <- length(nomAttrs)
     contAttrs <- setdiff(seq(ncol),nomAttrs)
@@ -442,7 +442,7 @@ knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
     dm <- data
     if (scale) dm[,contAttrs] <- scale(dm[,contAttrs])
     if (hasNom)
-        for(i in nomAttrs) dm[,i] <- as.integer(dm[,i])
+        for(i in nomAttrs) dm[[i]] <- as.integer(dm[[i]])
     
     dm <- as.matrix(dm)
     
@@ -514,12 +514,12 @@ standardPOST <- function(form,train,test,preds,steps,...) {
         ## -----------    
         } else if (s == "maxutil") {
             pars <- list(...)
-            if (is.numeric(train[,tgtVar])) stop("'maxutil'' is only available for classification tasks.",call.=FALSE)
+            if (is.numeric(train[[tgtVar]])) stop("'maxutil'' is only available for classification tasks.",call.=FALSE)
             if (!("cb.matrix" %in% names(pars))) stop("'maxutil' requires that you specify a cost-benefit matrix.",call.=FALSE)
             if (is.null(dim(preds))) stop("'maxutil' requires that the classifier outputs a matrix of probabilities as predictions.",call.=FALSE)
             if (ncol(preds) != ncol(pars$cb.matrix)) stop("Error in 'maxutil': predictions do not contain as many class probabilities as there are classes in the cost-benefit matrix.",call.=FALSE)
             ps <- apply(preds,1,function(ps) which.max(apply(pars$cb.matrix,2,function(cs) sum(ps*cs))))
-            preds <- levels(train[,tgtVar])[ps]
+            preds <- levels(train[[tgtVar]])[ps]
             
         ## -----------    
         } else {

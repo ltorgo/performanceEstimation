@@ -21,10 +21,10 @@ smote <- function(form,data, perc.over=2,k=5,perc.under=2)
 
   # the column where the target variable is
   tgt <- which(names(data) == as.character(form[[2]]))
-  minCl <- names(which.min(table(data[,tgt])))
+  minCl <- names(which.min(table(data[[tgt]])))
   
   # get the cases of the minority class
-  minExs <- which(data[,tgt] == minCl)
+  minExs <- which(data[[tgt]] == minCl)
 
   # generate synthetic cases from these minExs
   if (tgt < ncol(data)) {
@@ -71,10 +71,10 @@ smote.exs <- function(data,tgt,N,k)
   nomatr <- c()
   T <- matrix(nrow=dim(data)[1],ncol=dim(data)[2]-1)
   for(col in seq.int(dim(T)[2]))
-    if (class(data[,col]) %in% c('factor','character')) {
-      T[,col] <- as.integer(data[,col])
+    if (class(data[[col]]) %in% c('factor','character')) {
+      T[[col]] <- as.integer(data[[col]])
       nomatr <- c(nomatr,col)
-    } else T[,col] <- data[,col]
+    } else T[[col]] <- data[[col]]
   
   if (N < 1) { # only a percentage of the T cases will be SMOTEd
     nT <- NROW(T)
@@ -96,7 +96,7 @@ smote.exs <- function(data,tgt,N,k)
 
     # the k NNs of case T[i,]
     xd <- scale(T,T[i,],ranges)
-    for(a in nomatr) xd[,a] <- xd[,a]==0
+    for(a in nomatr) xd[[a]] <- xd[[a]]==0
     dd <- drop(xd^2 %*% rep(1, ncol(xd)))
     kNNs <- order(dd)[2:(k+1)]
 
@@ -116,9 +116,9 @@ smote.exs <- function(data,tgt,N,k)
   }
   newCases <- data.frame(new)
   for(a in nomatr)
-    newCases[,a] <- factor(newCases[,a],levels=1:nlevels(data[,a]),labels=levels(data[,a]))
+    newCases[[a]] <- factor(newCases[[a]],levels=1:nlevels(data[[a]]),labels=levels(data[[a]]))
 
-  newCases[,tgt] <- factor(rep(data[1,tgt],nrow(newCases)),levels=levels(data[,tgt]))
+  newCases[[tgt]] <- factor(rep(data[[1,tgt]],nrow(newCases)),levels=levels(data[[tgt]]))
   colnames(newCases) <- colnames(data)
   newCases
 }
