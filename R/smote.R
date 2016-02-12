@@ -72,9 +72,9 @@ smote.exs <- function(data,tgt,N,k)
   T <- matrix(nrow=dim(data)[1],ncol=dim(data)[2]-1)
   for(col in seq.int(dim(T)[2]))
     if (class(data[[col]]) %in% c('factor','character')) {
-      T[[col]] <- as.integer(data[[col]])
+      T[,col] <- as.integer(data[[col]])
       nomatr <- c(nomatr,col)
-    } else T[[col]] <- data[[col]]
+    } else T[,col] <- data[[col]]
   
   if (N < 1) { # only a percentage of the T cases will be SMOTEd
     nT <- NROW(T)

@@ -360,8 +360,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
             ggplot2::coord_fixed(ratio=0.5) + 
 #            ggplot2::annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,
 #                     y=0,yend=0,size=2) 
-            ggplot2::annotate("segment",x=max(0,baseScore-cd),xend=min(baseScore+cd),
-                     y=0,yend=0,size=2)  +
+            ggplot2::annotate("segment",x=max(0,baseScore-cd),xend=min(baseScore,baseScore+cd), y=0,yend=0,size=2)  +
             ggplot2::annotate("text",x=-Inf,y=+Inf,label=paste0("Critical Difference = ",round(cd,1),"; Baseline = ",r[[metric]]$BonferroniDunn.test$baseline),vjust=0,hjust=0,size=3)
 
 
