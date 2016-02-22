@@ -14,7 +14,7 @@ Obtain the best scores from a performance estimation experiment
 \usage{
 topPerformers(compRes,
            maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),
-           digs=3)
+           stat="avg",digs=3)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,7 +27,13 @@ topPerformers(compRes,
     statistic is to be maximized, while a \code{FALSE} means
     minimization. Defaults to all \code{FALSE} values, i.e. all metrics are to
     be minimized.
-}
+  }
+  \item{stat}{
+    The statistic to be used to obtain the ranks. The options are the
+    statistics produced by the function \code{summary} applied to objects
+    of class  \code{\linkS4class{ComparisonResults}}, i.e. "avg", "std",
+    "med", "iqr", "min", "max" or "invalid" (defaults to "avg").
+  }
   \item{digs}{
     The number of digits (defaults to 3) used in the scores column of the results.
 }

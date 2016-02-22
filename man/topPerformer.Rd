@@ -10,7 +10,7 @@ Obtain the workflow that best performed in terms of a metric on a task
   given metric on a certain task. 
 }
 \usage{
-topPerformer(compRes,metric,task,max=FALSE) 
+topPerformer(compRes,metric,task,max=FALSE,stat="avg") 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,7 +28,13 @@ topPerformer(compRes,metric,task,max=FALSE)
     best performance for the selected metric. If this is \code{FALSE} it
     means that the goal is to minimize this metric, otherwise it means
     that the metric is to be maximized.
-}
+  }
+  \item{stat}{
+    The statistic to be used to obtain the ranks. The options are the
+    statistics produced by the function \code{summary} applied to objects
+    of class  \code{\linkS4class{ComparisonResults}}, i.e. "avg", "std",
+    "med", "iqr", "min", "max" or "invalid" (defaults to "avg").
+  }
 }
 \details{
   

@@ -3,12 +3,12 @@
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),digs=3) {
+topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),stat="avg",digs=3) {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
   if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes[[1]][[1]]@iterationsScores)[2])
   else if (length(maxs) != dim(compRes[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
 
-  avgScs <- .statScores(compRes,'avg')
+  avgScs <- .statScores(compRes,stat)
   bs <- lapply(avgScs,function(t) {
       r <- data.frame(Workflow=rep('',NROW(t)),Estimate=rep(0,NROW(t)),stringsAsFactors=F,row.names=rownames(t))
       for(i in 1:NROW(t))
@@ -23,7 +23,7 @@ topPerformers <- function(compRes,maxs=rep(FALSE,dim(compRes[[1]][[1]]@iteration
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-topPerformer <- function(compRes,metric,task,max=FALSE) {
+topPerformer <- function(compRes,metric,task,max=FALSE,stat="avg") {
   if (!inherits(compRes,'ComparisonResults'))
       stop(compRes,' needs to be of class "ComparisonResults".\n')
   if (!(metric %in% metricNames(compRes)))
@@ -31,7 +31,7 @@ topPerformer <- function(compRes,metric,task,max=FALSE) {
   if (!(task %in% taskNames(compRes)))
       stop(task,' not used in this "ComparisonResults" object.\n')
 
-  avgScs <- .statScores(compRes,'avg')
+  avgScs <- .statScores(compRes,stat)
   scs <- avgScs[[task]]
   w <- if (max) colnames(scs)[which.max(scs[metric,])] else colnames(scs)[which.min(scs[metric,])]
   getWorkflow(w,compRes)
@@ -42,12 +42,12 @@ topPerformer <- function(compRes,metric,task,max=FALSE) {
 # =====================================================
 # Luis Torgo, Nov 2013
 #
-rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2])) {
+rankWorkflows <- function(compRes,top=min(5,length(workflowNames(compRes))),maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),stat="avg") {
   if (!inherits(compRes,'ComparisonResults')) stop(compRes,' needs to be of class "ComparisonResults".\n')
   if (length(maxs) == 1) maxs <- rep(maxs,dim(compRes[[1]][[1]]@iterationsScores)[2])
   else if (length(maxs) != dim(compRes[[1]][[1]]@iterationsScores)[2]) stop('"maxs" needs to have the same size as the number of evaluation statistics.\n')
 
-  avgScs <- .statScores(compRes,'avg')
+  avgScs <- .statScores(compRes,stat)
   lapply(avgScs,function(t) {
       l <- vector("list",nrow(t))
       for(i in 1:nrow(t))
@@ -355,7 +355,7 @@ CDdiagram.BD <- function(r,metric=names(r)[1]) {
                   axis.line.y=ggplot2::element_blank(),
                   panel.grid.major=ggplot2::element_blank(),
                   plot.background=ggplot2::element_blank(),
-                  plot.margin = grid::unit(c(1,6,1,5), "lines")
+                  plot.margin = grid::unit(c(1,7,1,6), "lines")
                   ) +
             ggplot2::coord_fixed(ratio=0.5) + 
 #            ggplot2::annotate("segment",x=max(data$invRk),xend=max(data$invRk)-cd,

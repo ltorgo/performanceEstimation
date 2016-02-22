@@ -13,7 +13,7 @@
 }
 \usage{
 rankWorkflows(compRes,top=min(5,length(workflowNames(compRes))),
-              maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]))
+              maxs=rep(FALSE,dim(compRes[[1]][[1]]@iterationsScores)[2]),stat="avg")
 }
 
 \arguments{
@@ -30,7 +30,13 @@ rankWorkflows(compRes,top=min(5,length(workflowNames(compRes))),
     the experimental comparison. A \code{TRUE} value means the respective
     metric is to be maximized, while a \code{FALSE} means
     minimization. Defaults to all \code{FALSE} values.
-}
+  }
+  \item{stat}{
+    The statistic to be used to obtain the ranks. The options are the
+  statistics produced by the function \code{summary} applied to objects
+  of class  \code{\linkS4class{ComparisonResults}}, i.e. "avg", "std",
+  "med", "iqr", "min", "max" or "invalid" (defaults to "avg").
+  }
 }
 
 \value{
@@ -79,6 +85,9 @@ results <- performanceEstimation(
                                  )
 ## get a ranking of the top workflows for each task and evaluation metric
 rankWorkflows(results)
+## get a ranking of the top workflows for each task and evaluation
+## metric by the median score on all iterations instead of the mean score
+rankWorkflows(results, stat="med")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
