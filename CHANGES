@@ -1,7 +1,7 @@
 DEVELOPMENT VERSION
 
 - Added a few new two-class metrics.
-- Corrected serious mistakes (giving incorrect values) on some two-class metrics.
+- Corrected serious mistakes (giving incorrect values) on some two-class metrics (thanks Kohji Muraoka!).
 - Added a new parameter to functions rankWorkflows, topPerformers and topPerformer, which allows the user to specify which of the summary statistics shown in the summary, is to be used (defaults to "avg")
 - Corrected a problem with the metric names in the results objects. They were not properly filled in when using user-supplied evaluator functions.
 - Changed the way some functions where being called internally (suggestion of Andre Mikulec). The new version allows you to supply, for instance, a learner equal to "e1071::svm" thus avoiding having to load the e1071 package before running the experiments. 
