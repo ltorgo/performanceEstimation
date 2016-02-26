@@ -9,7 +9,7 @@ Description: An  infra-structure for estimating the predictive performance
     applied to any solutions (workflows) to the predictive tasks. The package provides easy to use
     standard workflows that allow the usage of any available R modeling algorithm together with
     some pre-defined data pre-processing steps and also prediction post-processing methods. It also provides means for addressing issues related with the statistical significance of the observed differences. 
-Version: 1.0.3
+Version: 1.1.0
 Depends: R(>= 3.0), methods
 Imports:
     ggplot2 (>= 0.9.3), foreach (>= 1.2.0), doParallel (>= 1.0.8)

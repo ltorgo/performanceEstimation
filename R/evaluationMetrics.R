@@ -74,7 +74,7 @@ classificationMetrics <- function(trues,preds,
 
     ## Cheking the statistics
     twoClsMetrics <- c('fpr','fnr','tpr','tnr','rec','sens','spec',
-                       'prec','rpp','lift','F')
+                       'prec','rpp','lift','F','ppv','fdr','npv','for','plr','nlr','dor')
     knownMetrics <- c(twoClsMetrics,c('acc','err','totU',
                       'microF','macroF',"macroRec","macroPrec"))
 
@@ -109,29 +109,37 @@ classificationMetrics <- function(trues,preds,
     trues <- factor(trues,levels=allCls)
     
     N <- length(trues)
-    cm <- as.matrix(table(trues,preds))
+    cm <- as.matrix(table(preds,trues))
 
     a <- sum(diag(cm))/N
     r[c('acc','microF','err')] <- c(a,a,1-a)
 
     if (length(allCls) == 2) {
         negClass <- setdiff(allCls,posClass)
-        r[c('tpr','rec','sens')] <- cm[posClass,posClass]/sum(cm[posClass,])
-        r['spec'] <- cm[negClass,negClass]/sum(cm[negClass,])
-        r['fpr'] <- cm[negClass,posClass]/sum(cm[,posClass])
-        r['fnr'] <- cm[posClass,negClass]/sum(cm[,posClass])
-        r['tnr'] <- cm[posClass,negClass]/sum(cm[,negClass])
-        r['prec'] <- cm[posClass,posClass]/sum(cm[,posClass])
-        r['rpp'] <- (cm[posClass,posClass] +cm[negClass,posClass])/N
-        r['lift'] <- r['rec']/sum(cm[,posClass])
+        r[c('tpr','rec','sens')] <- cm[posClass,posClass]/sum(cm[,posClass])
+        r[c('spec','tnr')] <- cm[negClass,negClass]/sum(cm[,negClass])
+        r['fpr'] <- cm[posClass,negClass]/sum(cm[,negClass])
+        r['fnr'] <- cm[negClass,posClass]/sum(cm[,posClass])
+        r[c('prec','ppv')] <- cm[posClass,posClass]/sum(cm[posClass,])
+        
+        r['npv'] <- cm[negClass,negClass]/sum(cm[negClass,])
+        r['fdr'] <- cm[posClass,negClass]/sum(cm[posClass,])
+        r['for'] <- cm[negClass,posClass]/sum(cm[negClass,])
+
+        r['plr'] <- r['tpr']/r['fpr']
+        r['nlr'] <- r['fnr']/r['tnr'] 
+        r['dor'] <- r['plr']/r['nlr']
+
+        r['rpp'] <- sum(cm[posClass,])/N
+        r['lift'] <- r['rec']/sum(cm[posClass,])
         r['F'] <- (1+beta^2)*r['prec']*r['rec']/(beta^2*r['prec']+r['rec'])
     }
 
     if (any(c("macroF","macroRec","macroPrec") %in% stats)) {
         F <- R <- P <- 0
         for(cl in allCls) {
-            pr <- cm[cl,cl]/sum(cm[,cl])
-            rc <- cm[cl,cl]/sum(cm[cl,])
+            pr <- cm[cl,cl]/sum(cm[cl,])
+            rc <- cm[cl,cl]/sum(cm[,cl])
             F <- F+(1+beta^2)*pr*rc/(beta^2*pr+rc)
             P <- P + pr
             R <- R + rc

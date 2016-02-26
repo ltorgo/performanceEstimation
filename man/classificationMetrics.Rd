@@ -83,7 +83,15 @@ In the
   with only two classes, where one is considered the "positive" class we
   will use some extra notation, namely: TP = #{p == + & t == +} ; FP =
   #{p == + & t == -} ; TN = #{p == - & t == -}; FN = #{p == - & t == +}
-  ; P = #{t == +} ; N = #{t == -}
+  ; P = #{t == +} ; N = #{t == -}; Finally, for some descriptions
+  we will use the concept of confusion matrix (CM). This is a C x C
+  square matrix where entry CM[i,j] contains the number of times (for a
+  certain test set) some model predicted class i for a true class value
+  of j, i.e. rows of this matrix represent predicted values and columns
+  true values. We will also refer to cost/benefit matrices (or utility
+  matrices) that have the same structure (squared C x C) where entry
+  CB[i,j] represents the cost/benefit of predicting a class i for a true
+  class of j.
 
   The currently available classification performance metrics
   are:
@@ -107,15 +115,12 @@ In the
   prediction errors and should have negative values (costs). The "totU"
   measures the total Utility (sum of the costs and benefits) of the
   predictions of a classification model. It is calculated as
-  sum(CB[t_i,p_i] * CM[t_i,p_i) where CB is a cost/benefit matrix and CB[t_i,p_i] 
-  is the entry on this matrix corresponding to predicting class p_i for
-  a true value of t_i, and CM is a confusion matrix where CM[t_i,p_i] is
-  the number of times the true class value was t_i and the prediction of
-  the model was p_i
+  sum(CB[p_i,t_i] * CM[p_i,t_i) where CB is a cost/benefit matrix and CM
+  is a confusion matrix. 
 
   "fpr": false positives rate, is a metric applicable to two classes
   tasks that measures the proportion of times the model
-  forecasted a positive class when it should not and it is given by FP/P
+  forecasted a positive class when it should not and it is given by FP/N
 
   "fnr": false negatives rate, is a metric applicable to two classes
   tasks that measures the proportion of times the model
@@ -134,16 +139,33 @@ In the
 
   "sens": sensitivity, it is equal to the true positive rate ("tpr")
 
-  "spec": specificity, it is a metric  applicable to two classes
-  tasks that measures the proportion of times the model
-  forecasted a negative class for the negative test cases, and it is
-  given by TN/N
+  "spec": specificity, it is equal to the true negative rate ("tnr")
 
   "prec": precision, it is a metric  applicable to two classes
   tasks that measures the proportion of times the model
   forecasted a positive class and it was correct, and it is
   given by TP/(TP+FP)
 
+  "ppv": predicted positive value, it is equal to the precision ("prec")
+
+  "fdr": false discovery rate, it is a metric  applicable to two classes
+  tasks that is given by FP/(TP+FP)
+
+  "npv": negative predicted value, it is a metric  applicable to two classes
+  tasks that is given by TN/(TN+FN)
+
+  "for": false omission rate, it is a metric  applicable to two classes
+  tasks that is given by FN/(TN+FN)
+
+  "plr": positive likelihood ratio, it is a metric  applicable to two classes
+  tasks that is given by "tpr"/"fpr"
+  
+  "nlr": negative likelihood ratio, it is a metric  applicable to two classes
+  tasks that is given by "fnr"/"tnr"
+  
+  "dor": diagnostic odds ratio, it is a metric  applicable to two classes
+  tasks that is given by "plr"/"nlr"
+  
   "rpp": rate of positive predictions, it is a metric  applicable to two classes
   tasks that measures the proportion of times the model
   forecasted a positive class, and it is
