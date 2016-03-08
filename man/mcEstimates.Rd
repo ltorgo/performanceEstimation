@@ -58,7 +58,7 @@ mcEstimates(wf, task, estTask, verbose = TRUE,cluster)
     this parameter. In case no value is provided for this parameter the
     function will run sequentially.
   }
- 
+
 }
 
 \details{
@@ -152,7 +152,7 @@ colnames(data)[1] <- 'PercVarClose'
 spExp <- mcEstimates(Workflow("timeseriesWF",wfID="rfTrial",
                               type="slide",relearn.step=10,
                               learner='randomForest'),
-                    PredTask(PercVarClose ~ .,sp500.data,"sp500"),
+                    PredTask(PercVarClose ~ .,data,"sp500"),
                     EstimationTask(metrics=c("mse","theil"),
                                    method=MonteCarlo(nReps=4,szTrain=.3,szTest=.2)))
 
