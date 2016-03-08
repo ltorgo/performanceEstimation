@@ -1,5 +1,7 @@
 DEVELOPMENT VERSION
 
+- Changed the parallel computation backend. The package now is built upon the infra-structure of parallelMap
+- Corrected a small typo on the example of the help page of mcEstimates
 - Added a few new two-class metrics.
 - Corrected serious mistakes (giving incorrect values) on some two-class metrics (thanks Kohji Muraoka!).
 - Added a new parameter to functions rankWorkflows, topPerformers and topPerformer, which allows the user to specify which of the summary statistics shown in the summary, is to be used (defaults to "avg")
