@@ -50,8 +50,9 @@ setMethod("show",
 ##                    cat('\t\t',n,' = ',deparse(object@pars[[n]]),'\n')
                         k <- object@pars[[n]]
                         k <- if (is.list(k)) paste(paste(names(k),k,sep='='),collapse=" ") else paste(k,collapse=' ')
-                        k <- if (nchar(k) > 20) paste(substr(k,1,20),' ...') else k
-                        cat('\t\t',n,' -> ',k,'\n')
+                        cat('\t\t',n,' -> ')
+                        if (nchar(k) > 30) cat(unlist(strsplit(k," ")), fill=30) else cat(k)
+                        cat("\n")
                     }
                 }
             }
