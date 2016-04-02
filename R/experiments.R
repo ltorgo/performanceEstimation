@@ -115,7 +115,7 @@ cvEstimates <- function(wf,task,estTask,cluster) {
             parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
-        parallelMap::parallelLibrary(packages=.loadedPackages())
+        parallelMap::parallelLibrary(packages=.packages())
         cat('cvEstimates: Running in parallel with options:\n')
         print(parallelMap::parallelGetOptions())
         cat('\n\n')
@@ -231,7 +231,7 @@ hldEstimates <- function(wf,task,estTask,cluster) {
             parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
-        parallelMap::parallelLibrary(packages=.loadedPackages())
+        parallelMap::parallelLibrary(packages=.packages())
         cat('hldEstimates: Running in parallel with options:\n')
         print(parallelMap::parallelGetOptions())
         cat('\n\n')
@@ -344,7 +344,7 @@ loocvEstimates <- function(wf,task,estTask,verbose=FALSE,cluster) {
             parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
-        parallelMap::parallelLibrary(packages=.loadedPackages())
+        parallelMap::parallelLibrary(packages=.packages())
         cat('loocvEstimates: Running in parallel with options:\n')
         print(parallelMap::parallelGetOptions())
         cat('\n\n')
@@ -430,7 +430,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
             parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
-        parallelMap::parallelLibrary(packages=.loadedPackages())
+        parallelMap::parallelLibrary(packages=.packages())
         cat('bootEstimates: Running in parallel with options:\n')
         print(parallelMap::parallelGetOptions())
         cat('\n\n')
@@ -574,7 +574,7 @@ mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
             parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
-        parallelMap::parallelLibrary(packages=.loadedPackages())
+        parallelMap::parallelLibrary(packages=.packages())
         cat('mcEstimates: Running in parallel with options:\n')
         print(parallelMap::parallelGetOptions())
         cat('\n\n')
@@ -750,5 +750,6 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 }
 
 
-.loadedPackages <- function(bases=c("datasets","grDevices","stats","utils","base","graphics","methods")) setdiff(sapply(strsplit(search()[grep("package",search())],":"),function(x) x[2]),bases)
+## .loadedPackages <- function(bases=c("datasets","grDevices","stats","utils","base","graphics","methods")) setdiff(sapply(strsplit(search()[grep("package",search())],":"),function(x) x[2]),bases)
+## This was replaced by a call to .packages()
 
