@@ -77,7 +77,7 @@ A  vector or factor with the predicted values of the target variable.
 In the
   following description of the currently available metrics we denote the
   vector of true target variable values as t, the vector of predictions
-  by p, while N denotes the size of these two vectors, i.e. the number
+  by p, while n denotes the size of these two vectors, i.e. the number
   of test cases. Furthermore we will denote the number of classes
   (different values of the target nominal variable) as C. For problems
   with only two classes, where one is considered the "positive" class we
@@ -96,7 +96,7 @@ In the
   The currently available classification performance metrics
   are:
   
-  "acc": sum(I(t_i == p_i))/N, where I() is an indicator function given 1 if its
+  "acc": sum(I(t_i == p_i))/n, where I() is an indicator function given 1 if its
   argument is true and 0 otherwise. Note that "acc" is a value in the interval [0,1], 1
   corresponding to  all predictions being correct.
 

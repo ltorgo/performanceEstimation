@@ -1,5 +1,6 @@
 DEVELOPMENT VERSION
 
+- corrected small confusion in notation used in the help page of classificationMetrics (thanks to Andre Mikulec for noting this).
 - show method of workflows changed to not truncate the parameters of learners. Now it always shows all parameters spread over different text lines.
 - Calls to .loadedPackages replaced by calls to the base function .packages that does the same
 - Changed the parallel computation backend. The package now is built upon the infra-structure of parallelMap
