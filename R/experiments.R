@@ -108,11 +108,12 @@ performanceEstimation <- function(tasks,workflows,estTask,...) {
 cvEstimates <- function(wf,task,estTask,cluster) {
 
     ## registering (and eventually creating) the parallel backend
-    if (!missing(cluster) && getOption("parallelMap.status")=="stopped") {
+    if (!missing(cluster) && !is.null(cluster) && getOption("parallelMap.status")=="stopped") {
         if (is(cluster,"list")) do.call(parallelMap::parallelStart,cluster)
         else {
             cores <- parallel::detectCores()-1
-            parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
+            mode <- if(.Platform$OS.type != "windows") { "multicore" } else { "socket" }
+            parallelMap::parallelStart(mode=mode,cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
         parallelMap::parallelLibrary(packages=.packages())
@@ -224,11 +225,12 @@ cvEstimates <- function(wf,task,estTask,cluster) {
 #
 hldEstimates <- function(wf,task,estTask,cluster) {
     ## registering (and eventually creating) the parallel backend
-    if (!missing(cluster) && getOption("parallelMap.status")=="stopped") {
+    if (!missing(cluster) && !is.null(cluster) && getOption("parallelMap.status")=="stopped") {
         if (is(cluster,"list")) do.call(parallelMap::parallelStart,cluster)
         else {
             cores <- parallel::detectCores()-1
-            parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
+            mode <- if(.Platform$OS.type != "windows") { "multicore" } else { "socket" }
+            parallelMap::parallelStart(mode=mode,cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
         parallelMap::parallelLibrary(packages=.packages())
@@ -337,11 +339,12 @@ hldEstimates <- function(wf,task,estTask,cluster) {
 #
 loocvEstimates <- function(wf,task,estTask,verbose=FALSE,cluster) {
     ## registering (and eventually creating) the parallel backend
-    if (!missing(cluster) && getOption("parallelMap.status")=="stopped") {
+    if (!missing(cluster) && !is.null(cluster) && getOption("parallelMap.status")=="stopped") {
         if (is(cluster,"list")) do.call(parallelMap::parallelStart,cluster)
         else {
             cores <- parallel::detectCores()-1
-            parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
+            mode <- if(.Platform$OS.type != "windows") { "multicore" } else { "socket" }
+            parallelMap::parallelStart(mode=mode,cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
         parallelMap::parallelLibrary(packages=.packages())
@@ -423,11 +426,12 @@ loocvEstimates <- function(wf,task,estTask,verbose=FALSE,cluster) {
 #
 bootEstimates <- function(wf,task,estTask,cluster) {
     ## registering (and eventually creating) the parallel backend
-    if (!missing(cluster) && getOption("parallelMap.status")=="stopped") {
+    if (!missing(cluster) && !is.null(cluster) && getOption("parallelMap.status")=="stopped") {
         if (is(cluster,"list")) do.call(parallelMap::parallelStart,cluster)
         else {
             cores <- parallel::detectCores()-1
-            parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
+            mode <- if(.Platform$OS.type != "windows") { "multicore" } else { "socket" }
+            parallelMap::parallelStart(mode=mode,cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
         parallelMap::parallelLibrary(packages=.packages())
@@ -567,11 +571,12 @@ bootEstimates <- function(wf,task,estTask,cluster) {
 ## =====================================================
 mcEstimates <- function(wf, task, estTask, verbose=TRUE, cluster) {
     ## registering (and eventually creating) the parallel backend
-    if (!missing(cluster) && getOption("parallelMap.status")=="stopped") {
+    if (!missing(cluster) && !is.null(cluster) && getOption("parallelMap.status")=="stopped") {
         if (is(cluster,"list")) do.call(parallelMap::parallelStart,cluster)
         else {
             cores <- parallel::detectCores()-1
-            parallelMap::parallelStart(mode="multicore",cpus=cores,show.info=FALSE)
+            mode <- if(.Platform$OS.type != "windows") { "multicore" } else { "socket" }
+            parallelMap::parallelStart(mode=mode,cpus=cores,show.info=FALSE)
             on.exit(parallelMap::parallelStop())
         }
         parallelMap::parallelLibrary(packages=.packages())
