@@ -721,7 +721,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     stats <- if (!is.null(predMs)) list(stats=predMs) else NULL
     
     for(i in 1:nIts) {
-        trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,task@target]) else NULL
+        trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,][[task@target]]) else NULL
         fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else its[[i]]
         ss <- do.call(evalFunc,
                       c(fstArgs,
