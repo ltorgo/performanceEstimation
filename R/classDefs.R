@@ -352,7 +352,7 @@ EstimationResults <- function(t,w,et,sc,e) {
   o@estTask          <- et
   o@iterationsScores <- sc
   ## classification tasks, code back predictions to class labels
-  if (et@evaluator=="") {
+  if (is.null(et@evaluator)) {
       if (is.null(et@metrics)) o@estTask@metrics <- colnames(sc)
       if (is.factor(model.response(model.frame(t@formula,eval(t@dataSource))))) {
           for (i in 1:length(e))
