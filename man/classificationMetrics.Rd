@@ -13,7 +13,7 @@ metrics may require additional information to be given (see Details section).
 }
 \usage{
 classificationMetrics(trues,preds,
-            stats=NULL,
+            metrics=NULL,
             benMtrx=NULL,
             allCls=unique(c(levels(as.factor(trues)),levels(as.factor(preds)))),
             posClass=allCls[1],
@@ -27,7 +27,7 @@ A vector or factor with the true values of the target variable.
   \item{preds}{
 A  vector or factor with the predicted values of the target variable.
 }
-  \item{stats}{
+  \item{metrics}{
     A vector with the names of the evaluation statistics to
     calculate (see Details section). If none is indicated (default) it will
   calculate all available metrics.

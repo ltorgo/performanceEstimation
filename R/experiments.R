@@ -492,7 +492,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
         
         nIts <- length(itsInfo)
         
-        standEval <- if (estTask@evaluator == "" ) TRUE else FALSE
+        standEval <- if (is.null(estTask@evaluator)) TRUE else FALSE
         if (standEval) 
             evalFunc <- if (is.classification(task)) "classificationMetrics" else "regressionMetrics"
         else
@@ -500,14 +500,14 @@ bootEstimates <- function(wf,task,estTask,cluster) {
 
         wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
         predMs <- setdiff(estTask@metrics,wts)
-        stats <- if (!is.null(predMs)) list(stats=predMs) else NULL
+        metrics <- if (!is.null(predMs)) list(metrics=predMs) else NULL
 
         ## getting the resubstitution scores
         trR <- if (trReq) list(train.y=eval(task@dataSource)[1:n,task@target]) else NULL
         fstArgs <- if (standEval) list(trues=resub$trues,preds=resub$preds) else resub
         resubScores <- do.call(evalFunc,
                                c(fstArgs,
-                                 stats,
+                                 metrics,
                                  trR,
                                  estTask@evaluator.pars))
 
@@ -527,7 +527,7 @@ bootEstimates <- function(wf,task,estTask,cluster) {
             fstArgs <- if (standEval) list(trues=itsInfo[[i]]$trues,preds=itsInfo[[i]]$preds) else itsInfo[[i]]
             ss <- 0.632*do.call(evalFunc,
                                 c(fstArgs,
-                                  stats,
+                                  metrics,
                                   trR,
                                   estTask@evaluator.pars)
                                 ) + 0.368*resubScores
@@ -714,7 +714,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
     nIts <- length(its)
 
-    standEval <- if (estTask@evaluator == "" ) TRUE else FALSE
+    standEval <- if (is.null(estTask@evaluator)) TRUE else FALSE
     if (standEval) 
         evalFunc <- if (is.classification(task)) "classificationMetrics" else "regressionMetrics"
     else
@@ -723,14 +723,14 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
     scores <- NULL
     wts <- intersect(estTask@metrics,c("trTime","tsTime","totTime"))
     predMs <- setdiff(estTask@metrics,wts)
-    stats <- if (!is.null(predMs)) list(stats=predMs) else NULL
+    metrics <- if (!is.null(predMs)) list(metrics=predMs) else NULL
     
     for(i in 1:nIts) {
         trR <- if (trReq) list(train.y=eval(task@dataSource)[its[[i]]$train,][[task@target]]) else NULL
         fstArgs <- if (standEval) list(trues=its[[i]]$trues,preds=its[[i]]$preds) else its[[i]]
         ss <- do.call(evalFunc,
                       c(fstArgs,
-                        stats,
+                        metrics,
                         trR,
                         estTask@evaluator.pars))
         if (is.null(scores)) {

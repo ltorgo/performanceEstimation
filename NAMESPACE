@@ -68,6 +68,7 @@ export(
     taskNames, workflowNames, metricNames,
     getScores, getIterationsInfo, getIterationsPreds,
     estimationSummary,
+    results2table,
 
     ## workflows.R file
     workflowVariants,

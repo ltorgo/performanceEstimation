@@ -14,8 +14,8 @@
 # Luis Torgo, Aug 2013
 # =====================================================
 # Example runs:
-# > bestScores(mergeEstimationRes(subset(earth,stats='e1',vars=1:3),
-#                   subset(nnet,stats='e1',vars=4:6),by=3))
+# > bestScores(mergeEstimationRes(subset(earth,metrics='e1',vars=1:3),
+#                   subset(nnet,metrics='e1',vars=4:6),by=3))
 # > bestScores(mergeEstimationRes(nnet,earth,rf,rpartXse,svm,by=3))
 #
 mergeEstimationRes <- function(...,by='tasks') {
@@ -143,3 +143,29 @@ estimationSummary <- function(results,workflow,task) {
 }
   
 
+
+
+## ======================================================================
+## This function produces a dplyr data frame table object containing
+## all the results
+## It is a table with the columns:
+##    Task, Workflow, nrIt, Metric, Score
+## =====================================================
+## Luis Torgo, Jul 2016
+## =====================================================
+results2table <- function(res) {
+    nrTasks <- length(res)
+    nrWfs	<- length(res[[1]])
+    nrIts <- nrow(res[[1]][[1]]@iterationsScores)
+    nrMetrs <- ncol(res[[1]][[1]]@iterationsScores)
+    tbl <- data.frame(Task=rep(taskNames(res),each=nrMetrs*nrIts*nrWfs),
+                      Workflow=rep(rep(workflowNames(res), each=nrMetrs*nrIts),nrTasks),
+                      nrIt=vector(mode="integer",length=nrTasks*nrMetrs*nrIts*nrWfs),
+                      Metric=vector(mode="character",length=nrTasks*nrMetrs*nrIts*nrWfs),
+                      Score=vector(mode="numeric",length=nrTasks*nrMetrs*nrIts*nrWfs),
+                      stringsAsFactors=FALSE)
+    for(t in seq_along(res))
+        for(w in seq_along(res[[t]]))
+            tbl[((t-1)*nrWfs*nrIts*nrMetrs + (w-1)*nrIts*nrMetrs + 1):((t-1)*nrWfs*nrIts*nrMetrs + w*nrIts*nrMetrs), 3:5] <- tidyr::gather_(as.data.frame(cbind(nrIt=1:nrIts,res[[t]][[w]]@iterationsScores)),"Metric","Score",colnames(res[[t]][[w]]@iterationsScores))
+    dplyr::tbl_df(tbl)
+}

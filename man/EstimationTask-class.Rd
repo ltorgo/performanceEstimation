@@ -22,7 +22,7 @@ calculate these metrics.
 }
 \section{Slots}{
   \describe{
-    \item{\code{metrics}:}{A vector of objects of class
+    \item{\code{metrics}:}{An optional vector of objects of class
       \code{character} containing the names of the metrics to be
       estimated. These can be any of the metrics provided by the
       functions \code{\link{classificationMetrics}} and
@@ -30,7 +30,9 @@ calculate these metrics.
       training, testing and total time, respectively. You may also
       provide the name of any other metrics, but in that case you need
       to use the slots \code{evaluator} and \code{evaluator.pars} to
-      indicate the function to be use to calculate them.}
+      indicate the function to be use to calculate them. If you do not supply 
+      the name of any metric, all metrics of the used evaluator function will
+      be calculated.}
     \item{\code{method}:}{Object of class \code{\linkS4class{EstimationMethod}}
       containing the estimation method and its settings to be used to
       obtain the estimates of the metrics (defaulting to \code{CV()}). }
@@ -60,16 +62,28 @@ calculate these metrics.
  (through parameters \code{evaluator} anbd \code{evaluator.pars}) you
  need to follow some protocol in defining these functions so that the
  package may correctly call them during the execution of the estimation
- experiments. More specifically, the first 3 parameters of the
- user-defined evaluator functions must be: \code{trues}, \code{preds}
- and \code{stats}. The parameter \code{trues}  will "receive" the vector
- of true values of the target variable of each test set, whilst the
- parameter \code{preds} will get the vector of model predictions. Based
- on these two vectors you should calculate whatever metrics are
- indicated through the parameter \code{stats} that is a vector of
- strings. In case the slot \code{trainReq} is \code{TRUE} then the
- user-defined evaluator function should also have as fourth parameter
- the parameter \code{train.y} that will "receive" the values of the
+ experiments. This protocol depends on the output of the workflows you 
+ plan to evaluate with your use-defined function. Standard workflows 
+ (\code{\link{standardWF}} or \code{\link{timeseriesWF}}) will return 
+ at least a vector named \code{trues} with  the true values of the test 
+ cases and the vector named \code{preds} with the respective predicted 
+ values (in this order). This means that your evaluator function should 
+ assume that it will be called with these two vectors as the first two 
+ arguments. However, if you are not using the standard workflows, you 
+ have more flexibility. In effect, user-defined workflows return whatever 
+ the author wants them to return (unless they are going to be evaluated 
+ using either \code{\link{classificationMetrics}} or 
+ \code{\link{regressionMetrics}}, that require the vectors of true and 
+ predicted values). This means that in the most flexible case where you 
+ have your own user-defined workflow function and your user-defined evaluator 
+ function, you can use whatever parameters you want. The only thing you need 
+ to worry is to be aware that your user-defined evaluator function will 
+ be called with whatever your user-defined workflow has returned as result 
+ of its execution. Your user-defined evaluator function should calculate 
+ whatever metrics are indicated through the parameter \code{stats} that 
+ is a vector of strings. In case the slot \code{trainReq} is \code{TRUE} 
+ then the user-defined evaluator function should also have a parameter
+ named \code{train.y} that will "receive" the values of the
  target variable on the training set. The remaining parameters of the
  user-defined function can be freely defined by you and their values
  will be specified through the contents of the \code{evaluator.pars}
@@ -106,15 +120,16 @@ EstimationTask(metrics=c("acc","totTime"),method=Holdout(nReps=3,hldSz=0.2))
 ## An example with a user-defined metric: the average differences between true
 ## predicted values raised to a certain power.
 
-## The first we define the function that calculates this metric. It
-## needs to have 'trues' and 'preds' as the first two arguments
-powErr <- function(trues,preds,stats,pow=3) {
-     if (stats != "pow.err") stop("Unable to calculate that metric!")
+## First we define the function that calculates this metric. It
+## needs to have 'trues' and 'preds' as the first two arguments if we
+## want it to be usable by standard workflows
+powErr <- function(trues,preds,metrics,pow=3) {
+     if (metrics != "pow.err") stop("Unable to calculate that metric!")
      c(pow.err = mean((trues-preds)^pow))
 }
 
 ## Now the estimation task (10-fold cv in this example)
-EstimationTask(metrics="pow.err",method=CV(), 
-               evaluator="powErr",evaluator.pars=list(pow=4))
+EstimationTask(metrics="pow.err", method=CV(), 
+               evaluator="powErr", evaluator.pars=list(pow=4))
 }
 \keyword{classes}

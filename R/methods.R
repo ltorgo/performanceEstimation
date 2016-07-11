@@ -105,9 +105,9 @@ setMethod("show",
           function(object) {
             userSplit <- !is.null(object@dataSplits)
             cat(ifelse(!userSplit & object@strat,'Stratified ',''),
-                object@nReps,'x')
+                object@nReps,'x ')
             
-            if (object@hldSz < 1) cat(100*(1-object@hldSz),'%/',100*object@hldSz,'% Holdout\n')
+            if (object@hldSz < 1) cat(100*(1-object@hldSz),'% /',100*object@hldSz,'% Holdout\n')
             else cat(object@hldSz," cases Holdout\n")
             
             if (!userSplit)
@@ -416,7 +416,7 @@ setMethod("show",
 # Luis Torgo, Aug 2009
 # =====================================================
 # Example runs:
-# > plot(subset(nnet,stats='e1',vars=1:4))
+# > plot(subset(nnet,metrics='e1',vars=1:4))
 #
 setMethod("subset",
           signature(x='ComparisonResults'),

@@ -11,7 +11,7 @@ and the other with the predicted target variable values. Some of the
 metrics may require additional information to be given (see Details section).		
 }
 \usage{
-regressionMetrics(trues, preds, stats = NULL, train.y = NULL)
+regressionMetrics(trues, preds, metrics = NULL, train.y = NULL)
 }
 
 \arguments{
@@ -21,7 +21,7 @@ A numeric vector with the true values of the target variable.
   \item{preds}{
 A numeric vector with the predicted values of the target variable.
 }
-  \item{stats}{
+  \item{metrics}{
 A vector with the names of the evaluation statistics to
   calculate (see Details section). If none is indicated (default) it will
   calculate all available metrics of this function. 
@@ -81,7 +81,7 @@ absolute error metrics the function includes currently the following:
   t_\{i-1\} is the last observed value of the target variable
 
   The user may also indicate the value "all" in the parameter
-  \code{stats}. In this case all possible metrics will be
+  \code{metrics}. In this case all possible metrics will be
   calculated. This will only include the "nmse", "nmae" and "theil" metrics if
   the value of the \code{train.y} parameter is set, otherwise only the
   other metrics will be returned.
@@ -117,7 +117,7 @@ preds <- predict(model,test)
 ## by default only mse is calculated
 regressionMetrics(test[,'Infant.Mortality'],preds)
 ## calculate mae and rmse
-regressionMetrics(test[,'Infant.Mortality'],preds,stats=c('mae','rmse'))
+regressionMetrics(test[,'Infant.Mortality'],preds,metrics=c('mae','rmse'))
 ## calculate all statistics
 regressionMetrics(test[,'Infant.Mortality'],preds,train.y=train[,'Infant.Mortality'])
 }

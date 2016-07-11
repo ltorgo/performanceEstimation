@@ -1,5 +1,10 @@
 DEVELOPMENT VERSION
 
+- Added a new function (results2table) that produces a dplyr data frame table from the results of an experiment for easier querying using dplyr-style facilities
+- Changed slightly the show method of class Holdout
+- Changed several parameter names in several functions that were referring to the metrics as "stats". All these parameters are now named "metrics"
+- Corrected EstimationTask man page that was still referring to things of the previous versions
+- corrections to the clustering parts(thanks to Andre Mikulec)
 - corrected small confusion in notation used in the help page of classificationMetrics (thanks to Andre Mikulec for noting this).
 - show method of workflows changed to not truncate the parameters of learners. Now it always shows all parameters spread over different text lines.
 - Calls to .loadedPackages replaced by calls to the base function .packages that does the same

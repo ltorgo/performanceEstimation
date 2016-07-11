@@ -46,7 +46,7 @@ workflowVariants <- function(wf,...,varsRootName,as.is=NULL) {
     
     if (missing(varsRootName)) varsRootName <- n
 
-    default.novar <- c('evaluator.pars.stats','evaluator.pars.allCls','evaluator.pars.benMtrx')
+    default.novar <- c('evaluator.pars.metrics','evaluator.pars.allCls','evaluator.pars.benMtrx')
     allnovar <- c(as.is,default.novar)
 
     ## unfolding the parameters hidden inside the special parameters

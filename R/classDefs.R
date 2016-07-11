@@ -300,7 +300,7 @@ setClassUnion("EstimationMethod",
 setClass("EstimationTask",
          slots=c(metrics='OptString',        # the metrics to be estimated
                  method="EstimationMethod",  # the estimation method to use
-                 evaluator='character',      # function used to calculate the metrics
+                 evaluator='OptString',      # function used to calculate the metrics
                  evaluator.pars='OptList',   # pars to this function
                  trainReq='logical'          # is the training data required?
          )
@@ -310,7 +310,7 @@ setClass("EstimationTask",
 ## constructor
 ##
 EstimationTask <- function(metrics=NULL,method=CV(),
-                           evaluator="",evaluator.pars=NULL,
+                           evaluator=NULL,evaluator.pars=NULL,
                            trainReq=FALSE) {
     new("EstimationTask",
         metrics=metrics,method=method,
