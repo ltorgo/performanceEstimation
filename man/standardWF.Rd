@@ -94,7 +94,7 @@ A named list of parameter values to be passed to the post-processing functions.
   Through parameter \code{learner} users may indicate the modeling
   algorithm to use to obtain the predictive model. This can be any R function,
   provided it can be called with a formula on the first argument and a
-  training set on the second (as most R modeling functions do). As
+  training set on a parameter named \code{data} (as most R modeling functions do). As
   usual, these functions may include other arguments that are specific
   to the modeling approach (i.e. are parameters of the model). The
   values to be used for these parameters are specified as a list through
@@ -236,6 +236,28 @@ a1.res <- performanceEstimation(
             ws,
             EstimationTask("mse")
             )
+
+## An example using GBM that is a bit different in terms of the
+## prediction part as it requires to select the number of trees of the
+## ensemble to use
+data(Boston, package="MASS")
+library(gbm)
+
+## A user written predict function to allow for using the standard
+## workflows
+gbm.predict <- function(model, test, method, ...) {
+    best <- gbm.perf(model, plot.it=FALSE, method=method)
+    return(predict(model, test, n.trees=best, ...))
+}
+
+resG <- performanceEstimation(
+             PredTask(medv ~.,Boston),
+             Workflow(learner="gbm",
+                      learner.pars=list(n.trees=1000, cv.folds=10),
+                      predictor="gbm.predict",
+                      predictor.pars=list(method="cv")),
+             EstimationTask(metrics="mse",method=CV())
+        )
 
 }
 }
