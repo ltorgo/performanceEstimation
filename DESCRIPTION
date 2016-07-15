@@ -20,4 +20,6 @@ BugReports: https://github.com/ltorgo/performanceEstimation/issues
 License: GPL (>=2)
 LazyLoad: yes
 LazyData: yes
-
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

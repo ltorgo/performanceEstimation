@@ -1,0 +1,218 @@
+---
+title: "An Infra-Structure for Performance Estimation and Experimental Comparison of Predictive Models in R"
+author: "Luis Torgo"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  \VignetteIndexEntry{An Infra-Structure for Performance Estimation and Experimental Comparison of Predictive Models in R}
+  \VignetteEngine{knitr::rmarkdown}
+  \VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE}
+pckg <- packageDescription("performanceEstimation")
+peN <- pckg$Package
+peV <- pckg$Version
+```
+
+  This document describes an infra-structure provided by the R `r peN`
+  that allows to estimate the predictive performance of different
+  approaches (workflows) to predictive tasks.  The infra-structure is
+  generic in the sense that it can be used to estimate the values of
+  any performance metrics, for any workflow on different predictive
+  tasks, namely, classification, regression and time series tasks. The
+  package also includes several standard workflows that allow users to
+  easily set up their experiments limiting the amount of work and
+  information they need to provide. The overall goal of the
+  infra-structure provided by our package is to facilitate the task of
+  estimating the predictive performance of different modeling
+  approaches to predictive tasks in the R environment.
+
+## Introduction
+
+The goal of this document is to describe the infra-structure that is
+available in `r peN`^[This document was written with version `r peV` of the package.] to estimate the performance of different approaches
+to predictive tasks.  The main goal of this package is to provide a
+general infra-structure that can be used to estimate the performance
+using several predictive performance metrics of any modelling approach
+to different predictive tasks, with a minimal effort from the
+user. The package provides this type of facilities for classification,
+regression and time series tasks. There is no limitation on the type
+of approaches to these tasks for which you can estimate the
+performance - the user just needs to provide a workflow function
+(following some interface rules) that implements the approach for
+which the predictive performance is to be estimated. The package
+includes some standard workflow functions that implement the typical
+learn+test approach that most users will be interested
+in. This means that if you just want to estimate the performance of
+some variants of a method already implemented in R (e.g. an SVM), on
+some particular tasks, you will be able to use these standard workflow
+functions and thus your required input will be limited to the minimum. The
+package also provides a series of predictive performance metrics for
+different tasks. Still, you are not limited to these metrics and can
+use any metric as long as it exists in R or you provide a function
+calculating it. Finally, the package also
+include several standard data pre-processing and predictions
+post-processing steps that again can be incorporated into the
+workflows being evaluated.  
+
+This infra-structure implements different methods for estimating the
+predictive performance. Namely, you can select among: (i) cross
+validation, (ii) holdout and random sub-sampling, (iii) leave one out
+cross validation, (iv)  bootstrap ($\epsilon_0$ and .631) and also (v)
+Monte-Carlo experiments for time series forecasting tasks. For each of
+these tasks different options are implemented (e.g. use of stratified
+sampling).
+
+Most of the times experimental methodologies for performance estimation are iterative
+processes that repeat the modeling task several times using different
+train+test samples with the goal of improving the accuracy of the
+estimates. The estimates are the result of aggregating the scores
+obtained on each of the repetitions. For each of these
+repetitions different training and testing samples are generated and
+the process being evaluated is "asked" to: (i) obtain the predictive
+model using the training data, and then (ii) use this model to obtain
+predictions for the respective test sample. These predictions can then be
+used to calculate the scores of the performance metrics being
+estimated. This means that there is a workflow that starts with a
+predictive task for which training and testing samples are given, and
+that it should produce as result the predictions of the workflow for
+the given test sample. There are far too many possible approaches and
+sub-steps for the implementation of this workflow.  To ensure full
+generality of the infra-structure, we allow the user to provide a
+function that implements this workflow for each of the predictive
+approaches she/he wishes to compare and/or evaluate. This function can
+be parameterizable in the sense that there may be variants of the
+workflow that the user wishes to evaluate and/or compare. Still, the
+goal of this workflow  functions is very clear: (i)
+receive as input a predictive task for which training  and  test
+samples are given, as well as any eventual workflow specific parameters; and
+(ii) produce as result a set of predictions for the given test
+set.  These predictions
+will then be used to obtain the scores of the predictive metrics for which the
+user is interested in obtaining reliable estimates.
+
+The infra-structure we describe here provides means for the user to
+indicate: (i) a set of predictive tasks with the respective data sets;
+(ii) a set of workflows and respective variants; and (iii) the
+information on the estimation task. The infra-structure then takes care of all
+the process of experimentally estimating the predictive performance of the different approaches on
+the tasks, producing as result an object that can be
+explored in different ways to obtain the results of the estimation process.
+The infra-structure also provides several utility functions
+to explore these results objects, for instance to
+obtain summaries of the estimation process both in textual format as well as
+visually. Moreover, it also provides functions that carry out
+statistical significance tests based on the outcome of the
+experiments. 
+
+Finally, the infra-structure provides utility functions
+implementing frequently used workflows for common modelling techniques, several data pre-processing steps and prediction post-processing operations, as
+well as functions that facilitate the automatic generation of variants
+of workflows by specifying sets of parameters that the user wishes to
+consider in the comparisons.
+
+## Package Installation
+
+The package can be installed as any other R package that is available at the R central repository (CRAN), i.e. by simply executing the code:
+
+```{r eval=FALSE}
+install.packages("performanceEstimation")
+```
+
+This is the recommended form of installing the package an we assume that you start by doing this before you proceed to try the examples described in this document. This will install the current stable version of the package that at the time of writing of this document is version `r peV`.
+
+If you wish to try some eventual new developments of the package that are still under testing and have not yet been released to the general public (thus are subject to bugs), then you may install the development version of the package that is available at the package GitHub Web page:
+
+<https://github.com/ltorgo/performanceEstimation>
+
+In order to install this development version (again not recommended unless you have a good reason for it), you may issue the following commands in R:
+
+```{r eval=FALSE}
+library(devtools)  # You need to install this package before!
+install_github("ltorgo/performanceEstimation",ref="develop")
+```
+
+The GitHub Web page referred above is also the right place for you to report any issues you have with the package or help in its development.
+
+## A Simple Illustrative Example
+
+Let us assume we are interested in estimating the predictive performance of several variants of
+an SVM on the
+**Iris** classification problem. More specifically, we want to
+obtain a reliable estimate of the error rate of these variants using
+10-fold cross validation. The following code illustrates how these
+estimates could be obtained with our proposed infra-structure.
+
+```{r}
+library(performanceEstimation)  # Loading our infra-structure
+library(e1071)                  # A package containing SVMs
+
+data(iris)                      # The data set we are going to use
+
+res <- performanceEstimation(
+         PredTask(Species ~ .,iris),
+         Workflow("standardWF",learner="svm"),
+         EstimationTask(metrics="err",method=CV())
+         )  
+```
+
+
+This simple example illustrates several key concepts of our
+infra-structure. First of all, we have the main function  -
+`performanceEstimation()`, which is used to carry out
+the estimation process. It has 3 main arguments: (i) a vector of
+predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
+specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing the information related with these three concepts: predictive tasks (S4 class **PredTask**); workflows (S4 class **Workflow**); and estimation tasks (S4 class **EstimationTask**).
+
+**PredTask** objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
+
+**Workflow** objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets.
+
+**EstimationTask** objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined with the `r peN` we also need to supply the name of the function that can be used to calculate these specific metrics.
+
+In the above simple example we are using the data frame **iris** to create a task consisting of forecasting the variable *Species* using all remaining variables. We are solving this classification task by using the function `standardWF` with the parameter **learner** set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The `standardWF` function simply applies the modeling function indicated through the parameter **learner** (in this case the function `svm` defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
+
+
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
