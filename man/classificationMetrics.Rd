@@ -44,7 +44,8 @@ A  vector or factor with the predicted values of the target variable.
     whilst costs (negative values) should be on all positions outside of
     the diagonal of the matrix (situations where the predicted value is
     different from the true class value and thus the model should incur on
-    a cost for this wrong prediction).
+    a cost for this wrong prediction). The function assumes the rows of the matrix are 
+    the predicted values while the columns are the true class values.
   }
   \item{allCls}{
     An optional vector with the possible values of the nominal target variable,
@@ -109,13 +110,13 @@ In the
   benefits corresponding to correct predictions, i.e. where t_i ==
   p_i, while costs correspond to erroneous predictions. These matrices are C x C square matrices, where C is the
   number of possible values of the nominal target variable (i.e. the
-  number of classes). The diagonal of these matrices corresponds to the
+  number of classes). The entry benMtrx[x, y] represents the utility (a cost if x != y) of the model predicting x for a true value of y. The diagonal of these matrices corresponds to the
   correct predictions (t_i == p_i) and should have positive values
   (benefits). The positions outside of the diagonal correspond to
   prediction errors and should have negative values (costs). The "totU"
   measures the total Utility (sum of the costs and benefits) of the
   predictions of a classification model. It is calculated as
-  sum(CB[p_i,t_i] * CM[p_i,t_i) where CB is a cost/benefit matrix and CM
+  sum(CB[p_i,t_j] * CM[p_i,t_j) where CB is a cost/benefit matrix and CM
   is a confusion matrix. 
 
   "fpr": false positives rate, is a metric applicable to two classes
