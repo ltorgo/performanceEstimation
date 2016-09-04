@@ -714,7 +714,7 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 
     nIts <- length(its)
 
-    standEval <- if (is.nul(estTask@evaluator == "" ) TRUE else FALSE
+    standEval <- if (estTask@evaluator == "" ) TRUE else FALSE
     if (standEval) 
         evalFunc <- if (is.classification(task)) "classificationMetrics" else "regressionMetrics"
     else
