@@ -70,6 +70,10 @@ standardPRE(form, train, test, steps, ...)
   using only the training set although they are applied to both train
   and test sets.
 
+  "knnImp" - that fills in any \code{NA} values in both sets using
+  the median value for numeric predictors and the mode for nominal
+  predictors, but using only the k-nearest neighbors to calculate these satistics.
+
   "na.omit" - that uses the R function \code{\link{na.omit}} to remove
   any rows containing \code{NA}'s  from both the training and test sets.
 
