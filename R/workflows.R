@@ -394,7 +394,7 @@ standardPRE <- function(form,train,test,steps,...) {
             train <- na.omit(train)
             test <- na.omit(test)
         } else if (s == "undersample") {
-            if (is.numeric(train[[tgtVar]])) stop("Undersampling is currently only available for classification tasks. Check http://www.dcc.fc.up.pt/~ltorgo/ExpertSystems/ for approaches applicable to regression.",call.=FALSE)
+            if (is.numeric(train[[tgtVar]])) stop("Undersampling is currently only available for classification tasks. Check CRAN package UBL for approaches applicable to regression.",call.=FALSE)
             pars <- list(...)
             clDistr <- table(train[[tgtVar]])
             minCl <- which.min(clDistr)
@@ -452,7 +452,7 @@ knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
     if (!is.null(distData)) tgt.nas <- nas[nas <= n]
     else tgt.nas <- nas
     
-    if (length(tgt.nas) == 0)  return(data) # no NAs (nothing to do!)
+    if (length(tgt.nas) == 0)  return(data[1:n,]) # no NAs (nothing to do!)
 
     xcomplete <- dm[setdiff(distInit:N,nas),]
     if (nrow(xcomplete) < k)
