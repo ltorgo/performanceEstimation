@@ -1,25 +1,42 @@
 Package: performanceEstimation
 Type: Package
 Title: An  Infra-Structure for Performance Estimation of Predictive Models
-Description: An  infra-structure for estimating the predictive performance
-    of predictive models. In this context, it can also be used to compare and/or select among
-    different alternative ways of solving one or more predictive tasks. The main goal of the 
-    package is to provide a generic infra-structure to estimate the values of different metrics
-    of predictive performance using different estimation procedures. These estimation tasks can be
-    applied to any solutions (workflows) to the predictive tasks. The package provides easy to use
-    standard workflows that allow the usage of any available R modeling algorithm together with
-    some pre-defined data pre-processing steps and also prediction post-processing methods. It also provides means for addressing issues related with the statistical significance of the observed differences. 
+Description: An infra-structure for estimating the predictive performance of
+    predictive models. In this context, it can also be used to compare and/or select
+    among different alternative ways of solving one or more predictive tasks. The
+    main goal of the package is to provide a generic infra-structure to estimate
+    the values of different metrics of predictive performance using different
+    estimation procedures. These estimation tasks can be applied to any solutions
+    (workflows) to the predictive tasks. The package provides easy to use standard
+    workflows that allow the usage of any available R modeling algorithm together
+    with some pre-defined data pre-processing steps and also prediction post-
+    processing methods. It also provides means for addressing issues related with
+    the statistical significance of the observed differences.
 Version: 1.1.0
-Depends: R(>= 3.0), methods
+Depends:
+    R(>= 3.0),
+    methods
 Imports:
-    ggplot2 (>= 0.9.3), parallelMap (>= 1.3), parallel, tidyr (>= 0.4.1), dplyr (>= 0.4.3)
-Date: 2016-03-08
+    ggplot2 (>= 0.9.3),
+    parallelMap (>= 1.3),
+    parallel,
+    tidyr (>= 0.4.1),
+    dplyr (>= 0.4.3)
+Date: 2016-07-19
 Authors@R: person("Luis", "Torgo", email = "ltorgo@dcc.fc.up.pt", role = c("aut", "cre"))
 URL: https://github.com/ltorgo/performanceEstimation
 BugReports: https://github.com/ltorgo/performanceEstimation/issues
 License: GPL (>=2)
 LazyLoad: yes
 LazyData: yes
-Suggests: knitr,
-    rmarkdown, devtools, e1071, DMwR, randomForest, quantmod, nnet, mlbench, parallel, MASS
-VignetteBuilder: knitr
+Suggests:
+    knitr,
+    rmarkdown,
+    devtools,
+    e1071,
+    DMwR,
+    randomForest,
+    quantmod,
+    nnet,
+    mlbench,
+    MASS

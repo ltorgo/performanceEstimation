@@ -63,14 +63,23 @@
  pdfstartview={XYZ null null 1}}
 \usepackage{breakurl}
 
-\newcommand{\PE}{package \texttt{performanceEstimation}\ }
-\newcommand{\PEversion}{1.0.2\ }
+\newcommand{\PE}{package \textbf{performanceEstimation}\ }
+\newcommand{\PEversion}{1.1.0\ }
 
 \author{Luis Torgo\\FCUP - LIAAD/INESC Tec\\University of Porto\\
   \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inesctec.pt}}
 \title{An Infra-Structure for Performance Estimation\\ and Experimental Comparison\\ of Predictive Models in R}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+%' <<include=FALSE>>=
+%' library(knitr)
+%' opts_chunk$set(
+%' concordance=TRUE
+%' )
+%' @
+
 
 
 
@@ -119,7 +128,7 @@ package also provides a series of predictive performance metrics for
 different tasks. Still, you are not limited to these metrics and can
 use any metric as long as it exists in R or you provide a function
 calculating it. Finally, the package also
-include several standard data pre-processing and predictions
+includes several standard data pre-processing and predictions
 post-processing steps that again can be incorporated into the
 workflows being evaluated.  
 
@@ -231,9 +240,9 @@ estimates could be obtained with our proposed infra-structure.
 \hlkwd{data}\hlstd{(iris)}                      \hlcom{# The data set we are going to use}
 
 \hlstd{res} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-         \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{.,iris),}
-         \hlkwd{Workflow}\hlstd{(}\hlstr{"standardWF"}\hlstd{,}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{),}
-         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"err"}\hlstd{,}\hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
+         \hlkwd{PredTask}\hlstd{(Species} \hlopt{~} \hlstd{., iris),}
+         \hlkwd{Workflow}\hlstd{(}\hlkwc{learner}\hlstd{=}\hlstr{"svm"}\hlstd{),}
+         \hlkwd{EstimationTask}\hlstd{(}\hlkwc{metrics}\hlstd{=}\hlstr{"err"}\hlstd{,} \hlkwc{method}\hlstd{=}\hlkwd{CV}\hlstd{())}
          \hlstd{)}
 \end{alltt}
 \begin{verbatim}
@@ -247,25 +256,25 @@ estimates could be obtained with our proposed infra-structure.
 ## Task for estimating  err  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Iteration :  1  2  3  4  5  6  7  8  9  10
+## Iteration :**********
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
 
 This simple example illustrates several key concepts of our
 infra-structure. First of all, we have the main function  -
-\texttt{performanceEstimation()}, which is used to carry out
+\texttt{performanceEstimation}, which is used to carry out
 the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
 specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing the information related with these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
 \textbf{PredTask} objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
 
-\textbf{Workflow} objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets.
+\textbf{Workflow} objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets. If you do not supply the name of the workflow to use (like in the above example), a standard default workflow will be used (more details on this later).
 
-\textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined with the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
+\textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined in the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
 
-In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using the function \texttt{standardWF} with the parameter \textbf{learner} set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
+In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using a standard workflow with the parameter \textbf{learner} set to ``svm''. The idea of these standard workflows which are already provided by the package is to cover the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function, which will be called by default if no other workflow function is provided, simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function can also be used to apply a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold (the default of function \texttt{CV}) Cross Validation to obtain estimates of the error rate. 
 
 
 
@@ -320,7 +329,7 @@ In the above simple example we are using the data frame \textbf{iris} to create 
 %% \texttt{performanceEstimation()} specifies the estimation task to carry out. It is an S4 object of class
 %% \textbf{EstimationTask}. These objects include information on the vector of metrics to be estimated (a large of them are already known by the infra-structure, but you may include your own metrics provided you tell R how to calculate them), and also the estimation method to use. For this latter issue several standard estimation methodologies are implemented by our package. For instance, in the simple example above we are using cross validation experiments with 10-folds.
 
-The result of the call to \texttt{performanceEstimation()} is an S4
+The result of the call to \texttt{performanceEstimation} is an S4
 object of the class \textbf{ComparisonResults}. These objects tipically are not
  directly explored by the end-user so we ommit their
 details here\footnote{Interested readers may have a look at the corresponding
@@ -407,9 +416,10 @@ show in Figure~\ref{fig:ex1Iris}.
 %% getWorkflow('svm.v1',res)
 %% @ 
 
-The above  example is just a simple illustration of the key concepts of the \PE. Most of the times you will use the package for more complex experiments, usually involving several tasks, several workflows or workflow variants, and eventually estimating several performance metrics. Before, we provide illustrations for these more complex setups we describe in more detail the key concepts of the \PE.
+The above  example is just a simple illustration of the key concepts of the \PE. Most of the times you will use the package for more complex experiments, usually involving several tasks, several workflows or workflow variants, and eventually estimating several performance metrics. Before we provide illustrations for these more complex setups we describe in more detail the key concepts of the \PE.
 
 
+% ====================================================================
 \section{Predictive Tasks}
 
 Predictive tasks are data analysis problems where we want to obtain a
@@ -427,7 +437,7 @@ Objects of class \textbf{PredTask} encapsulate the information of a
 predictive task, i.e. the functional form and the data required for
 solving it. For convenience they also allow the user to assign a name
 to each task. These S4 objects can be created using the construtor
-function \texttt{PredTask()}, as seen in the following example:
+function \texttt{PredTask}, as seen in the following example:
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -481,13 +491,14 @@ set. This process can include several steps, e.g. specific data
 pre-processing steps, and may use any modelling approach, eventually
 developed  by the user. 
 
-We distinguish two types of workflows: (i) generic, and (ii) user-defined. The first are probably the most common setups where the user simply wants to apply methods that already exist in R to some task. The second covers situations where the user has developed her/his own specific approach to solve a task and wants to apply it to some concrete problems. The package covers both situations as we will see.
+We distinguish two types of workflows: (i) generic/standard, and (ii) user-defined. The first are probably the most common setups where the user simply wants to apply methods that already exist in R to some task. The second covers situations where the user has developed her/his own specific approach to solve a task and wants to apply it to some concrete problems. The package covers both situations as we will see.
 
 Independently of the workflows being generic or user-defined, they will typically have parameters that we can tune to try to improve the results. Frequently, we want to estimate and compare the performance of these parameter variants over some set of tasks. Our package also facilitates these setups by providing a function to easily specify these alternatives.
 
+% ----------------------------------------------------------
 \subsection{Workflow Variants}\label{sec:variants}
 
-The function \texttt{workflowVariants}  provides  means to easily create a vector of \textbf{Workflow} objects, each resulting from a variation of some parameter values of a certain workflow. For instance, suppose you want to evaluate the performance of SVMs on a certain task and you wish to consider a certain range of values for the parameters \textbf{cost} and \textbf{gamma} of the function \texttt{svm} from package \textbf{e1071}. You could obviously create a vector of \textbf{Workflow} objects, one for each combination of \textbf{cost} and \textbf{gamma} you wish to consider in your experiment. This could become very easily an annoying task if you want to consider a large number of combinations. Instead you can use the \texttt{workflowVariants} function.
+The function \texttt{workflowVariants}  provides  means to easily create a vector of \textbf{Workflow} objects, each resulting from a variation of some parameter values of a certain workflow (either generic or user-defined). For instance, suppose you want to evaluate the performance of SVMs on a certain task and you wish to consider a certain range of values for the parameters \textbf{cost} and \textbf{gamma} of the function \texttt{svm} from package \textbf{e1071}. You could obviously create a vector of \textbf{Workflow} objects, one for each combination of \textbf{cost} and \textbf{gamma} you wish to consider in your experiment. This could become very easily an annoying task if you want to consider a large number of combinations. Instead you can use the \texttt{workflowVariants} function.
 
 The following example illustrates its use by considering 15 variants of SVMs applied to the Boston Housing data:
 
@@ -510,7 +521,7 @@ The following example illustrates its use by considering 15 variants of SVMs app
 \end{knitrout}
 
 The function accepts any workflow function in parameter
-\textbf{wf}. All remaining parameters are taken as parameters of that
+\textbf{wf}. In this case we are using the standard/generic workflow implemented in function \texttt{standardWF}. All remaining parameters are taken as parameters of that
 workflow function. If you include  any of these parameters with a vector of values
 (as it is the case of \textbf{cost} and \textbf{gamma} in the above
 example), the values in these vectors will be used to generate
@@ -525,6 +536,7 @@ the name of that parameter in the parameter \textbf{as.is} of the
 function \texttt{workflowVariants}.
 
 
+% ----------------------------------------------------------
 \subsection{Generic Workflows}
 
 Most of the times users want to evaluate standard workflows on some tasks. This means that they want to use existing out-of-the-box tools within R and apply them to some data sets.  As such, 
@@ -533,9 +545,10 @@ using some existing algorithm and obtain its predictions for the test set. To fa
 from having to write her/his own workflow functions provided her/his workflow fits
 this generic schema.
 
+% ...................
 \subsubsection{Classification and Regression Tasks}\label{sec:standardWF}
 
-Function \texttt{standardWF()} implements a typical workflow for both
+Function \texttt{standardWF} implements a typical workflow for both
 classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following main parameters that help the user to specify the intended approach:
 
 \begin{description}
@@ -700,7 +713,7 @@ The following is a simple example of using data pre-processing steps within our 
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Iteration :  1  2  3  4  5  6  7  8  9  10
+## Iteration :**********
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -789,13 +802,14 @@ In the next example we illustrate the use of the post-processing routines by ``c
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Iteration :  1  2  3  4  5  6  7  8  9  10
+## Iteration :**********
+## 
 ## 
 ## ++ MODEL/WORKFLOW :: lmOnlyPos 
 ## Task for estimating  mae  using
 ##  1 x 10 - Fold Cross Validation
 ## 	 Run with seed =  1234 
-## Iteration :  1  2  3  4  5  6  7  8  9  10
+## Iteration :**********
 \end{verbatim}
 \begin{alltt}
 \hlkwd{summary}\hlstd{(res)}
@@ -838,6 +852,7 @@ In the next example we illustrate the use of the post-processing routines by ``c
 As you see this simple post-processing step improved the performance of the model considerably.
 
 
+% ...................
 \subsubsection{Time Series Tasks}\label{sec:timeseriesWF}
 
 Our infra-structure also includes another generic workflow function
@@ -849,7 +864,7 @@ obtain predictions for a test set in the future. These two approaches
 contrast with the standard approach of learning a model with the
 available training sample and then use it to obtain predictions for
 all test period. This standard approach could be applied using the previously
-described \texttt{standardWF()} function. However, there are
+described \texttt{standardWF} function. However, there are
 alternatives to this procedure, two of the most common being the
 sliding and growing window approaches, which are implemented in another workflow function developed specifically for time series tasks.
 
@@ -875,11 +890,11 @@ changed since the training period has ended. Model updating using the
 sliding window method is carried out by using the data in the $L$ last
 time steps, i.e. every new model is always obtained using the last $L$
 data observations, as if the training window was slided forward in
-time. Our \texttt{timeseriesWF()} function implements this idea for
+time. Our \texttt{timeseriesWF} function implements this idea for
 both time series with a numeric target variable and a nominal target
 variable. This function has a parameter (\texttt{type}) that if set to
 ``slide'' will use a sliding window approach. As with the
-\texttt{standardWF()} function, this \texttt{timeseriesWF()} function
+\texttt{standardWF} function, this \texttt{timeseriesWF} function
 also accepts parameters specifying the learner, predictor, 
 and their respective parameters, as well as the previously defined pre- and post-processing steps, all with exactly the same names and possible values (c.f. Section ~\ref{sec:standardWF}). Moreover, this function also includes
 an extra parameter, named \texttt{relearn.step}, which allows the user
@@ -894,7 +909,7 @@ uses the data occurring in the last $L$ time steps, growing window
 keeps increasing the original training window with the newly available
 data points, i.e. the models are obtained with increasingly larger
 training samples. By setting the parameter \texttt{type} to ``grow''
-you get the \texttt{timseriesWF()} function to use this method.
+you get the \texttt{timseriesWF} function to use this method.
 
 The following code illustrates these two approaches by comparing them to the standard approach of using a single model to forecast all testing period:
 
@@ -907,10 +922,10 @@ The following code illustrates these two approaches by comparing them to the sta
 \hlkwd{getSymbols}\hlstd{(}\hlstr{'^GSPC'}\hlstd{,}\hlkwc{from}\hlstd{=}\hlstr{'2008-01-01'}\hlstd{,}\hlkwc{to}\hlstd{=}\hlstr{'2012-12-31'}\hlstd{)}
 \hlstd{data.model} \hlkwb{<-} \hlkwd{specifyModel}\hlstd{(}
   \hlkwd{Next}\hlstd{(}\hlnum{100}\hlopt{*}\hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC)))} \hlopt{~} \hlkwd{Delt}\hlstd{(}\hlkwd{Ad}\hlstd{(GSPC),}\hlkwc{k}\hlstd{=}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{))}
-\hlstd{data} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}\hlkwd{modelData}\hlstd{(data.model))}
-\hlkwd{colnames}\hlstd{(data)[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlstr{'PercVarClose'}
+\hlstd{dat} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}\hlkwd{modelData}\hlstd{(data.model))}
+\hlkwd{colnames}\hlstd{(dat)[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlstr{'PercVarClose'}
 \hlstd{spExp} \hlkwb{<-} \hlkwd{performanceEstimation}\hlstd{(}
-  \hlkwd{PredTask}\hlstd{(PercVarClose} \hlopt{~} \hlstd{.,data,}\hlstr{'SP500_2012'}\hlstd{),}
+  \hlkwd{PredTask}\hlstd{(PercVarClose} \hlopt{~} \hlstd{.,dat,}\hlstr{'SP500_2012'}\hlstd{),}
   \hlkwd{c}\hlstd{(}\hlkwd{Workflow}\hlstd{(}\hlkwc{wf}\hlstd{=}\hlstr{'standardWF'}\hlstd{,}\hlkwc{wfID}\hlstd{=}\hlstr{"standRF"}\hlstd{,}
              \hlkwc{learner}\hlstd{=}\hlstr{'randomForest'}\hlstd{,}
              \hlkwc{learner.pars}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{ntree}\hlstd{=}\hlnum{500}\hlstd{)),}
@@ -935,6 +950,7 @@ The following code illustrates these two approaches by comparing them to the sta
 The above example applies 3 different workflows to the task of trying to forecast the percentage daily variation of the prices of S\&P 500, using some information of the previous prices as predictors. Namely, all workflows use a random forest with 500 trees but the predictions for each test set of the 5 repetitions Monte Carlo estimation methodology (c.f. Section~\ref{sec:MC}), are obtained differently. The first workflow, named ``standRF'', obtains a single random forest with the training set and uses it to obtain predictions for the full test set. The other two approaches, instead of using this standard workflow, take advantage of the workflow provided by \texttt{timeseriesWF} and use either  sliding  or growing windows to obtain these predictions. For both these two latter approaches a new random forest is obtained after each 30 new test cases (set by parameter \texttt{relearn.step}).
 
 
+% ----------------------------------------------------------
 \subsection{User-defined Workflows}
 
 With the goal of ensuring that the
@@ -981,18 +997,18 @@ Regarding the components of this results list, in case you wish to use the funct
 important to return. 
 
 The sketch shown above also illustrates the use of the function
-\texttt{responseValues()} that can be used to obtain the values of the target
+\texttt{responseValues} that can be used to obtain the values of the target
 variable given a formula and a data frame.
 
 On top of the 3 mandatory parameters (formula, training and test sets), user-defined workflow functions may also accept any other arguments. As we have seen in Section~\ref{sec:variants} we provide
-the function \texttt{workflowVariants()} to facilitate the specification of
+the function \texttt{workflowVariants} to facilitate the specification of
 different variants of any workflow function by trying all combinations
 of several of its specific parameters. For instance, if the modelling
 function in the above example workflow (function
-\texttt{myModelingTechnique()}) had an integer parameter \texttt{x}
+\texttt{myModelingTechnique}) had an integer parameter \texttt{x}
 and a Boolean parameter \texttt{y}, we could generate several
 \textbf{Workflow} objects to be evaluated/compared using the
-\texttt{performanceEstimation()} function, as follows:
+\texttt{performanceEstimation} function, as follows:
 
 \begin{knitrout}\footnotesize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
@@ -1040,8 +1056,8 @@ algae blooms data set~\cite{Tor10}.  We write a workflow function that implement
 This workflow starts by building two modified samples of the training
 and testing sets, with the \texttt{NA} values being filled in using a
 nearest neighbour strategy (see the help page of the function
-\texttt{knnImputation()} for more
-details). These versions are to be used by the \texttt{lm()} function
+\texttt{knnImputation} for more
+details). These versions are to be used by the \texttt{lm} function
 that is unable to cope with cases with missing values. After obtaining
 the two models and their predictions the function calculates a
 weighted average of both predictions. Note that if \texttt{.models=TRUE} we add the models to the results list.
@@ -1130,7 +1146,7 @@ methods to estimate the predictive performance of a model. By
 including an S4 object of class \textbf{CV} in the parameter \textbf{method} we can carry
 out experiments of this type.
 
-The constructor function \texttt{CV()} can be used to obtain objects
+The constructor function \texttt{CV} can be used to obtain objects
 of class \textbf{CV}. It accepts the following parameters:
 
 \begin{description}
@@ -1180,7 +1196,7 @@ By including an S4 object of class
 \textbf{Bootstrap} in the \textbf{method} argument we can carry out experiments of this
 type.
 
-Function \texttt{Bootstrap()} can be used as a constructor of
+Function \texttt{Bootstrap} can be used as a constructor of
 objects of class \textbf{Bootstrap}. It accepts the following
 arguments:
 
@@ -1219,9 +1235,9 @@ The Holdout is another frequently used experimental methodology,
 particularly for large data sets. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
 class \textbf{Holdout} in the third argument of function
-\texttt{performanceEstimation()}.
+\texttt{performanceEstimation}.
 
-Function \texttt{Holdout()} can be used as a constructor of
+Function \texttt{Holdout} can be used as a constructor of
 objects of class \textbf{Holdout}. It accepts the following
 arguments:
 
@@ -1259,7 +1275,7 @@ random subsampling with the LetterRecognition classification task from package
 \end{knitrout}
 
 Please note the use of the \texttt{predictor.pars} parameter of our
-\texttt{standardWF()} function to be able to cope with the fact that
+\texttt{standardWF} function to be able to cope with the fact that
 the \texttt{predict} method for classification trees requires the use
 of \texttt{type="class"} to get actual predicted class labels instead
 of class probabilities.
@@ -1272,9 +1288,9 @@ out cross validation as a $k$-fold cross validation with $k$ equal to
 the size of the available data set. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
 class \textbf{LOCV} in the third argument of function
-\texttt{performanceEstimation()}.
+\texttt{performanceEstimation}.
 
-Function \texttt{LOOCV()} can be used as a constructor of
+Function \texttt{LOOCV} can be used as a constructor of
 objects of class \textbf{LOOCV}. It accepts the following
 arguments:
 
@@ -1338,9 +1354,9 @@ usual. The overall process is depicted in Figure~\ref{fig:MC}.
 
 To carry out this type of experiments in our infra-structure we can
 include an S4 object of class \textbf{MonteCarlo} in the third
-argument of function \texttt{performanceEstimation()}.
+argument of function \texttt{performanceEstimation}.
 
-The function \texttt{MonteCarlo()} can be used as a constructor of
+The function \texttt{MonteCarlo} can be used as a constructor of
 objects of class \textbf{MonteCarlo}. It accepts the following
 arguments:
 
@@ -1405,9 +1421,9 @@ in performance between the workflows are statistically
 significant. More formally, we want to know that confidence level of rejecting the null hypothesis that the difference between the estimated averages is zero.
 
 That is the goal of the function
-\texttt{pairedComparisons()}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons()} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
+\texttt{pairedComparisons}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
 
-Function \texttt{pairedComparisons()} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
+Function \texttt{pairedComparisons} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
 
 \begin{itemize}
 \item \textbf{setup} - with generic information on the estimation task
@@ -1446,7 +1462,7 @@ Let us see a concrete example of using this statistical tests. Suppose we want t
 \end{kframe}
 \end{knitrout}
 
-The object \texttt{res} can be passed to \texttt{pairedComparisons()} to calculate the tests described before:
+The object \texttt{res} can be passed to \texttt{pairedComparisons} to calculate the tests described before:
 
 
 \begin{knitrout}\footnotesize
@@ -1493,72 +1509,88 @@ We can see that the null hypothesis that the average ranks of the workflows are 
 ## [1] 12.38302
 ## 
 ## $rkDifs
-##            svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6    svm.v7    svm.v8
-## svm.v1  0.0000000 1.5000000 1.0000000 1.8333333 1.5000000 0.6666667 0.8333333 0.1666667
-## svm.v2  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667 2.3333333 1.3333333
-## svm.v3  1.0000000 0.5000000 0.0000000 0.8333333 0.5000000 1.6666667 1.8333333 0.8333333
-## svm.v4  1.8333333 0.3333333 0.8333333 0.0000000 0.3333333 2.5000000 2.6666667 1.6666667
-## svm.v5  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667 2.3333333 1.3333333
-## svm.v6  0.6666667 2.1666667 1.6666667 2.5000000 2.1666667 0.0000000 0.1666667 0.8333333
-## svm.v7  0.8333333 2.3333333 1.8333333 2.6666667 2.3333333 0.1666667 0.0000000 1.0000000
-## svm.v8  0.1666667 1.3333333 0.8333333 1.6666667 1.3333333 0.8333333 1.0000000 0.0000000
-## svm.v9  1.3333333 0.1666667 0.3333333 0.5000000 0.1666667 2.0000000 2.1666667 1.1666667
-## svm.v10 2.8333333 1.3333333 1.8333333 1.0000000 1.3333333 3.5000000 3.6666667 2.6666667
-## svm.v11 7.6666667 9.1666667 8.6666667 9.5000000 9.1666667 7.0000000 6.8333333 7.8333333
-## svm.v12 6.6666667 8.1666667 7.6666667 8.5000000 8.1666667 6.0000000 5.8333333 6.8333333
-## svm.v13 2.3333333 3.8333333 3.3333333 4.1666667 3.8333333 1.6666667 1.5000000 2.5000000
-## svm.v14 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333 0.1666667 1.1666667
-## svm.v15 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333 0.1666667 1.1666667
-##            svm.v9   svm.v10   svm.v11  svm.v12  svm.v13   svm.v14   svm.v15
-## svm.v1  1.3333333  2.833333  7.666667 6.666667 2.333333 1.0000000 1.0000000
-## svm.v2  0.1666667  1.333333  9.166667 8.166667 3.833333 2.5000000 2.5000000
-## svm.v3  0.3333333  1.833333  8.666667 7.666667 3.333333 2.0000000 2.0000000
-## svm.v4  0.5000000  1.000000  9.500000 8.500000 4.166667 2.8333333 2.8333333
-## svm.v5  0.1666667  1.333333  9.166667 8.166667 3.833333 2.5000000 2.5000000
-## svm.v6  2.0000000  3.500000  7.000000 6.000000 1.666667 0.3333333 0.3333333
-## svm.v7  2.1666667  3.666667  6.833333 5.833333 1.500000 0.1666667 0.1666667
-## svm.v8  1.1666667  2.666667  7.833333 6.833333 2.500000 1.1666667 1.1666667
-## svm.v9  0.0000000  1.500000  9.000000 8.000000 3.666667 2.3333333 2.3333333
-## svm.v10 1.5000000  0.000000 10.500000 9.500000 5.166667 3.8333333 3.8333333
-## svm.v11 9.0000000 10.500000  0.000000 1.000000 5.333333 6.6666667 6.6666667
-## svm.v12 8.0000000  9.500000  1.000000 0.000000 4.333333 5.6666667 5.6666667
-## svm.v13 3.6666667  5.166667  5.333333 4.333333 0.000000 1.3333333 1.3333333
-## svm.v14 2.3333333  3.833333  6.666667 5.666667 1.333333 0.0000000 0.0000000
-## svm.v15 2.3333333  3.833333  6.666667 5.666667 1.333333 0.0000000 0.0000000
+##            svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6
+## svm.v1  0.0000000 1.5000000 1.0000000 1.8333333 1.5000000 0.6666667
+## svm.v2  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667
+## svm.v3  1.0000000 0.5000000 0.0000000 0.8333333 0.5000000 1.6666667
+## svm.v4  1.8333333 0.3333333 0.8333333 0.0000000 0.3333333 2.5000000
+## svm.v5  1.5000000 0.0000000 0.5000000 0.3333333 0.0000000 2.1666667
+## svm.v6  0.6666667 2.1666667 1.6666667 2.5000000 2.1666667 0.0000000
+## svm.v7  0.8333333 2.3333333 1.8333333 2.6666667 2.3333333 0.1666667
+## svm.v8  0.1666667 1.3333333 0.8333333 1.6666667 1.3333333 0.8333333
+## svm.v9  1.3333333 0.1666667 0.3333333 0.5000000 0.1666667 2.0000000
+## svm.v10 2.8333333 1.3333333 1.8333333 1.0000000 1.3333333 3.5000000
+## svm.v11 7.6666667 9.1666667 8.6666667 9.5000000 9.1666667 7.0000000
+## svm.v12 6.6666667 8.1666667 7.6666667 8.5000000 8.1666667 6.0000000
+## svm.v13 2.3333333 3.8333333 3.3333333 4.1666667 3.8333333 1.6666667
+## svm.v14 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333
+## svm.v15 1.0000000 2.5000000 2.0000000 2.8333333 2.5000000 0.3333333
+##            svm.v7    svm.v8    svm.v9   svm.v10   svm.v11  svm.v12
+## svm.v1  0.8333333 0.1666667 1.3333333  2.833333  7.666667 6.666667
+## svm.v2  2.3333333 1.3333333 0.1666667  1.333333  9.166667 8.166667
+## svm.v3  1.8333333 0.8333333 0.3333333  1.833333  8.666667 7.666667
+## svm.v4  2.6666667 1.6666667 0.5000000  1.000000  9.500000 8.500000
+## svm.v5  2.3333333 1.3333333 0.1666667  1.333333  9.166667 8.166667
+## svm.v6  0.1666667 0.8333333 2.0000000  3.500000  7.000000 6.000000
+## svm.v7  0.0000000 1.0000000 2.1666667  3.666667  6.833333 5.833333
+## svm.v8  1.0000000 0.0000000 1.1666667  2.666667  7.833333 6.833333
+## svm.v9  2.1666667 1.1666667 0.0000000  1.500000  9.000000 8.000000
+## svm.v10 3.6666667 2.6666667 1.5000000  0.000000 10.500000 9.500000
+## svm.v11 6.8333333 7.8333333 9.0000000 10.500000  0.000000 1.000000
+## svm.v12 5.8333333 6.8333333 8.0000000  9.500000  1.000000 0.000000
+## svm.v13 1.5000000 2.5000000 3.6666667  5.166667  5.333333 4.333333
+## svm.v14 0.1666667 1.1666667 2.3333333  3.833333  6.666667 5.666667
+## svm.v15 0.1666667 1.1666667 2.3333333  3.833333  6.666667 5.666667
+##          svm.v13   svm.v14   svm.v15
+## svm.v1  2.333333 1.0000000 1.0000000
+## svm.v2  3.833333 2.5000000 2.5000000
+## svm.v3  3.333333 2.0000000 2.0000000
+## svm.v4  4.166667 2.8333333 2.8333333
+## svm.v5  3.833333 2.5000000 2.5000000
+## svm.v6  1.666667 0.3333333 0.3333333
+## svm.v7  1.500000 0.1666667 0.1666667
+## svm.v8  2.500000 1.1666667 1.1666667
+## svm.v9  3.666667 2.3333333 2.3333333
+## svm.v10 5.166667 3.8333333 3.8333333
+## svm.v11 5.333333 6.6666667 6.6666667
+## svm.v12 4.333333 5.6666667 5.6666667
+## svm.v13 0.000000 1.3333333 1.3333333
+## svm.v14 1.333333 0.0000000 0.0000000
+## svm.v15 1.333333 0.0000000 0.0000000
 ## 
 ## $signifDifs
-##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9 svm.v10 svm.v11
-## svm.v1   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v2   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v3   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v4   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v5   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v6   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v7   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v8   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v9   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v10  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v11  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v12  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v13  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v14  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-## svm.v15  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE   FALSE   FALSE
-##         svm.v12 svm.v13 svm.v14 svm.v15
-## svm.v1    FALSE   FALSE   FALSE   FALSE
-## svm.v2    FALSE   FALSE   FALSE   FALSE
-## svm.v3    FALSE   FALSE   FALSE   FALSE
-## svm.v4    FALSE   FALSE   FALSE   FALSE
-## svm.v5    FALSE   FALSE   FALSE   FALSE
-## svm.v6    FALSE   FALSE   FALSE   FALSE
-## svm.v7    FALSE   FALSE   FALSE   FALSE
-## svm.v8    FALSE   FALSE   FALSE   FALSE
-## svm.v9    FALSE   FALSE   FALSE   FALSE
-## svm.v10   FALSE   FALSE   FALSE   FALSE
-## svm.v11   FALSE   FALSE   FALSE   FALSE
-## svm.v12   FALSE   FALSE   FALSE   FALSE
-## svm.v13   FALSE   FALSE   FALSE   FALSE
-## svm.v14   FALSE   FALSE   FALSE   FALSE
-## svm.v15   FALSE   FALSE   FALSE   FALSE
+##         svm.v1 svm.v2 svm.v3 svm.v4 svm.v5 svm.v6 svm.v7 svm.v8 svm.v9
+## svm.v1   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v2   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v3   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v4   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v5   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v6   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v7   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v8   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v9   FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v10  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v11  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v12  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v13  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v14  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+## svm.v15  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE  FALSE
+##         svm.v10 svm.v11 svm.v12 svm.v13 svm.v14 svm.v15
+## svm.v1    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v2    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v3    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v4    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v5    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v6    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v7    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v8    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v9    FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v10   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v11   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v12   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v13   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v14   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
+## svm.v15   FALSE   FALSE   FALSE   FALSE   FALSE   FALSE
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1571,14 +1603,13 @@ This is obviously a too extensive set of information though the conclusions are 
 \begin{alltt}
 \hlkwd{CDdiagram.Nemenyi}\hlstd{(pres)}
 \end{alltt}
-\end{kframe}\begin{figure}[]
+\end{kframe}\begin{figure}
 
-
-{\centering \includegraphics[width=0.9\textwidth]{figures/perfEst-cdn} 
+{\centering \includegraphics[width=\textwidth]{figures/perfEst-cdn-1} 
 
 }
 
-\caption[The CD diagram of the Nemenyi post-hoc test]{The CD diagram of the Nemenyi post-hoc test.\label{fig:cdn}}
+\caption[The CD diagram of the Nemenyi post-hoc test]{The CD diagram of the Nemenyi post-hoc test.}\label{fig:cdn}
 \end{figure}
 
 
@@ -1607,7 +1638,7 @@ difficulties they bring.
 Extremely large experiments may take days or weeks to complete,
 depending on the available hardware. In this context, it may not be
 wise to run the experiments on a single call to the
-\texttt{performanceEstimation()} function because if something goes
+\texttt{performanceEstimation} function because if something goes
 wrong in the middle you may loose lots of work/time. Using the random
 number generation seeds that are available in all experimental
 settings objects we can split the experiments in several calls and
@@ -1639,10 +1670,22 @@ Another way of improving performance on large experiments is through parallel co
 ## ** PREDICTIVE TASK :: Satellite.classes
 ## 
 ## ++ MODEL/WORKFLOW :: svm 
-## cvEstimates: Running in parallel with 2 worker(s)
+## cvEstimates: Running in parallel with options:
+## parallelMap options : value      (default)
+## 
+## mode                : multicore  (not set)
+## cpus                : 3          (not set)
+## level               : NA         (not set)
+## logging             : FALSE      (not set)
+## show.info           : FALSE      (not set)
+## storagedir          : /usersData/ltorgo/Software/R/MyRpackages/performanceEstimation/report/packageVignette
+##                       (not set)
+## 
+## 
 ## Task for estimating  err  using
 ##  1 x 10 - Fold Cross Validation
-## 	 Run with seed =  1234
+## 	 Run with seed =  1234 
+## Iteration :
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1674,7 +1717,7 @@ Please note that there are a few assumptions on the above example, namely concer
 
 \vspace*{0.5cm}
 
-Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation()} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation()} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
+Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
 
 
 \begin{knitrout}\small
@@ -1728,7 +1771,7 @@ validation. Although this is not a very large experimental comparison
 it still includes applying 18 different workflow variants on 7
 different prediction tasks, 30 times, i.e. 3780 train+test
 cycles. Instead of running all these experiments on a single call to
-the function \texttt{performanceEstimation()} (which would obviously
+the function \texttt{performanceEstimation} (which would obviously
 still be possible), we have made different calls for each workflow
 type (SVM and random forest) and for each predictive task. This
 means that each call will run all variants of a certain workflow on a
@@ -1766,12 +1809,12 @@ into R and moreover, join them into a single object, as shown below:
 \end{kframe}
 \end{knitrout}
 
-The \texttt{mergeEstimationRes()}  function when applied to objects of class
+The \texttt{mergeEstimationRes}  function when applied to objects of class
 \textbf{ComparisonResults} allows merging of these objects across different
 dimensions. Namely, such objects have the individual scores of all
 experiments spread across 3 dimensions:  the
 metrics, the workflows and the tasks. The argument
-\texttt{by} of the \texttt{mergeEstimationRes()} function allows you to specify how
+\texttt{by} of the \texttt{mergeEstimationRes} function allows you to specify how
 to merge the given objects. The most common situations are: (i)
 merging the results of different workflows over the same data sets -
 you should use ``\texttt{by='workflows'}'', or (ii) merging the results
@@ -1809,11 +1852,12 @@ be obvious:
 \hlkwd{workflowNames}\hlstd{(res)}
 \end{alltt}
 \begin{verbatim}
-##  [1] "svm.v1"          "svm.v2"          "svm.v3"          "svm.v4"         
-##  [5] "svm.v5"          "svm.v6"          "svm.v7"          "svm.v8"         
-##  [9] "svm.v9"          "svm.v10"         "svm.v11"         "svm.v12"        
-## [13] "randomForest.v1" "randomForest.v2" "randomForest.v3" "randomForest.v4"
-## [17] "randomForest.v5" "randomForest.v6"
+##  [1] "svm.v1"          "svm.v2"          "svm.v3"         
+##  [4] "svm.v4"          "svm.v5"          "svm.v6"         
+##  [7] "svm.v7"          "svm.v8"          "svm.v9"         
+## [10] "svm.v10"         "svm.v11"         "svm.v12"        
+## [13] "randomForest.v1" "randomForest.v2" "randomForest.v3"
+## [16] "randomForest.v4" "randomForest.v5" "randomForest.v6"
 \end{verbatim}
 \begin{alltt}
 \hlkwd{metricNames}\hlstd{(res)}
@@ -1835,12 +1879,12 @@ scores or rankings of the workflows:
 \begin{verbatim}
 ## $a1
 ##            Workflow Estimate
-## mse randomForest.v3  265.374
-## mae randomForest.v1   11.066
+## mse randomForest.v3  263.869
+## mae randomForest.v3   11.057
 ## 
 ## $a2
 ##            Workflow Estimate
-## mse randomForest.v5   94.463
+## mse randomForest.v1   94.102
 ## mae         svm.v11    5.917
 ## 
 ## $a3
@@ -1850,12 +1894,12 @@ scores or rankings of the workflows:
 ## 
 ## $a4
 ##            Workflow Estimate
-## mse randomForest.v5   18.238
+## mse randomForest.v3   18.343
 ## mae         svm.v10    1.882
 ## 
 ## $a5
 ##            Workflow Estimate
-## mse randomForest.v1   44.415
+## mse randomForest.v1   44.609
 ## mae          svm.v7    4.037
 ## 
 ## $a6
@@ -1865,7 +1909,7 @@ scores or rankings of the workflows:
 ## 
 ## $a7
 ##            Workflow Estimate
-## mse randomForest.v3   26.208
+## mse randomForest.v5   26.227
 ## mae         svm.v10    2.383
 \end{verbatim}
 \end{kframe}
@@ -1880,29 +1924,29 @@ scores or rankings of the workflows:
 ## $a1
 ## $a1$mse
 ##          Workflow Estimate
-## 1 randomForest.v3 265.3743
-## 2 randomForest.v5 265.6385
-## 3 randomForest.v1 266.0238
-## 4 randomForest.v6 272.3064
-## 5 randomForest.v4 272.5888
+## 1 randomForest.v3 263.8695
+## 2 randomForest.v5 264.5268
+## 3 randomForest.v1 264.7324
+## 4 randomForest.v4 272.2932
+## 5 randomForest.v6 272.7472
 ## 
 ## $a1$mae
 ##          Workflow Estimate
-## 1 randomForest.v1 11.06603
-## 2 randomForest.v3 11.07444
-## 3 randomForest.v5 11.08084
-## 4 randomForest.v4 11.18655
-## 5 randomForest.v2 11.19782
+## 1 randomForest.v3 11.05689
+## 2 randomForest.v1 11.06012
+## 3 randomForest.v5 11.07450
+## 4 randomForest.v2 11.22290
+## 5 randomForest.v4 11.22579
 ## 
 ## 
 ## $a2
 ## $a2$mse
 ##          Workflow Estimate
-## 1 randomForest.v5 94.46308
-## 2 randomForest.v6 94.88411
-## 3 randomForest.v3 94.90805
-## 4 randomForest.v1 94.95223
-## 5 randomForest.v4 95.03046
+## 1 randomForest.v1 94.10169
+## 2 randomForest.v3 94.22759
+## 3 randomForest.v5 94.28289
+## 4 randomForest.v6 95.03010
+## 5 randomForest.v4 95.06688
 ## 
 ## $a2$mae
 ##   Workflow Estimate
@@ -1920,7 +1964,7 @@ scores or rankings of the workflows:
 ## 2          svm.v2 44.54107
 ## 3          svm.v8 45.27262
 ## 4          svm.v9 45.31149
-## 5 randomForest.v5 46.30568
+## 5 randomForest.v3 46.47451
 ## 
 ## $a3$mae
 ##   Workflow Estimate
@@ -1934,11 +1978,11 @@ scores or rankings of the workflows:
 ## $a4
 ## $a4$mse
 ##          Workflow Estimate
-## 1 randomForest.v5 18.23780
-## 2 randomForest.v3 18.25305
-## 3 randomForest.v1 18.26055
-## 4          svm.v4 18.36773
-## 5 randomForest.v2 18.56495
+## 1 randomForest.v3 18.34261
+## 2 randomForest.v1 18.36200
+## 3          svm.v4 18.36773
+## 4 randomForest.v5 18.39560
+## 5         svm.v10 18.58282
 ## 
 ## $a4$mae
 ##   Workflow Estimate
@@ -1952,11 +1996,11 @@ scores or rankings of the workflows:
 ## $a5
 ## $a5$mse
 ##          Workflow Estimate
-## 1 randomForest.v1 44.41519
-## 2 randomForest.v3 44.43139
-## 3 randomForest.v5 44.50338
-## 4 randomForest.v4 45.50986
-## 5 randomForest.v2 45.53312
+## 1 randomForest.v1 44.60891
+## 2 randomForest.v5 44.71305
+## 3 randomForest.v3 44.75107
+## 4 randomForest.v4 45.70916
+## 5 randomForest.v2 45.74127
 ## 
 ## $a5$mae
 ##   Workflow Estimate
@@ -1974,7 +2018,7 @@ scores or rankings of the workflows:
 ## 2         svm.v12 113.1213
 ## 3          svm.v5 121.9274
 ## 4         svm.v11 123.1705
-## 5 randomForest.v3 123.3406
+## 5 randomForest.v5 123.4793
 ## 
 ## $a6$mae
 ##   Workflow Estimate
@@ -1988,11 +2032,11 @@ scores or rankings of the workflows:
 ## $a7
 ## $a7$mse
 ##          Workflow Estimate
-## 1 randomForest.v3 26.20759
-## 2 randomForest.v5 26.21914
-## 3 randomForest.v1 26.32753
-## 4 randomForest.v2 26.44505
-## 5 randomForest.v4 26.49540
+## 1 randomForest.v5 26.22656
+## 2 randomForest.v3 26.24998
+## 3 randomForest.v1 26.29936
+## 4 randomForest.v2 26.34936
+## 5 randomForest.v4 26.44271
 ## 
 ## $a7$mae
 ##   Workflow Estimate
@@ -2005,7 +2049,7 @@ scores or rankings of the workflows:
 \end{kframe}
 \end{knitrout}
 
-Notice that both \texttt{topPerformers()} and \texttt{rankWorkflows()}
+Notice that both \texttt{topPerformers} and \texttt{rankWorkflows}
 assume that the evaluation metrics are to be minimized, i.e. they
 assume the lower the better the scores. Still, both functions have a
 parameter named \texttt{maxs} that accepts a vector with as many
@@ -2020,7 +2064,7 @@ In order to obtain further results from these large objects one
 usually proceeds by analyzing parts of the object, for instance
 focusing on a particular task or metric, or even a subset of the
 workflows. To facilitate this we can use the generic function
-\texttt{subset()} that can also be applied to objects of class
+\texttt{subset} that can also be applied to objects of class
 \textbf{ComparisonResults}. An example of its use is given below, which results
 in a graph of the performance of the different workflows in the
 predictive task ``a1'', in terms of ``MAE'', which is show in
@@ -2033,22 +2077,21 @@ Figure~\ref{fig:maeA1}.
 \begin{alltt}
 \hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,} \hlkwc{metrics}\hlstd{=}\hlstr{'mae'}\hlstd{))}
 \end{alltt}
-\end{kframe}\begin{figure}[]
+\end{kframe}\begin{figure}
 
-
-{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-maeA1} 
+{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-maeA1-1} 
 
 }
 
-\caption[The MAE results for the task ``a1'']{The MAE results for the task ``a1''.\label{fig:maeA1}}
+\caption[The MAE results for the task ``a1'']{The MAE results for the task ``a1''.}\label{fig:maeA1}
 \end{figure}
 
 
 \end{knitrout}
  
-As before we are using the generic function \texttt{plot()} but this
+As before we are using the generic function \texttt{plot} but this
 time applied to a subset of the original object with all results. This
-subset is obtained using the generic function \texttt{subset()} that
+subset is obtained using the generic function \texttt{subset} that
 accepts several parameters to specify the subset we are interested
 on. In this case we are using the parameters \texttt{tasks} and
 \texttt{metrics} to indicate that we want to analyze only the results
@@ -2056,7 +2099,7 @@ concerning the task ``a1'' and the metric ``mae''. Other possibility
 is the parameter \texttt{workflows} for indicating a subset of the
 workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{metrics} accept
 as values a character string containing a regular expression that will
-be used internally with the R function \texttt{grep()} over the vector
+be used internally with the R function \texttt{grep} over the vector
 of names of the respective objects (names of the workflows, names of
 the tasks and names of the metrics, respectively). For instance, if
 you want to constrain the previous graph even further to the workflows
@@ -2069,14 +2112,13 @@ the following:
 \begin{alltt}
 \hlkwd{plot}\hlstd{(}\hlkwd{subset}\hlstd{(res,} \hlkwc{tasks}\hlstd{=}\hlstr{'a1'}\hlstd{,} \hlkwc{workflows}\hlstd{=}\hlstr{'4$'}\hlstd{))}
 \end{alltt}
-\end{kframe}\begin{figure}[]
+\end{kframe}\begin{figure}
 
-
-{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-mseA1b} 
+{\centering \includegraphics[width=0.75\textwidth]{figures/perfEst-mseA1b-1} 
 
 }
 
-\caption[Illustration of the use of regular expressions in sub-setting the results objects]{Illustration of the use of regular expressions in sub-setting the results objects.\label{fig:mseA1b}}
+\caption[Illustration of the use of regular expressions in sub-setting the results objects]{Illustration of the use of regular expressions in sub-setting the results objects.}\label{fig:mseA1b}
 \end{figure}
 
 
@@ -2084,7 +2126,7 @@ the following:
 
 
 If you are more familiar with the syntax of "wildcards" you may use
-the R function \texttt{glob2rx()} to convert to regular expressions,
+the R function \texttt{glob2rx} to convert to regular expressions,
 as show in the following example:
 
 \begin{knitrout}\small
@@ -2240,37 +2282,37 @@ particular task:
 \hlkwd{getScores}\hlstd{(res,} \hlstr{'svm.v6'}\hlstd{,}\hlstr{'a3'}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
-##              mse      mae
-##  [1,]  58.773058 4.039651
-##  [2,]  63.420588 4.836262
-##  [3,] 124.212723 6.629852
-##  [4,]  20.818437 2.902345
-##  [5,]  28.507875 3.202152
-##  [6,]  18.424942 2.774288
-##  [7,]  14.446194 2.509190
-##  [8,]  54.975336 4.584341
-##  [9,]  23.521575 2.871156
-## [10,] 135.025071 6.735133
-## [11,] 112.234104 5.328625
-## [12,]  81.117165 5.569711
-## [13,]  34.504072 3.779135
-## [14,]   9.790665 2.162704
-## [15,]  30.126166 3.476657
-## [16,]  58.715226 4.654773
-## [17,]  23.793327 3.171367
-## [18,]  26.480963 3.236722
-## [19,]  99.572929 5.928280
-## [20,]  27.569010 3.293526
-## [21,]   8.495628 2.129290
-## [22,]  27.933235 3.197012
-## [23,]  20.164491 2.850632
-## [24,]  72.373337 5.364697
-## [25,]  69.470293 4.813790
-## [26,] 126.075926 5.477111
-## [27,]  65.167023 5.459279
-## [28,]   9.437532 2.299811
-## [29,]  22.696736 3.511973
-## [30,]  90.988401 5.114133
+##           mse      mae
+## 1   58.773058 4.039651
+## 2   63.420588 4.836262
+## 3  124.212723 6.629852
+## 4   20.818437 2.902345
+## 5   28.507875 3.202152
+## 6   18.424942 2.774288
+## 7   14.446194 2.509190
+## 8   54.975336 4.584341
+## 9   23.521575 2.871156
+## 10 135.025071 6.735133
+## 11 112.234104 5.328625
+## 12  81.117165 5.569711
+## 13  34.504072 3.779135
+## 14   9.790665 2.162704
+## 15  30.126166 3.476657
+## 16  58.715226 4.654773
+## 17  23.793327 3.171367
+## 18  26.480963 3.236722
+## 19  99.572929 5.928280
+## 20  27.569010 3.293526
+## 21   8.495628 2.129290
+## 22  27.933235 3.197012
+## 23  20.164491 2.850632
+## 24  72.373337 5.364697
+## 25  69.470293 4.813790
+## 26 126.075926 5.477111
+## 27  65.167023 5.459279
+## 28   9.437532 2.299811
+## 29  22.696736 3.511973
+## 30  90.988401 5.114133
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2295,8 +2337,8 @@ Getting the summary of the results of a particular workflow on a  predictive tas
 \end{kframe}
 \end{knitrout}
 
-Finally, the \texttt{metricsSummary()} function allows you to apply any
-summary function (defaulting to \texttt{mean()}) to the iterations estimates. The following
+Finally, the \texttt{metricsSummary} function allows you to apply any
+summary function (defaulting to \texttt{mean}) to the iterations estimates. The following
 calculates the median of the results of the SVMs on the task ``a1'',
 
 \begin{knitrout}\small
@@ -2307,12 +2349,12 @@ calculates the median of the results of the SVMs on the task ``a1'',
 \end{alltt}
 \begin{verbatim}
 ## $a1
-##        svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6    svm.v7    svm.v8
-## mse 275.08382 301.54507 345.65254 326.86720 282.98787 285.41018 271.52274 313.36744
-## mae  11.93685  12.65768  13.78127  12.85777  12.21762  12.10388  11.82759  12.89971
-##        svm.v9   svm.v10   svm.v11   svm.v12
-## mse 350.18044 331.28706 282.41397 284.02493
-## mae  13.67427  12.87902  12.13263  12.10956
+##        svm.v1    svm.v2    svm.v3    svm.v4    svm.v5    svm.v6    svm.v7
+## mse 275.08382 301.54507 345.65254 326.86720 282.98787 285.41018 271.52274
+## mae  11.93685  12.65768  13.78127  12.85777  12.21762  12.10388  11.82759
+##        svm.v8    svm.v9   svm.v10   svm.v11   svm.v12
+## mse 313.36744 350.18044 331.28706 282.41397 284.02493
+## mae  12.89971  13.67427  12.87902  12.13263  12.10956
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

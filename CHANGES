@@ -1,7 +1,6 @@
 DEVELOPMENT VERSION
 
 - The help page of classificationMetrics was updated to mention the structure that is assumed on cost/benefit matrices
-- A package vignette was added
 - The way the learner is called on both standard workflows was slightly changed because of gbm, that does not use the data in the second argument as "all" other modeling functions. Because of this now the training data is passed as a named (name "data") argument to the learner. This may be a problem if there is some modeling function that does not use that name for the parameter that receives the training set. Still, I've not found one yet... For those cases (if they exist) a user-defined workflow is the only solution. I think this is better because gbm is an important modeling tool.
 - Added a new function (results2table) that produces a dplyr data frame table from the results of an experiment for easier querying using dplyr-style facilities
 - Changed slightly the show method of class Holdout

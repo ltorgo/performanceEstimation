@@ -18,7 +18,6 @@ vignette: >
 pckg <- packageDescription("performanceEstimation")
 peN <- pckg$Package
 peV <- pckg$Version
-library(performanceEstimation)
 ```
 
   This document describes an infra-structure provided by the R `r peN`

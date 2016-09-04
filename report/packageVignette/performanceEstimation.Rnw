@@ -14,21 +14,30 @@
  pdfstartview={XYZ null null 1}}
 \usepackage{breakurl}
 
-\newcommand{\PE}{package \texttt{performanceEstimation}\ }
-\newcommand{\PEversion}{1.0.2\ }
+\newcommand{\PE}{package \textbf{performanceEstimation}\ }
+\newcommand{\PEversion}{1.1.0\ }
 
 \author{Luis Torgo\\FCUP - LIAAD/INESC Tec\\University of Porto\\
   \texttt{ltorgo@dcc.fc.up.pt}, \texttt{ltorgo@inesctec.pt}}
 \title{An Infra-Structure for Performance Estimation\\ and Experimental Comparison\\ of Predictive Models in R}
 
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
+
+%' <<include=FALSE>>=
+%' library(knitr)
+%' opts_chunk$set(
+%' concordance=TRUE
+%' )
+%' @
 
 
-<<setup, include=FALSE, cache=FALSE>>=
+
+<<setup, include=FALSE, cache=FALSE, echo=FALSE>>=
 library(knitr)
 ## set global chunk options
-opts_chunk$set(cache.path='cache/perfEst-',dev='pdf',fig.path='figures/perfEst-', fig.align='center', fig.show='hold',tidy=FALSE,size="footnotesize",message=FALSE,cache=TRUE)
-options(replace.assign=TRUE,width=90)
+opts_chunk$set(cache.path='cache/perfEst-',dev='pdf',fig.path='figures/perfEst-', fig.align='center', tidy=FALSE,size="footnotesize",message=FALSE,cache=TRUE)
+#options(replace.assign=TRUE,width=90)
 ##
 ## Load the package (later this should be substituted by library(performanceEstimation))
 ##library(devtools)
@@ -80,7 +89,7 @@ package also provides a series of predictive performance metrics for
 different tasks. Still, you are not limited to these metrics and can
 use any metric as long as it exists in R or you provide a function
 calculating it. Finally, the package also
-include several standard data pre-processing and predictions
+includes several standard data pre-processing and predictions
 post-processing steps that again can be incorporated into the
 workflows being evaluated.  
 
@@ -182,26 +191,26 @@ library(e1071)                  # A package containing SVMs
 data(iris)                      # The data set we are going to use
 
 res <- performanceEstimation(
-         PredTask(Species ~ .,iris),
-         Workflow("standardWF",learner="svm"),
-         EstimationTask(metrics="err",method=CV())
+         PredTask(Species ~ ., iris),
+         Workflow(learner="svm"),
+         EstimationTask(metrics="err", method=CV())
          )  
 @ 
 
 This simple example illustrates several key concepts of our
 infra-structure. First of all, we have the main function  -
-\texttt{performanceEstimation()}, which is used to carry out
+\texttt{performanceEstimation}, which is used to carry out
 the estimation process. It has 3 main arguments: (i) a vector of
 predictive tasks (in the example a single one); (ii) a vector of workflows (in the example a single one); and (iii) the
 specification of the estimation task (essentially the metrics to be estimated and the estimation methodology). The package defines three classes of objects for storing the information related with these three concepts: predictive tasks (S4 class \textbf{PredTask}); workflows (S4 class \textbf{Workflow}); and estimation tasks (S4 class \textbf{EstimationTask}).
 
 \textbf{PredTask} objects can be created by providing information on the formula defining the task, the source data set (an R data frame or the name of such object), and an optional ID (a string) to give to the task.
 
-\textbf{Workflow} objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets.
+\textbf{Workflow} objects include information on the name of the function implementing the workflow and any number of parameters to be passed to this function when it will be called with different train and test sets. If you do not supply the name of the workflow to use (like in the above example), a standard default workflow will be used (more details on this later).
 
-\textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined with the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
+\textbf{EstimationTask} objects provide information on the metrics for which we want a reliable estimate and also the methodology to be used to obtain these estimation. In case of metrics not defined in the \PE we also need to supply the name of the function that can be used to calculate these specific metrics.
 
-In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using the function \texttt{standardWF} with the parameter \textbf{learner} set to ``svm''. This workflow function is already provided by the package and essentially can be used for the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function also implements a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold Cross Validation to obtain estimates of the error rate. 
+In the above simple example we are using the data frame \textbf{iris} to create a task consisting of forecasting the variable \textit{Species} using all remaining variables. We are solving this classification task by using a standard workflow with the parameter \textbf{learner} set to ``svm''. The idea of these standard workflows which are already provided by the package is to cover the most frequent situations where a user just wants to apply and existing learning method to solve some task. This avoids the need for the user to have to write the functions solving the task. The \texttt{standardWF} function, which will be called by default if no other workflow function is provided, simply applies the modeling function indicated through the parameter \textbf{learner} (in this case the function \texttt{svm} defined in package \textbf{e1071}~\cite{e1071}) to the training set, and uses the resulting model to obtain the predictions for the test set. As we will see later the \texttt{standardWF} function can also be used to apply a series of common data pre-processing steps (e.g. filling in unknown values), and several common prediction post-processing steps (e.g. applying some transformation to the predicted values). Finally, the above example specifies the estimation task as using 10-fold (the default of function \texttt{CV}) Cross Validation to obtain estimates of the error rate. 
 
 
 
@@ -256,7 +265,7 @@ In the above simple example we are using the data frame \textbf{iris} to create 
 %% \texttt{performanceEstimation()} specifies the estimation task to carry out. It is an S4 object of class
 %% \textbf{EstimationTask}. These objects include information on the vector of metrics to be estimated (a large of them are already known by the infra-structure, but you may include your own metrics provided you tell R how to calculate them), and also the estimation method to use. For this latter issue several standard estimation methodologies are implemented by our package. For instance, in the simple example above we are using cross validation experiments with 10-folds.
 
-The result of the call to \texttt{performanceEstimation()} is an S4
+The result of the call to \texttt{performanceEstimation} is an S4
 object of the class \textbf{ComparisonResults}. These objects tipically are not
  directly explored by the end-user so we ommit their
 details here\footnote{Interested readers may have a look at the corresponding
@@ -304,9 +313,10 @@ plot(res)
 %% getWorkflow('svm.v1',res)
 %% @ 
 
-The above  example is just a simple illustration of the key concepts of the \PE. Most of the times you will use the package for more complex experiments, usually involving several tasks, several workflows or workflow variants, and eventually estimating several performance metrics. Before, we provide illustrations for these more complex setups we describe in more detail the key concepts of the \PE.
+The above  example is just a simple illustration of the key concepts of the \PE. Most of the times you will use the package for more complex experiments, usually involving several tasks, several workflows or workflow variants, and eventually estimating several performance metrics. Before we provide illustrations for these more complex setups we describe in more detail the key concepts of the \PE.
 
 
+% ====================================================================
 \section{Predictive Tasks}
 
 Predictive tasks are data analysis problems where we want to obtain a
@@ -324,7 +334,7 @@ Objects of class \textbf{PredTask} encapsulate the information of a
 predictive task, i.e. the functional form and the data required for
 solving it. For convenience they also allow the user to assign a name
 to each task. These S4 objects can be created using the construtor
-function \texttt{PredTask()}, as seen in the following example:
+function \texttt{PredTask}, as seen in the following example:
 
 <<>>=
 data(iris)
@@ -354,18 +364,19 @@ set. This process can include several steps, e.g. specific data
 pre-processing steps, and may use any modelling approach, eventually
 developed  by the user. 
 
-We distinguish two types of workflows: (i) generic, and (ii) user-defined. The first are probably the most common setups where the user simply wants to apply methods that already exist in R to some task. The second covers situations where the user has developed her/his own specific approach to solve a task and wants to apply it to some concrete problems. The package covers both situations as we will see.
+We distinguish two types of workflows: (i) generic/standard, and (ii) user-defined. The first are probably the most common setups where the user simply wants to apply methods that already exist in R to some task. The second covers situations where the user has developed her/his own specific approach to solve a task and wants to apply it to some concrete problems. The package covers both situations as we will see.
 
 Independently of the workflows being generic or user-defined, they will typically have parameters that we can tune to try to improve the results. Frequently, we want to estimate and compare the performance of these parameter variants over some set of tasks. Our package also facilitates these setups by providing a function to easily specify these alternatives.
 
+% ----------------------------------------------------------
 \subsection{Workflow Variants}\label{sec:variants}
 
-The function \texttt{workflowVariants}  provides  means to easily create a vector of \textbf{Workflow} objects, each resulting from a variation of some parameter values of a certain workflow. For instance, suppose you want to evaluate the performance of SVMs on a certain task and you wish to consider a certain range of values for the parameters \textbf{cost} and \textbf{gamma} of the function \texttt{svm} from package \textbf{e1071}. You could obviously create a vector of \textbf{Workflow} objects, one for each combination of \textbf{cost} and \textbf{gamma} you wish to consider in your experiment. This could become very easily an annoying task if you want to consider a large number of combinations. Instead you can use the \texttt{workflowVariants} function.
+The function \texttt{workflowVariants}  provides  means to easily create a vector of \textbf{Workflow} objects, each resulting from a variation of some parameter values of a certain workflow (either generic or user-defined). For instance, suppose you want to evaluate the performance of SVMs on a certain task and you wish to consider a certain range of values for the parameters \textbf{cost} and \textbf{gamma} of the function \texttt{svm} from package \textbf{e1071}. You could obviously create a vector of \textbf{Workflow} objects, one for each combination of \textbf{cost} and \textbf{gamma} you wish to consider in your experiment. This could become very easily an annoying task if you want to consider a large number of combinations. Instead you can use the \texttt{workflowVariants} function.
 
 The following example illustrates its use by considering 15 variants of SVMs applied to the Boston Housing data:
 
 
-<<results="hide">>=
+<<results='hide'>>=
 library(performanceEstimation)
 library(e1071)
 data(Boston,package="MASS")                    
@@ -379,7 +390,7 @@ exp <- performanceEstimation(
 @ 
 
 The function accepts any workflow function in parameter
-\textbf{wf}. All remaining parameters are taken as parameters of that
+\textbf{wf}. In this case we are using the standard/generic workflow implemented in function \texttt{standardWF}. All remaining parameters are taken as parameters of that
 workflow function. If you include  any of these parameters with a vector of values
 (as it is the case of \textbf{cost} and \textbf{gamma} in the above
 example), the values in these vectors will be used to generate
@@ -394,6 +405,7 @@ the name of that parameter in the parameter \textbf{as.is} of the
 function \texttt{workflowVariants}.
 
 
+% ----------------------------------------------------------
 \subsection{Generic Workflows}
 
 Most of the times users want to evaluate standard workflows on some tasks. This means that they want to use existing out-of-the-box tools within R and apply them to some data sets.  As such, 
@@ -402,9 +414,10 @@ using some existing algorithm and obtain its predictions for the test set. To fa
 from having to write her/his own workflow functions provided her/his workflow fits
 this generic schema.
 
+% ...................
 \subsubsection{Classification and Regression Tasks}\label{sec:standardWF}
 
-Function \texttt{standardWF()} implements a typical workflow for both
+Function \texttt{standardWF} implements a typical workflow for both
 classification and regression tasks. Apart from a formula, a training set data frame and a test set data frame, this function has the following main parameters that help the user to specify the intended approach:
 
 \begin{description}
@@ -417,7 +430,7 @@ classification and regression tasks. Apart from a formula, a training set data f
 Below you find another simple example that illustrates the use of some of these parameters, this time to estimate the accuracy of 3 variants of a classification tree using 2$\times$5-CV.
 
 
-<<results="hide">>=
+<<results='hide'>>=
 library(performanceEstimation)
 library(DMwR)
 data(iris)                    
@@ -443,7 +456,7 @@ models for illustrative purposes and let us play with the well-known
 Boston housing regression task:
 
 
-<<standardWF_ex1,results="hide">>=
+<<standardWF_ex1,results='hide'>>=
 data(Boston,package='MASS')
 library(DMwR)
 library(e1071)
@@ -464,7 +477,7 @@ to use the modelling tools with other parameter settings then you
 should separate them in different \texttt{workflowVariants} calls because each learner will most probably use different parameters, as shown
 in the following example:
 
-<<standardWF_ex2,results="hide",cache=TRUE>>=
+<<standardWF_ex2,results='hide',cache=TRUE>>=
 data(Boston,package='MASS')
 library(DMwR)
 library(e1071)
@@ -621,6 +634,7 @@ summary(res)
 As you see this simple post-processing step improved the performance of the model considerably.
 
 
+% ...................
 \subsubsection{Time Series Tasks}\label{sec:timeseriesWF}
 
 Our infra-structure also includes another generic workflow function
@@ -632,7 +646,7 @@ obtain predictions for a test set in the future. These two approaches
 contrast with the standard approach of learning a model with the
 available training sample and then use it to obtain predictions for
 all test period. This standard approach could be applied using the previously
-described \texttt{standardWF()} function. However, there are
+described \texttt{standardWF} function. However, there are
 alternatives to this procedure, two of the most common being the
 sliding and growing window approaches, which are implemented in another workflow function developed specifically for time series tasks.
 
@@ -658,11 +672,11 @@ changed since the training period has ended. Model updating using the
 sliding window method is carried out by using the data in the $L$ last
 time steps, i.e. every new model is always obtained using the last $L$
 data observations, as if the training window was slided forward in
-time. Our \texttt{timeseriesWF()} function implements this idea for
+time. Our \texttt{timeseriesWF} function implements this idea for
 both time series with a numeric target variable and a nominal target
 variable. This function has a parameter (\texttt{type}) that if set to
 ``slide'' will use a sliding window approach. As with the
-\texttt{standardWF()} function, this \texttt{timeseriesWF()} function
+\texttt{standardWF} function, this \texttt{timeseriesWF} function
 also accepts parameters specifying the learner, predictor, 
 and their respective parameters, as well as the previously defined pre- and post-processing steps, all with exactly the same names and possible values (c.f. Section ~\ref{sec:standardWF}). Moreover, this function also includes
 an extra parameter, named \texttt{relearn.step}, which allows the user
@@ -677,21 +691,21 @@ uses the data occurring in the last $L$ time steps, growing window
 keeps increasing the original training window with the newly available
 data points, i.e. the models are obtained with increasingly larger
 training samples. By setting the parameter \texttt{type} to ``grow''
-you get the \texttt{timseriesWF()} function to use this method.
+you get the \texttt{timseriesWF} function to use this method.
 
 The following code illustrates these two approaches by comparing them to the standard approach of using a single model to forecast all testing period:
 
-<<slideAndGrowEx, results="hide",cache=TRUE>>=
+<<slideAndGrowEx, results='hide',cache=TRUE>>=
 library(performanceEstimation)
 library(quantmod)
 library(randomForest)
 getSymbols('^GSPC',from='2008-01-01',to='2012-12-31')
 data.model <- specifyModel(
   Next(100*Delt(Ad(GSPC))) ~ Delt(Ad(GSPC),k=1:10))
-data <- as.data.frame(modelData(data.model))
-colnames(data)[1] <- 'PercVarClose'
+dat <- as.data.frame(modelData(data.model))
+colnames(dat)[1] <- 'PercVarClose'
 spExp <- performanceEstimation(
-  PredTask(PercVarClose ~ .,data,'SP500_2012'),
+  PredTask(PercVarClose ~ .,dat,'SP500_2012'),
   c(Workflow(wf='standardWF',wfID="standRF",
              learner='randomForest',
              learner.pars=list(ntree=500)),
@@ -714,6 +728,7 @@ spExp <- performanceEstimation(
 The above example applies 3 different workflows to the task of trying to forecast the percentage daily variation of the prices of S\&P 500, using some information of the previous prices as predictors. Namely, all workflows use a random forest with 500 trees but the predictions for each test set of the 5 repetitions Monte Carlo estimation methodology (c.f. Section~\ref{sec:MC}), are obtained differently. The first workflow, named ``standRF'', obtains a single random forest with the training set and uses it to obtain predictions for the full test set. The other two approaches, instead of using this standard workflow, take advantage of the workflow provided by \texttt{timeseriesWF} and use either  sliding  or growing windows to obtain these predictions. For both these two latter approaches a new random forest is obtained after each 30 new test cases (set by parameter \texttt{relearn.step}).
 
 
+% ----------------------------------------------------------
 \subsection{User-defined Workflows}
 
 With the goal of ensuring that the
@@ -756,18 +771,18 @@ Regarding the components of this results list, in case you wish to use the funct
 important to return. 
 
 The sketch shown above also illustrates the use of the function
-\texttt{responseValues()} that can be used to obtain the values of the target
+\texttt{responseValues} that can be used to obtain the values of the target
 variable given a formula and a data frame.
 
 On top of the 3 mandatory parameters (formula, training and test sets), user-defined workflow functions may also accept any other arguments. As we have seen in Section~\ref{sec:variants} we provide
-the function \texttt{workflowVariants()} to facilitate the specification of
+the function \texttt{workflowVariants} to facilitate the specification of
 different variants of any workflow function by trying all combinations
 of several of its specific parameters. For instance, if the modelling
 function in the above example workflow (function
-\texttt{myModelingTechnique()}) had an integer parameter \texttt{x}
+\texttt{myModelingTechnique}) had an integer parameter \texttt{x}
 and a Boolean parameter \texttt{y}, we could generate several
 \textbf{Workflow} objects to be evaluated/compared using the
-\texttt{performanceEstimation()} function, as follows:
+\texttt{performanceEstimation} function, as follows:
 
 <<eval=FALSE>>=
 workflowVariants('myWorkFlow',x=c(0,3,5,7),y=c(TRUE,FALSE))
@@ -807,8 +822,8 @@ RLensemble <- function(f, tr, ts, weightRT=0.5, step=FALSE, ..., .models=FALSE) 
 This workflow starts by building two modified samples of the training
 and testing sets, with the \texttt{NA} values being filled in using a
 nearest neighbour strategy (see the help page of the function
-\texttt{knnImputation()} for more
-details). These versions are to be used by the \texttt{lm()} function
+\texttt{knnImputation} for more
+details). These versions are to be used by the \texttt{lm} function
 that is unable to cope with cases with missing values. After obtaining
 the two models and their predictions the function calculates a
 weighted average of both predictions. Note that if \texttt{.models=TRUE} we add the models to the results list.
@@ -816,7 +831,7 @@ weighted average of both predictions. Note that if \texttt{.models=TRUE} we add 
 To evaluate different variants of this workflow we could run the
 following experiment:
 
-<<RLensembleExp,results="hide",eval=FALSE>>=
+<<RLensembleExp,results='hide',eval=FALSE>>=
 data(algae,package='DMwR')
 expRes <- performanceEstimation(
     PredTask(a1 ~ .,algae[,1:12],'alga1'),
@@ -881,7 +896,7 @@ methods to estimate the predictive performance of a model. By
 including an S4 object of class \textbf{CV} in the parameter \textbf{method} we can carry
 out experiments of this type.
 
-The constructor function \texttt{CV()} can be used to obtain objects
+The constructor function \texttt{CV} can be used to obtain objects
 of class \textbf{CV}. It accepts the following parameters:
 
 \begin{description}
@@ -927,7 +942,7 @@ By including an S4 object of class
 \textbf{Bootstrap} in the \textbf{method} argument we can carry out experiments of this
 type.
 
-Function \texttt{Bootstrap()} can be used as a constructor of
+Function \texttt{Bootstrap} can be used as a constructor of
 objects of class \textbf{Bootstrap}. It accepts the following
 arguments:
 
@@ -962,9 +977,9 @@ The Holdout is another frequently used experimental methodology,
 particularly for large data sets. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
 class \textbf{Holdout} in the third argument of function
-\texttt{performanceEstimation()}.
+\texttt{performanceEstimation}.
 
-Function \texttt{Holdout()} can be used as a constructor of
+Function \texttt{Holdout} can be used as a constructor of
 objects of class \textbf{Holdout}. It accepts the following
 arguments:
 
@@ -998,7 +1013,7 @@ ltrExp <- performanceEstimation(
 @ 
 
 Please note the use of the \texttt{predictor.pars} parameter of our
-\texttt{standardWF()} function to be able to cope with the fact that
+\texttt{standardWF} function to be able to cope with the fact that
 the \texttt{predict} method for classification trees requires the use
 of \texttt{type="class"} to get actual predicted class labels instead
 of class probabilities.
@@ -1011,9 +1026,9 @@ out cross validation as a $k$-fold cross validation with $k$ equal to
 the size of the available data set. To carry out this type of
 experiments in our infra-structure we can include an S4 object of
 class \textbf{LOCV} in the third argument of function
-\texttt{performanceEstimation()}.
+\texttt{performanceEstimation}.
 
-Function \texttt{LOOCV()} can be used as a constructor of
+Function \texttt{LOOCV} can be used as a constructor of
 objects of class \textbf{LOOCV}. It accepts the following
 arguments:
 
@@ -1073,9 +1088,9 @@ usual. The overall process is depicted in Figure~\ref{fig:MC}.
 
 To carry out this type of experiments in our infra-structure we can
 include an S4 object of class \textbf{MonteCarlo} in the third
-argument of function \texttt{performanceEstimation()}.
+argument of function \texttt{performanceEstimation}.
 
-The function \texttt{MonteCarlo()} can be used as a constructor of
+The function \texttt{MonteCarlo} can be used as a constructor of
 objects of class \textbf{MonteCarlo}. It accepts the following
 arguments:
 
@@ -1136,9 +1151,9 @@ in performance between the workflows are statistically
 significant. More formally, we want to know that confidence level of rejecting the null hypothesis that the difference between the estimated averages is zero.
 
 That is the goal of the function
-\texttt{pairedComparisons()}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons()} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
+\texttt{pairedComparisons}. This function implements a series of statistical hypothesis tests that can be used in different types of setups. We follow the general recommendations of Demsar~\cite{Dem06}. The function \texttt{pairedComparisons} implements a series of statistical tests that can be used under different conditions. The function calculates them all (whenever possible) and it is up to the user to use the ones that are more adequate to answer her/his research questions (see Demsar~\cite{Dem06} for a series of guidelines on how to proceed).
 
-Function \texttt{pairedComparisons()} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
+Function \texttt{pairedComparisons} returns a list with as many components as there are metrics estimated. For each metric another list includes the different tests that are carried out as well as several other information. Namely, for each error metric the returned list includes the following components:
 
 \begin{itemize}
 \item \textbf{setup} - with generic information on the estimation task
@@ -1173,7 +1188,7 @@ res <- performanceEstimation(
     EstimationTask(metrics="err",method=CV()))
 @ 
 
-The object \texttt{res} can be passed to \texttt{pairedComparisons()} to calculate the tests described before:
+The object \texttt{res} can be passed to \texttt{pairedComparisons} to calculate the tests described before:
 
 <<echo=FALSE>>=
 load("pima.Rdata")
@@ -1198,7 +1213,7 @@ pres$err$Nemenyi.test
 This is obviously a too extensive set of information though the conclusions are centered in the \texttt{signifDifs} component. An even better alternative can be obtained through CD diagrams, which we have implemented in function \texttt{CDdiagram.Nemenyi} whose result is shown in Figure~\ref{fig:cdn}.
 
 
-<<cdn,out.width="0.9\\textwidth",fig.width=10,fig.height=6,size="scriptsize",fig.cap="The CD diagram of the Nemenyi post-hoc test.">>=
+<<cdn,out.width="\\textwidth",fig.width=10,fig.height=6,size="scriptsize",fig.cap="The CD diagram of the Nemenyi post-hoc test.">>=
 CDdiagram.Nemenyi(pres)
 @ 
 
@@ -1225,7 +1240,7 @@ difficulties they bring.
 Extremely large experiments may take days or weeks to complete,
 depending on the available hardware. In this context, it may not be
 wise to run the experiments on a single call to the
-\texttt{performanceEstimation()} function because if something goes
+\texttt{performanceEstimation} function because if something goes
 wrong in the middle you may loose lots of work/time. Using the random
 number generation seeds that are available in all experimental
 settings objects we can split the experiments in several calls and
@@ -1271,7 +1286,7 @@ Please note that there are a few assumptions on the above example, namely concer
 
 \vspace*{0.5cm}
 
-Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation()} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation()} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
+Let us now focus on the issue of splitting a large experiment in partial calls to \texttt{performanceEstimation} and at the end merge the separate results into a single object as if the experiments were run all together. Please note that further efficiency gains could be achieved if some parallel setup involving different computers as the one described above was used. The following example addresses several regression tasks using several workflows that are variants of different regression algorithms. We illustrate how to create the different \textbf{PredTask} objects programmatically,  how to create the different workflow variants, and how to call \texttt{performanceEstimation} with different task/workflow combinations storing the intermediate objects on temporary files for later reading and merging,
 
 
 <<eval=FALSE,size="small">>=
@@ -1321,7 +1336,7 @@ validation. Although this is not a very large experimental comparison
 it still includes applying 18 different workflow variants on 7
 different prediction tasks, 30 times, i.e. 3780 train+test
 cycles. Instead of running all these experiments on a single call to
-the function \texttt{performanceEstimation()} (which would obviously
+the function \texttt{performanceEstimation} (which would obviously
 still be possible), we have made different calls for each workflow
 type (SVM and random forest) and for each predictive task. This
 means that each call will run all variants of a certain workflow on a
@@ -1355,12 +1370,12 @@ for(d in nD) {
 save(res,file='allResultsAlgae.Rdata')
 @ 
 
-The \texttt{mergeEstimationRes()}  function when applied to objects of class
+The \texttt{mergeEstimationRes}  function when applied to objects of class
 \textbf{ComparisonResults} allows merging of these objects across different
 dimensions. Namely, such objects have the individual scores of all
 experiments spread across 3 dimensions:  the
 metrics, the workflows and the tasks. The argument
-\texttt{by} of the \texttt{mergeEstimationRes()} function allows you to specify how
+\texttt{by} of the \texttt{mergeEstimationRes} function allows you to specify how
 to merge the given objects. The most common situations are: (i)
 merging the results of different workflows over the same data sets -
 you should use ``\texttt{by='workflows'}'', or (ii) merging the results
@@ -1393,7 +1408,7 @@ topPerformers(res)
 rankWorkflows(res)
 @ 
 
-Notice that both \texttt{topPerformers()} and \texttt{rankWorkflows()}
+Notice that both \texttt{topPerformers} and \texttt{rankWorkflows}
 assume that the evaluation metrics are to be minimized, i.e. they
 assume the lower the better the scores. Still, both functions have a
 parameter named \texttt{maxs} that accepts a vector with as many
@@ -1408,7 +1423,7 @@ In order to obtain further results from these large objects one
 usually proceeds by analyzing parts of the object, for instance
 focusing on a particular task or metric, or even a subset of the
 workflows. To facilitate this we can use the generic function
-\texttt{subset()} that can also be applied to objects of class
+\texttt{subset} that can also be applied to objects of class
 \textbf{ComparisonResults}. An example of its use is given below, which results
 in a graph of the performance of the different workflows in the
 predictive task ``a1'', in terms of ``MAE'', which is show in
@@ -1422,9 +1437,9 @@ load('allResultsAlgae.Rdata')
 plot(subset(res, tasks='a1', metrics='mae'))
 @ 
  
-As before we are using the generic function \texttt{plot()} but this
+As before we are using the generic function \texttt{plot} but this
 time applied to a subset of the original object with all results. This
-subset is obtained using the generic function \texttt{subset()} that
+subset is obtained using the generic function \texttt{subset} that
 accepts several parameters to specify the subset we are interested
 on. In this case we are using the parameters \texttt{tasks} and
 \texttt{metrics} to indicate that we want to analyze only the results
@@ -1432,7 +1447,7 @@ concerning the task ``a1'' and the metric ``mae''. Other possibility
 is the parameter \texttt{workflows} for indicating a subset of the
 workflows. Both \texttt{workflows}, \texttt{tasks} and \texttt{metrics} accept
 as values a character string containing a regular expression that will
-be used internally with the R function \texttt{grep()} over the vector
+be used internally with the R function \texttt{grep} over the vector
 of names of the respective objects (names of the workflows, names of
 the tasks and names of the metrics, respectively). For instance, if
 you want to constrain the previous graph even further to the workflows
@@ -1446,7 +1461,7 @@ plot(subset(res, tasks='a1', workflows='4$'))
 
 
 If you are more familiar with the syntax of "wildcards" you may use
-the R function \texttt{glob2rx()} to convert to regular expressions,
+the R function \texttt{glob2rx} to convert to regular expressions,
 as show in the following example:
 
 <<size="small">>=
@@ -1470,8 +1485,8 @@ Getting the summary of the results of a particular workflow on a  predictive tas
 estimationSummary(res,'svm.v3', 'a7')
 @ 
 
-Finally, the \texttt{metricsSummary()} function allows you to apply any
-summary function (defaulting to \texttt{mean()}) to the iterations estimates. The following
+Finally, the \texttt{metricsSummary} function allows you to apply any
+summary function (defaulting to \texttt{mean}) to the iterations estimates. The following
 calculates the median of the results of the SVMs on the task ``a1'',
 
 <<size="small">>=
