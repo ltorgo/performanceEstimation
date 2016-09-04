@@ -472,7 +472,7 @@ knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
         dist <- sqrt(drop(dist^2 %*% rep(1,ncol(dist))))
         ks <- order(dist)[seq(k)]
         for(j in tgtAs) {
-            vals <- data[setdiff(distInit:N,nas),j][ks]
+            vals <- data[setdiff(distInit:N,nas),][[j]][ks]
             data[i,j] <- if (is.numeric(vals)) median(vals,na.rm=TRUE) else { x <- as.factor(vals) ; levels(x)[which.max(table(x))] }
         }
     }
