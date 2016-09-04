@@ -452,9 +452,8 @@ knnImp <- function(data,k=10,scale=TRUE,distData=NULL) {
     if (!is.null(distData)) tgt.nas <- nas[nas <= n]
     else tgt.nas <- nas
     
-    if (length(tgt.nas) == 0)
-        warning("No case has missing values. Stopping as there is nothing to do.")
-    
+    if (length(tgt.nas) == 0)  return(data) # no NAs (nothing to do!)
+
     xcomplete <- dm[setdiff(distInit:N,nas),]
     if (nrow(xcomplete) < k)
         stop("Not sufficient complete cases for computing neighbors.",call.=FALSE)
