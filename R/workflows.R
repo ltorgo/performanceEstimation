@@ -313,7 +313,7 @@ timeseriesWF <- function(form,train,test,
         } else {
             #m <- do.call(learner,c(list(form,tr),learner.pars))
             ## The following addition of data= was caused by the "wrong" order of parameters of gbm
-            m <- do.call(eval(parse(text=learner)),c(list(form,data=train),learner.pars)) 
+            m <- do.call(eval(parse(text=learner)),c(list(form,data=tr),learner.pars)) 
             t.tr <- t.tr + as.numeric(Sys.time() - tm,units="secs")
             tm <- Sys.time()
             #ps <- do.call(predictor,c(list(m,ts),predictor.pars))

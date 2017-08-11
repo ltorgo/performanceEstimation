@@ -12,7 +12,7 @@ Description: An infra-structure for estimating the predictive performance of
     with some pre-defined data pre-processing steps and also prediction post-
     processing methods. It also provides means for addressing issues related with
     the statistical significance of the observed differences.
-Version: 1.1.0
+Version: 1.1.1
 Depends:
     R(>= 3.0),
     methods
@@ -22,7 +22,7 @@ Imports:
     parallel,
     tidyr (>= 0.4.1),
     dplyr (>= 0.4.3)
-Date: 2016-10-12
+Date: 2017-08-11
 Authors@R: person("Luis", "Torgo", email = "ltorgo@dcc.fc.up.pt", role = c("aut", "cre"))
 URL: https://github.com/ltorgo/performanceEstimation
 BugReports: https://github.com/ltorgo/performanceEstimation/issues

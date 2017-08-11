@@ -7,7 +7,7 @@ import(methods)
 
 importFrom("stats", "IQR", "complete.cases", "df", "median",
      "model.frame", "model.response", "na.omit", "qtukey",
-     "reshape", "runif", "sd", "t.test", "wilcox.test")
+     "reshape", "runif", "sd", "t.test", "wilcox.test","quantile")
 
 exportClasses(
     CV, Holdout, LOOCV,

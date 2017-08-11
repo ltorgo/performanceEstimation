@@ -129,26 +129,23 @@ cvEstimates <- function(wf,task,estTask,cluster) {
     userSplit <- !is.null(estTask@method@dataSplits)
     
     n <- nrow(eval(task@dataSource))
-    if (!userSplit) n.each.part <- n %/% estTask@method@nFolds
+    if (!userSplit) {
+      n.each.part <- n %/% estTask@method@nFolds
+      remains <- n %% estTask@method@nFolds
+    }
     
     nits <- estTask@method@nFolds*estTask@method@nReps
     itsInfo <- vector("list",nits)
 
     ## Stratified sampling stuff
     if (!userSplit && estTask@method@strat) { 
-        respVals <- responseValues(task@formula,eval(task@dataSource))
-        regrProb <- is.numeric(respVals)
-        if (regrProb) {  # regression problem
-            ## the bucket to which each case belongs  
-            b <- cut(respVals,10)  # this 10 should be parametrizable
-        } else {
-            b <- respVals
-        }
-        ## how many on each bucket
-        bc <- table(b)
-        ## how many should be on each test partition
-        bct <- bc %/% estTask@method@nFolds
-
+      bct <- list()
+      for(nrep in 1:estTask@method@nReps){
+        set.seed(estTask@method@seed*nrep)
+        permutation <- sample(n)
+        respVals <- responseValues(task@formula,eval(task@dataSource)[permutation,])
+        bct[[nrep]] <- .cvStratFolds(respVals, estTask@method@nFolds)
+      }
     }
 
     permutation <- 1:n
@@ -168,11 +165,9 @@ cvEstimates <- function(wf,task,estTask,cluster) {
             
             if (!userSplit) {
                 if (estTask@method@strat) {
-                    out.fold <- c()
-                    for(x in seq(along=levels(b))) 
-                        if (bct[x]) out.fold <- c(out.fold,which(b[permutation] == levels(b)[x])[((nfold-1)*bct[x]+1):((nfold-1)*bct[x]+bct[x])])
+                  out.fold <- bct[[nrep]][[nfold]]
                 } else {
-                    out.fold <- ((nfold-1)*n.each.part+1):(nfold*n.each.part)
+                    out.fold <- ((nfold-1)*n.each.part+min((nfold-1),remains)+1):(nfold*n.each.part+min(nfold,remains))
                 }
             } else out.fold <- outFold(estTask@method@dataSplits,it)
             
@@ -758,3 +753,42 @@ outFold <- function(ds,it,what="test") if (is.list(ds[[1]])) ds[[it]][[what]] el
 ## .loadedPackages <- function(bases=c("datasets","grDevices","stats","utils","base","graphics","methods")) setdiff(sapply(strsplit(search()[grep("package",search())],":"),function(x) x[2]),bases)
 ## This was replaced by a call to .packages()
 
+
+## =====================================================
+## Function that does stratification of the target 
+## variable values (for both continuous and nominal)
+## =====================================================
+## Code by Paula Branco, May 2017
+## =====================================================
+.cvStratFolds <- function (y, folds = 10) 
+{
+  if (is.numeric(y)) {
+    cuts <- floor(length(y)/folds)
+    if (cuts < 2) 
+      cuts <- 2
+    if (cuts > 5) 
+      cuts <- 5
+    breaks <- unique(quantile(y, probs = seq(0, 1, length = cuts)))
+    y <- cut(y, breaks, include.lowest = TRUE)
+  }
+  if (folds < length(y)) {
+    y <- factor(as.character(y))
+    numInClass <- table(y)
+    foldVector <- vector(mode = "integer", length(y))
+    for (i in 1:length(numInClass)) {
+      min_reps <- numInClass[i]%/%folds
+      if (min_reps > 0) {
+        spares <- numInClass[i]%%folds
+        seqVector <- rep(1:folds, min_reps)
+        if (spares > 0) 
+          seqVector <- c(seqVector, sample(1:folds, spares))
+        foldVector[which(y == names(numInClass)[i])] <- sample(seqVector)
+      } else {
+        foldVector[which(y == names(numInClass)[i])] <- sample(1:folds, 
+                                                               size = numInClass[i])
+      }
+    }
+  } else foldVector <- seq(along = y)
+  
+  split(seq(along = y), foldVector)
+}

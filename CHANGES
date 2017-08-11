@@ -1,3 +1,9 @@
+VERSION 1.1.1 (2017-08-11)
+
+- Corrected a bug on the code of timeseriesWF that was introduced before. The bug was causing the "slide" strategy to actually using always the same training set, in effect corresponding to the standardWF approach! Note that the bug was introduced in a previous update motivated by make the package compatible with gbm, which means that on other previous versions this was working correctly.
+- The test folds being used in cross validation estimates were wrong (thanks Paula Branco for noticing). There were some situations where not all cases were part of one of the test paritions as it should by definition of k-fold CV.
+- The code for stratification had some errors (thanks Paula Branco for noticing). Introduced a new function provided by Paula Branco that solves these issues.
+
 VERSION 1.1.0 (2016-10-12)
 
 - Updated man page of standardPRE
