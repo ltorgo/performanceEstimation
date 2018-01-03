@@ -276,12 +276,11 @@ CDdiagram.Nemenyi <- function(r,metric=names(r)[1]) {
     mx <- ncol(ss)
     pos <- rep(1:mxl,each=mxl) - seq(0,1,by=1/(mxl+1))[-c(1,mxl+2)]
     frees <- rep(1,mxl)
-    from <- 1
     currTill <- 0
     for(i in 1:nrow(ss)) {
-        till <- which(ss[i,i:mx])
-        till <- if (length(till)) till-1 else mx
-        if (till > currTill) {
+        till <- which(ss[i,i:mx]) + (i-1) #add i-1 to get the correct which-values since the column selection removes i-1 values
+        till <- if (length(till)>0) till[1]-1 else mx
+        if (till > i && till > currTill) {
             theLine <- min(data[wfsOrd[i],"line"],data[wfsOrd[till],"line"])
             ypos <- pos[(theLine-1)*mxl+frees[theLine]]
             frees[theLine] <- frees[theLine]+1
