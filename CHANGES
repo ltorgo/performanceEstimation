@@ -1,3 +1,11 @@
+Development version
+
+- The output of the Wilcoxon signed rank tests was not correct. The p
+values are not affected (they were correct, as well as the test in
+itself). The output is now different showing the actual W statistic
+upon which the test is based.
+
+
 VERSION 1.1.1 (2017-08-11)
 
 - Corrected a bug on the code of timeseriesWF that was introduced before. The bug was causing the "slide" strategy to actually using always the same training set, in effect corresponding to the standardWF approach! Note that the bug was introduced in a previous update motivated by make the package compatible with gbm, which means that on other previous versions this was working correctly.
