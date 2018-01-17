@@ -130,20 +130,27 @@ pairedComparisons <-  function(obj,baseline,
                      ts)
                          )
         compResults[[p]]$WilcoxonSignedRank.test <- array(NA,dim=c(nws,3,nts),
-                 dimnames=list(c(base,other),c("MedScore","DiffMedScores","p.value"),
+                 dimnames=list(c(base,other),c("AvgScore","Wstatistic","p.value"),
                      ts)
                          )
         for(t in ts) {
             compResults[[p]]$WilcoxonSignedRank.test[base,,t] <- NA
-            compResults[[p]]$WilcoxonSignedRank.test[base,"MedScore",t] <- compResults[[p]]$medScores[t,base]
+            compResults[[p]]$WilcoxonSignedRank.test[base,"AvgScore",t] <- compResults[[p]]$avgScores[t,base]
             compResults[[p]]$t.test[base,,t] <- NA
             compResults[[p]]$t.test[base,"AvgScore",t] <- compResults[[p]]$avgScores[t,base]
             for(o in other) {
                 tst <- try(wilcox.test(obj[[t]][[o]]@iterationsScores[,p],
                                        obj[[t]][[base]]@iterationsScores[,p],
                                        paired=T))
-                compResults[[p]]$WilcoxonSignedRank.test[o,"DiffMedScores",t] <- compResults[[p]]$medScores[t,base] - compResults[[p]]$medScores[t,o]
-                compResults[[p]]$WilcoxonSignedRank.test[o,"MedScore",t] <- compResults[[p]]$medScores[t,o]
+                sg <- sign(obj[[t]][[base]]@iterationsScores[,p]-obj[[t]][[o]]@iterationsScores[,p])
+                rk <- rank(abs(obj[[t]][[base]]@iterationsScores[,p]-obj[[t]][[o]]@iterationsScores[,p]))
+                zad <- which(abs(obj[[t]][[base]]@iterationsScores[,p]-obj[[t]][[o]]@iterationsScores[,p])==0)
+                if (length(zad)) {
+                  sg <- sg[-zad]
+                  rk <- rk[-zad]
+                }
+                compResults[[p]]$WilcoxonSignedRank.test[o,"Wstatistic",t] <- sum(sg*rk)
+                compResults[[p]]$WilcoxonSignedRank.test[o,"AvgScore",t] <- compResults[[p]]$avgScores[t,o]
                 compResults[[p]]$WilcoxonSignedRank.test[o,"p.value",t] <-
                     if (inherits(tst,"try-error"))  NA else tst$p.value
                 tst <- try(t.test(obj[[t]][[o]]@iterationsScores[,p],
